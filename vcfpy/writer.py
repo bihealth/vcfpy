@@ -6,9 +6,6 @@ Currently, only writing to plain-text files is supported
 
 __author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
 
-# TODO: use context manager for making close-able
-# TODO: allow some configuration to make warning into exceptions?
-
 
 class VCFWriter:
     """Class for writing VCF files to ``file``-like objects
@@ -77,6 +74,8 @@ class VCFWriter:
 
     def _serialize_info(self, record):
         """Return serialized version of record.INFO"""
+        arr = []
+        return ';'.join(arr)
         raise NotImplementedError('Implement me!')
 
     def _serialize_call(self, format, call):

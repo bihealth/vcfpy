@@ -8,9 +8,6 @@ from . import parser
 
 __author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
 
-# TODO: use context manager for making close-able
-# TODO: allow some configuration to make warning into exceptions?
-
 
 class VCFReader:
     """Class for parsing of files from ``file``-like objects
@@ -71,7 +68,6 @@ class VCFReader:
         :param int begin: 0-based begin position (inclusive)
         :param int end: 0-based end position (exclusive)
         """
-        # TODO: this remains as an exercise for later...
         raise NotImplementedError('Implement me!')
 
     def __iter__(self):

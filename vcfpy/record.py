@@ -4,8 +4,6 @@
 The VCF record structure is modeled after the one of PyVCF
 """
 
-# TODO: representation of SingleBreakend and Breakend
-
 #: Code for single nucleotide variant
 SNV = 'SNV'
 #: Code for a multi nucleotide variant
@@ -216,6 +214,22 @@ class SV(AltRecord):
 
 class BreakEnd(AltRecord):
     """A placeholder for a breakend"""
+
+    def __init__(self, type_, value):
+        super().__init__(type_)
+        #: The alternative base sequence to use in the substitution
+        self.sequevaluence = value
+
+    def __str__(self):
+        tpl = 'Substitution(type_={}, value={})'
+        return tpl.format(*map(repr, [self.type, self.value]))
+
+    def __repr__(self):
+        return str(self)
+
+
+class SingleBreakEnd(AltRecord):
+    """A placeholder for a single breakend"""
 
     def __init__(self, type_, value):
         super().__init__(type_)

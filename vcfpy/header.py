@@ -11,14 +11,6 @@ from . import exceptions
 
 __author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
 
-# TODO: ##ALT=
-# TODO: ##assembly=
-# TODO: ##PEDIGREE=
-# TODO: ##META=
-# TODO: ##SAMPLE=
-# TODO: use @property instead of assignment to self.<property>
-# TODO: explicit tests for header module
-
 # Tuples of valid entries -----------------------------------------------------
 #
 #: valid INFO value types
@@ -77,7 +69,6 @@ class VCFHeader:
         return self._get_field_info('FORMAT', key)
 
     def _get_field_info(self, type_, key):
-        # TODO: speedup using faster lookup structure, requires updating
         for line in self.lines:
             if line.key == type_ and line.id == key:
                 return FieldInfo(line.mapping['Type'],

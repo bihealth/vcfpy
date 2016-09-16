@@ -13,12 +13,6 @@ from . import exceptions
 
 __author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
 
-# TODO: check whether the str.split() calls are a bottleneck, could write
-#       faster parsers based on scanning (VCF follows a regular grammar
-#       after all)
-
-# TODO: interpret escaping of parameters
-
 
 # expected "#CHROM" header prefix when there are samples
 REQUIRE_SAMPLE_HEADER = (
@@ -93,7 +87,7 @@ def parse_mapping(value):
     for pair in pairs:
         if '=' in pair:
             key, value = pair.split('=', 1)
-            key = key.strip()  # TODO: warn if this is necessary?
+            key = key.strip()  # XXX lenient parsing
             if value.startswith('"') and value.endswith('"'):
                 value = ast.literal_eval(value)
         else:
@@ -173,8 +167,7 @@ def convert_field_value(key, type_, value):
 def parse_field_value(key, field_info, value):
     """Parse ``value`` according to ``field_info``
     """
-    # TODO: check for value adhering to field_info in terms of count, warn
-    #       otherwise
+    # XXX lenient parsing, ignoring if counts differ from field_info
     if field_info.type == 'Flag':
         assert value is True
         return True
@@ -256,7 +249,7 @@ class VCFHeaderParser:
         line = line[len('##'):].rstrip()  # trim '^##' and trailing whitespace
         # split key/value pair at "="
         key, value = line.split('=', 1)
-        key = key.strip()  # TODO: warn if this is necessary?
+        key = key.strip()  # XXX lenient parsing
         sub_parser = self.sub_parsers.get(key, self.sub_parsers['__default__'])
         return sub_parser.parse_key_value(key, value)
 
@@ -278,7 +271,6 @@ class VCFRecordParser:
         if not line_str:
             return None  # empty line, EOF
         arr = self._split_line(line_str)
-        # TODO: check chrom, filter, etc. etc. to be present in header
         # CHROM
         chrom = arr[0]
         # POS
@@ -342,7 +334,7 @@ class VCFRecordParser:
                     entry, self.header.get_info_field_info(entry), True)
             else:
                 key, value = entry.split('=', 1)
-                key = key.strip()  # TODO: warn if this is necessary?
+                key = key.strip()  # XXX lenient parsing
                 result[key] = parse_field_value(
                     key, self.header.get_info_field_info(key), value)
 
