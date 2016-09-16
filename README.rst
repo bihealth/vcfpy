@@ -1,6 +1,6 @@
-===============================
-vcfpy
-===============================
+=====
+VCFPy
+=====
 
 
 .. image:: https://img.shields.io/pypi/v/vcfpy.svg
@@ -18,23 +18,29 @@ vcfpy
      :alt: Updates
 
 
-Python 3 VCF parser to circumvent problems in PyVCF
-
+Python 3 VCF parser that allows both reading and writing
 
 * Free software: MIT license
 * Documentation: https://vcfpy.readthedocs.io.
 
+Why another VCF parser for Python!
+----------------------------------
 
-Features
---------
+I've been using PyVCF with quite some success in the past.
+However, the main bottleneck of PyVCF is when you want to modify the per-sample genotype information.
+There are some issues in the tracker of PyVCF but none of them can really be considered solved.
+I tried several hours to solve these problems within PyVCF but this never got far or towards a complete rewrite...
 
-* TODO
+For this reason, VCFPy was born and here it is!
 
-Credits
----------
+What's the State?
+-----------------
 
-This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypackage`_ project template.
+VCFPy is the result of two full days of development plus some maintenance work later now (right now).
+I'm using it in several projects but it is not as battle-tested as PyVCF.
 
-.. _Cookiecutter: https://github.com/audreyr/cookiecutter
-.. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
+Why Python 3 Only?
+------------------
 
+As I'm only using Python 3 code, I see no advantage in carrying around support for legacy Python 2 and maintaining it.
+At a later point when VCFPy is known to be stable, Python 2 support might be added if someone contributes a pull request.
