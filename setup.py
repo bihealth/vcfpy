@@ -24,7 +24,7 @@ setup(
     long_description=readme + '\n\n' + history,
     author="Manuel Holtgrewe",
     author_email='manuel.holtgrewe@bihealth.de',
-    url='https://github.com/holtgrewe/vcfpy',
+    url='https://github.com/bihealth/vcfpy',
     packages=[
         'vcfpy',
     ],
