@@ -35,7 +35,7 @@ HEADER_NUMBER_GENOTYPES = 'G'
 HEADER_NUMBER_UNBOUNDED = '.'
 
 
-def _warn_missing(msg):
+def _warn(msg):
     """Print warning message in case of missing attributes"""
     print('[vcfpy] WARNING: {}'.format(msg), file=sys.stderr)
 
@@ -94,8 +94,11 @@ class VCFHeader:
         for line in self.lines:
             if line.key in LINES_WITH_ID:
                 result.setdefault(line.key, {})
-                assert line.mapping['ID'] not in result[line.key]
-                result[line.key][line.mapping['ID']] = line
+                if line.mapping['ID'] in result[line.key]:
+                    _warn(('Seen {} header more than once: {}, using first'
+                           'occurence').format(line.key, line.mapping['ID']))
+                else:
+                    result[line.key][line.mapping['ID']] = line
             else:
                 result.setdefault(line.key, [])
                 result[line.key].append(line)
@@ -113,7 +116,7 @@ class VCFHeader:
         result = self._indices[type_].get(key)
         if result:
             return result
-        _warn_missing('{} {} not found using String/"." instead'.format(
+        _warn('{} {} not found using String/"." instead'.format(
             type_, key))
         return FieldInfo('String', HEADER_NUMBER_UNBOUNDED)
 
@@ -191,7 +194,7 @@ class VCFContigHeaderLine(VCFSimpleHeaderLine):
         if 'length' in self.mapping:
             mapping['length'] = int(mapping['length'])
         else:
-            _warn_missing(
+            _warn(
                 'Field "length" not found in header line {}={}'.format(
                     key, value))
         #: name of the contig
@@ -212,7 +215,7 @@ class VCFFilterHeaderLine(VCFSimpleHeaderLine):
         super().__init__(key, value, mapping)
         # check for "Description" key
         if 'Description' not in self.mapping:
-            _warn_missing(
+            _warn(
                 'Field "Description" not found in header line {}={}'.format(
                     key, value))
         #: token for the filter
@@ -293,12 +296,12 @@ class VCFInfoHeaderLine(VCFCompoundHeaderLine):
         # check for "Type" field
         type_ = self.mapping.get('Type')
         if 'Type' not in self.mapping:
-            _warn_missing(
+            _warn(
                 ('Field "Type" not found in header line, using String '
                  'instead {}={}').format(key, value))
             type_ = 'String'
         if 'Type' in self.mapping and type_ not in INFO_TYPES:
-            _warn_missing(
+            _warn(
                 ('Invalid INFO value type {} in header line, using String '
                  'instead, {}={}').format(self.mapping['Type'], key, value))
             type_ = 'String'
@@ -306,7 +309,7 @@ class VCFInfoHeaderLine(VCFCompoundHeaderLine):
         self.type = type_
         # check for "Description" key
         if 'Description' not in self.mapping:
-            _warn_missing(
+            _warn(
                 'Field "Description" not found in header line {}={}'.format(
                     key, value))
         #: description, should be given, ``None`` if not given
@@ -334,12 +337,12 @@ class VCFFormatHeaderLine(VCFCompoundHeaderLine):
         # check for "Type" field
         type_ = self.mapping.get('Type')
         if 'Type' not in self.mapping:
-            _warn_missing(
+            _warn(
                 ('Field "Type" not found in header line, using String '
                  'instead {}={}').format(key, value))
             type_ = 'String'
         if 'Type' in self.mapping and type_ not in FORMAT_TYPES:
-            _warn_missing(
+            _warn(
                 ('Invalid INFO value type {} in header line, using String '
                  'instead, {}={}').format(self.mapping['Type'], key, value))
             type_ = 'String'
@@ -347,7 +350,7 @@ class VCFFormatHeaderLine(VCFCompoundHeaderLine):
         self.type = type_
         # check for "Description" key
         if 'Description' not in self.mapping:
-            _warn_missing(
+            _warn(
                 'Field "Description" not found in header line {}={}'.format(
                     key, value))
         #: description, should be given, ``None`` if not given
