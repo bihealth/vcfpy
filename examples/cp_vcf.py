@@ -18,7 +18,7 @@ def run_vcfpy(args):
     # optionally, open VCF writer
     writer = None
     if args.output_vcf:
-        writer = vcfpy.VCFReader.from_path(
+        writer = vcfpy.VCFWriter.from_path(
             reader.header, reader.samples, args.output_vcf)
     # read through input VCF file, optionally also writing out
     start = time.clock()
