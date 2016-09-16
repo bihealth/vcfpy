@@ -14,6 +14,7 @@ from vcfpy import record
 
 __author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
 
+# TODO: cleanup, refactor tests somewhat
 
 MEDIUM_HEADER = """
 ##fileformat=VCFv4.3
@@ -69,5 +70,43 @@ def test_write_minimal_record(header_samples, tmpdir_factory):
     # compare actual result with expected
     RESULT = path.read()
     LINE = '20\t100\t.\tC\tT\t.\t.\t.\tGT\t0/1\t0/0\t1/1\n'
+    EXPECTED = MEDIUM_HEADER + LINE
+    assert RESULT == EXPECTED
+
+
+def test_write_annotated_record(header_samples, tmpdir_factory):
+    O = collections.OrderedDict
+    S = record.Substitution
+    # open temporary file and setup the VCFWriter with header
+    path = tmpdir_factory.mktemp('write_annotated_record').join('out.vcf')
+    header, samples = header_samples
+    w = writer.VCFWriter.from_path(header, samples, path)
+    # construct record to write out from scratch
+    # def __init__(self, CHROM, POS, ID, REF, ALT, QUAL, FILTER, INFO, FORMAT,
+    #             calls):
+    r = record.Record(
+        '20',
+        100,
+        ['rs333', 'CSN42'],
+        'C',
+        [
+            record.Substitution(record.SNV, 'T'),
+            record.Substitution(record.SNV, 'G'),
+        ],
+        50,
+        ['PASS'],
+        O([('DP', 93), ('AF', [0.3, 0.2]), ('DB', True)]),
+        ['GT', 'DP', 'GQ', 'HQ'],
+        [
+            record.Call('NA00001', O(GT='0/1', DP=30, GQ=40, HQ=[1, 2])),
+            record.Call('NA00002', O(GT='0/2', DP=31, GQ=41, HQ=[3, 4])),
+            record.Call('NA00003', O(GT='1/2', DP=32, GQ=42, HQ=[5, 6])),
+        ])
+    # write out the record, close file to ensure flushing to disk
+    w.write_record(r)
+    w.close()
+    # compare actual result with expected
+    RESULT = path.read()
+    LINE = '20\t100\trs333;CSN42\tC\tT,G\t50\tPASS\tDP=93;AF=0.3,0.2;DB\tGT:DP:GQ:HQ\t0/1:30:40:1,2\t0/2:31:41:3,4\t1/2:32:42:5,6\n'
     EXPECTED = MEDIUM_HEADER + LINE
     assert RESULT == EXPECTED

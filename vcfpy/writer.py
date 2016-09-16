@@ -100,9 +100,9 @@ class VCFWriter:
         """Serialize whole VCFRecord"""
         f = self._empty_to_dot
         row = [record.CHROM, record.POS]
-        row += f(';'.join(record.ID))
+        row.append(f(';'.join(record.ID)))
         row.append(f(record.REF))
-        row += [f(a.value) for a in record.ALT]
+        row.append(','.join([f(a.value) for a in record.ALT]))
         row.append(f(record.QUAL))
         row.append(f(';'.join(record.FILTER)))
         row.append(f(self._serialize_info(record)))
