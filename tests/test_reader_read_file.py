@@ -6,6 +6,8 @@ import os
 
 from vcfpy import reader
 
+__author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
+
 
 def test_read_text():
     path = os.path.join(os.path.dirname(__file__), 'vcfs/full_vcf43.vcf')

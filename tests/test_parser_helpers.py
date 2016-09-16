@@ -3,6 +3,8 @@
 
 from vcfpy import parser
 
+__author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
+
 # parser.split_quoted_string() ------------------------------------------------
 
 

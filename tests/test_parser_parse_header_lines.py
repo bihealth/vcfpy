@@ -5,6 +5,8 @@
 from vcfpy import header
 from vcfpy import parser
 
+__author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
+
 # parser.StupidVCFHeaderLineParser.parse_key_value() --------------------------
 
 

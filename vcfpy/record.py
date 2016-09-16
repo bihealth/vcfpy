@@ -169,6 +169,13 @@ class Substitution(AltRecord):
         #: The alternative base sequence to use in the substitution
         self.sequence = sequence
 
+    def __str__(self):
+        tpl = 'Substitution(type_={}, sequence={})'
+        return tpl.format(*map(repr, [self.type, self.sequence]))
+
+    def __repr__(self):
+        return str(self)
+
 
 class SV(AltRecord):
     """A placeholder for an SV
@@ -176,10 +183,46 @@ class SV(AltRecord):
     For SVs, simply the ``type`` is written out as ``"<type>"`` as alternative
     """
 
+    def __init__(self, type_, value):
+        super().__init__(type_)
+        #: The alternative base sequence to use in the substitution
+        self.value = value
+
+    def __str__(self):
+        tpl = 'Substitution(type_={}, value={})'
+        return tpl.format(*map(repr, [self.type, self.value]))
+
+    def __repr__(self):
+        return str(self)
+
 
 class BreakEnd(AltRecord):
     """A placeholder for a breakend"""
 
+    def __init__(self, type_, value):
+        super().__init__(type_)
+        #: The alternative base sequence to use in the substitution
+        self.sequevaluence = value
+
+    def __str__(self):
+        tpl = 'Substitution(type_={}, value={})'
+        return tpl.format(*map(repr, [self.type, self.value]))
+
+    def __repr__(self):
+        return str(self)
+
 
 class SymbolicAllele(AltRecord):
     """A placeholder for a symbolic allele"""
+
+    def __init__(self, type_, value):
+        super().__init__(type_)
+        #: The alternative base sequence to use in the substitution
+        self.value = value
+
+    def __str__(self):
+        tpl = 'Substitution(type_={}, value={})'
+        return tpl.format(*map(repr, [self.type, self.value]))
+
+    def __repr__(self):
+        return str(self)

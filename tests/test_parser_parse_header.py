@@ -9,6 +9,8 @@ import pytest
 
 from vcfpy import parser
 
+__author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
+
 MEDIUM_HEADER = r"""
 ##fileformat=VCFv4.3
 ##fileDate=20090805

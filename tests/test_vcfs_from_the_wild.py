@@ -11,6 +11,9 @@ import pytest
 
 from vcfpy import reader
 
+__author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
+
+
 FILENAMES = [
     '1kg.sites.vcf',
     '1kg.vcf.gz',
