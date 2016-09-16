@@ -262,6 +262,11 @@ class VCFRecordParser:
         self.header = header
         #: SamplesInfos with sample information
         self.samples = samples
+        # Expected number of fields
+        if self.samples.names:
+            self.expected_fields = 9 + len(self.samples.names)
+        else:
+            self.expected_fields = 8
 
     def parse_line(self, line_str):
         """Parse line from file (including trailing line break) and return
@@ -303,19 +308,22 @@ class VCFRecordParser:
             filt = arr[6].split(';')
         # INFO
         info = self._parse_info(arr[7])
-        # FORMAT
-        format = arr[8].split(':')
-        # per-sample calls
-        calls = [record.Call(sample, data) for sample, data in
-                 zip(self.samples.names,
-                     self._parse_calls_data(format, arr[9:]))]
+        if not self.samples.names:
+            format, calls = [], []
+        else:
+            # FORMAT
+            format = arr[8].split(':')
+            # per-sample calls
+            calls = [record.Call(sample, data) for sample, data in
+                    zip(self.samples.names,
+                        self._parse_calls_data(format, arr[9:]))]
         return record.Record(
             chrom, pos, ids, ref, alts, qual, filt, info, format, calls)
 
     def _split_line(self, line_str):
         """Split line and check number of columns"""
         arr = line_str.rstrip().split('\t')
-        if len(arr) != 9 + len(self.samples.names):
+        if len(arr) != self.expected_fields:
             raise exceptions.InvalidRecordException(
                 ('The line contains an invalid number of fields. Was '
                  '{} but expected {}\n{}'.format(

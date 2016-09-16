@@ -20,6 +20,8 @@ INFO_TYPES = ('Integer', 'Float', 'Flag', 'Character', 'String')
 FORMAT_TYPES = ('Integer', 'Float', 'Character', 'String')
 #: valid values for "Number" entries, except for integers
 VALID_NUMBERS = ('A', 'R', 'G', '.')
+#: header lines that contain an "ID" entry
+LINES_WITH_ID = ('FORMAT', 'INFO', 'FILTER', 'contig')
 
 # Constants for "Number" entries ----------------------------------------------
 #
@@ -83,6 +85,21 @@ class VCFHeader:
         self.lines = list(lines)
         #: :py:class:`SamplesInfo` object
         self.samples = samples
+        # build indices for the different field types
+        self._indices = self._build_indices()
+
+    def _build_indices(self):
+        """Build indices for the different field types"""
+        result = {}
+        for line in self.lines:
+            if line.key in LINES_WITH_ID:
+                result.setdefault(line.key, {})
+                assert line.mapping['ID'] not in result[line.key]
+                result[line.key][line.mapping['ID']] = line
+            else:
+                result.setdefault(line.key, [])
+                result[line.key].append(line)
+        return result
 
     def get_info_field_info(self, key):
         """Return :py:class:`FieldInfo` for the given INFO field"""
@@ -93,13 +110,12 @@ class VCFHeader:
         return self._get_field_info('FORMAT', key)
 
     def _get_field_info(self, type_, key):
-        for line in self.lines:
-            if line.key == type_ and line.id == key:
-                return FieldInfo(line.mapping['Type'],
-                                 line.mapping['Number'])
+        result = self._indices[type_].get(key)
+        if result:
+            return result
         _warn_missing('{} {} not found using String/"." instead'.format(
             type_, key))
-        return FileInfo('String', HEADER_NUMBER_UNBOUNDED)
+        return FieldInfo('String', HEADER_NUMBER_UNBOUNDED)
 
     def __str__(self):
         tpl = 'VCFHeader(lines={}, samples={})'
