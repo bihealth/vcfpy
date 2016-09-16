@@ -36,6 +36,14 @@ vcfpy.reader module
     :undoc-members:
     :show-inheritance:
 
+vcfpy.record module
+-------------------
+
+.. automodule:: vcfpy.record
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------

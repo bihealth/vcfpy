@@ -87,6 +87,6 @@ class VCFReader:
         """
         result = self.parser.parse_next_record()
         if result is None:
-            raise StopException
+            raise StopIteration()
         else:
             return result

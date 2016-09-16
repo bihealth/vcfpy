@@ -19,3 +19,7 @@ class InvalidRecordException(VCFPyException):
 
 class IncorrectVCFFormat(VCFPyException):
     """Raised on problems parsing VCF"""
+
+
+class HeaderNotFound(VCFPyException):
+    """Raised when a VCF header could not be found"""

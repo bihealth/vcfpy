@@ -17,7 +17,6 @@ __author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
 # TODO: ##META=
 # TODO: ##SAMPLE=
 # TODO: use @property instead of assignment to self.<property>
-# TODO: id_ => id?
 # TODO: explicit tests for header module
 
 # Tuples of valid entries -----------------------------------------------------
@@ -46,6 +45,16 @@ def _warn_missing(msg):
     print('[vcfpy] WARNING: {}'.format(msg), file=sys.stderr)
 
 
+class FieldInfo:
+    """Core information for describing field type and number"""
+
+    def __init__(self, type_, number):
+        #: The type, one of INFO_TYPES or FORMAT_TYPES
+        self.type = type_
+        #: Number description, either an int or constant
+        self.number = number
+
+
 class VCFHeader:
     """Represent header of VCF file
 
@@ -58,6 +67,24 @@ class VCFHeader:
         self.lines = list(lines)
         #: :py:class:`SamplesInfo` object
         self.samples = samples
+
+    def get_info_field_info(self, key):
+        """Return :py:class:`FieldInfo` for the given INFO field"""
+        return self._get_field_info('INFO', key)
+
+    def get_format_field_info(self, key):
+        """Return :py:class:`FieldInfo` for the given INFO field"""
+        return self._get_field_info('FORMAT', key)
+
+    def _get_field_info(self, type_, key):
+        # TODO: speedup using faster lookup structure, requires updating
+        for line in self.lines:
+            if line.key == type_ and line.id == key:
+                return FieldInfo(line.mapping['Type'],
+                                 line.mapping['Number'])
+        _warn_missing('{} {} not found using String/"." instead'.format(
+            type_, key))
+        return FileInfo('String', HEADER_NUMBER_UNBOUNDED)
 
     def __str__(self):
         tpl = 'VCFHeader(lines={}, samples={})'
@@ -124,7 +151,7 @@ class VCFContigHeaderLine(VCFSimpleHeaderLine):
                 'Field "length" not found in header line {}={}'.format(
                     key, value))
         #: name of the contig
-        self.id_ = self.mapping['ID']
+        self.id = self.mapping['ID']
         #: length of the contig, ``None`` if missing
         self.length = self.mapping.get('length')
 
@@ -145,7 +172,7 @@ class VCFFilterHeaderLine(VCFSimpleHeaderLine):
                 'Field "Description" not found in header line {}={}'.format(
                     key, value))
         #: token for the filter
-        self.id_ = self.mapping['ID']
+        self.id = self.mapping['ID']
         #: description for the filter, ``None`` if missing
         self.description = self.mapping.get('Description')
 
@@ -207,7 +234,7 @@ class VCFInfoHeaderLine(VCFCompoundHeaderLine):
     def __init__(self, key, value, mapping):
         super().__init__(key, value, mapping)
         #: key in the INFO field
-        self.id_ = self.mapping['ID']
+        self.id = self.mapping['ID']
         # check for "Number" field
         self.number = self.mapping['Number']
         # check for "Type" field
@@ -248,7 +275,7 @@ class VCFFormatHeaderLine(VCFCompoundHeaderLine):
     def __init__(self, key, value, mapping):
         super().__init__(key, value, mapping)
         #: key in the INFO field
-        self.id_ = self.mapping['ID']
+        self.id = self.mapping['ID']
         # check for "Number" field
         self.number = self.mapping['Number']
         # check for "Type" field

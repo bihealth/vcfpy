@@ -7,6 +7,7 @@ import collections
 import itertools
 
 from . import header
+from . import record
 from . import exceptions
 
 __author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
@@ -14,6 +15,8 @@ __author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
 # TODO: check whether the str.split() calls are a bottleneck, could write
 #       faster parsers based on scanning (VCF follows a regular grammar
 #       after all)
+
+# TODO: interpret escaping of parameters
 
 
 # expected "#CHROM" header prefix
@@ -140,6 +143,80 @@ HEADER_PARSERS = {
 }
 
 
+# Field value converters
+_CONVERTERS = {
+    'Integer': int,
+    'Float': float,
+    'Flag': lambda x: True,
+    'Character': str,
+    'String': str,
+}
+
+
+def convert_field_value(key, type_, value):
+    """Convert atomic field value according to the type"""
+    if value == '.':
+        return None
+    else:
+        return _CONVERTERS[type_](value)
+
+
+def parse_field_value(key, field_info, value):
+    """Parse ``value`` according to ``field_info``
+    """
+    # TODO: check for value adhering to field_info in terms of count, warn
+    #       otherwise
+    if field_info.type == 'Flag':
+        assert value is True
+        return True
+    elif field_info.number == 1:
+        return convert_field_value(key, field_info.type, value)
+    else:
+        return [convert_field_value(key, field_info.type, x)
+                for x in value.split(',')]
+
+
+def process_alt(header, ref, alt_str):
+    """Process alternative value using VCFHeader in ``header``"""
+    # By its nature, this function contains a large number of case distinctions
+    if ']' in alt_str or '[' in alt_str:
+        return record.BreakEnd(record.BND, alt_str)
+    elif alt_str.startswith('<') and alt_str.endswith('>'):
+        inner = alt_str[1:-1]
+        if any([inner.startswith(code) for code in record.SV_CODES]):
+            return record.SV(record.SV, alt_str)
+        else:
+            return record.SymbolicAllele(record.SYMBOLIC, alt_str)
+    else:  # substitution
+        if len(ref) == len(alt_str):
+            if len(ref) == 1:
+                return record.Substitution(record.SNV, alt_str)
+            else:
+                return record.Substitution(record.MNV, alt_str)
+        elif len(ref) > len(alt_str):
+            if len(alt_str) == 0:
+                raise exceptions.InvalidRecordException(
+                    'Invalid VCF, empty ALT')
+            elif len(alt_str) == 1:
+                if ref[0] == alt_str[0]:
+                    return record.Substitution(record.DEL, alt_str)
+                else:
+                    return record.Substitution(record.INDEL, alt_str)
+            else:
+                return record.Substitution(record.INDEL, alt_str)
+        else:  # len(ref) < len(alt_str):
+            if len(ref) == 0:
+                raise exceptions.InvalidRecordException(
+                    'Invalid VCF, empty REF')
+            elif len(ref) == 1:
+                if ref[0] == alt_str[0]:
+                    return record.Substitution(record.INS, alt_str)
+                else:
+                    return record.Substitution(record.INDEL, alt_str)
+            else:
+                return record.Substitution(record.INDEL, alt_str)
+
+
 class VCFHeaderParser:
     """Helper class for parsing a VCF header
     """
@@ -171,6 +248,86 @@ class VCFHeaderParser:
         return sub_parser.parse_key_value(key, value)
 
 
+class VCFRecordParser:
+    """Helper class for parsing VCF records"""
+
+    def __init__(self, header, samples):
+        #: VCFHeader with the meta information
+        self.header = header
+        #: SamplesInfos with sample information
+        self.samples = samples
+
+    def parse_line(self, line_str):
+        """Parse line from file (including trailing line break) and return
+        resulting VCFRecord
+        """
+        line_str = line_str.rstrip()
+        if not line_str:
+            return None  # empty line, EOF
+        arr = self._split_line(line_str)
+        # TODO: check chrom, filter, etc. etc. to be present in header
+        chrom = arr[0]
+        pos = int(arr[1])
+        ids = arr[2].split(';')
+        ref = arr[3]
+        alts = list(map(lambda x: process_alt(self.header, ref, x),
+                        arr[4].split(',')))
+        qual = float(arr[5])
+        filt = arr[6].split(';')
+        info = self._parse_info(arr[7])
+        format = arr[8].split(':')
+        calls = [record.Call(sample, data) for sample, data in
+                 zip(self.samples.names,
+                     self._parse_calls_data(format, arr[9:]))]
+        return record.Record(
+            chrom, pos, ids, ref, alts, qual, filt, info, format, calls)
+
+    def _split_line(self, line_str):
+        """Split line and check number of columns"""
+        arr = line_str.rstrip().split('\t')
+        if len(arr) != 9 + len(self.samples.names):
+            raise exceptions.InvalidRecordException(
+                ('The line contains an invalid number of fields. Was '
+                 '{} but expected {}\n{}'.format(
+                     len(arr), 9 + len(self.samples.names),
+                     line_str)))
+        return arr
+
+    def _parse_info(self, info_str):
+        """Parse INFO column from string"""
+        result = collections.OrderedDict()
+        # The standard is very nice to parsers, we can simply split at
+        # semicolon characters, although I (Manuel) don't know how strict
+        # programs follow this
+        for entry in info_str.split(';'):
+            if '=' not in entry:  # flag
+                result[key] = parse_field_value(
+                    entry, self.header.get_info_field_info(entry), True)
+            else:
+                key, value = entry.split('=', 1)
+                result[key] = parse_field_value(
+                    key, self.header.get_info_field_info(key), value)
+
+    def _parse_calls_data(self, format, arr):
+        """Parse genotype call information from arrays using format array
+
+        :param list format: List of strings with format names
+        :param list arr: List of strings with genotype information values
+            for each sample
+        """
+        result = []
+        for entry in arr:
+            data = collections.OrderedDict()
+            # The standard is very nice to parsers, we can simply split at
+            # colon characters, although I (Manuel) don't know how strict
+            # programs follow this
+            for key, value in zip(format, entry.split(':')):
+                data[key] = parse_field_value(
+                    key, self.header.get_format_field_info(key), value)
+            result.append(data)
+        return result
+
+
 class VCFParser:
     """Class for line-wise parsing of VCF files
 
@@ -191,11 +348,14 @@ class VCFParser:
         #: :py:class:`vcfpy.header.SamplesInfos` with sample information;
         #: set on parsing the header
         self.samples = None
+        # helper for parsing the records
+        self._record_parser = None
 
     def _read_next_line(self):
-        """Read and return next line, copy to self._line"""
+        """Read next line store in self._line and return old one"""
+        prev_line = self._line
         self._line = self.stream.readline()
-        return self._line
+        return prev_line
 
     def parse_header(self):
         """Read and parse :py:class:`vcfpy.header.VCFHeader` from file, set
@@ -226,6 +386,8 @@ class VCFParser:
         self.samples = header.SamplesInfos(arr[len(REQUIRE_SAMPLE_HEADER):])
         # construct VCFHeader object
         self.header = header.VCFHeader(header_lines, self.samples)
+        # construct record parser
+        self._record_parser = VCFRecordParser(self.header, self.samples)
         # read next line, must not be header
         self._read_next_line()
         if self._line and self._line.startswith('#'):
@@ -258,5 +420,4 @@ class VCFParser:
         :raises: ``vcfpy.exceptions.InvalidRecordException`` in the case of
             problems reading the record
         """
-        # XXX
-        return None
+        return self._record_parser.parse_line(self._read_next_line())
