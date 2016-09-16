@@ -47,7 +47,7 @@ def test_parse_minimal_record():
     hdr = p.parse_header()
     # Perform the actual test
     EXPECTED = (
-        "Record('20', 1, [], 'C', [Substitution(type_='SNV', sequence='G')], "
+        "Record('20', 1, [], 'C', [Substitution(type_='SNV', value='G')], "
         "None, [], OrderedDict(), ['GT'], "
         "[Call('NA00001', OrderedDict([('GT', '0/1')])),"
         " Call('NA00002', OrderedDict([('GT', '0/2')])),"

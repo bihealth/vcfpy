@@ -182,14 +182,14 @@ class Substitution(AltRecord):
     Note that this subsumes MNVs, insertions, and deletions.
     """
 
-    def __init__(self, type_, sequence):
+    def __init__(self, type_, value):
         super().__init__(type_)
         #: The alternative base sequence to use in the substitution
-        self.sequence = sequence
+        self.value = value
 
     def __str__(self):
-        tpl = 'Substitution(type_={}, sequence={})'
-        return tpl.format(*map(repr, [self.type, self.sequence]))
+        tpl = 'Substitution(type_={}, value={})'
+        return tpl.format(*map(repr, [self.type, self.value]))
 
     def __repr__(self):
         return str(self)
