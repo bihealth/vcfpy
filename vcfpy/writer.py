@@ -4,6 +4,8 @@
 Currently, only writing to plain-text files is supported
 """
 
+from . import parser
+
 __author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
 
 
@@ -21,18 +23,22 @@ class VCFWriter:
     """
 
     @classmethod
-    def from_file(klass, stream, path=None):
+    def from_file(klass, header, samples, stream, path=None):
         """Create new :py:class:`VCFWriter` from file
 
+        :param header: VCF header to use
+        :param samples: VCFSamplesInfos to use
         :param stream: ``file``-like object to write to
         :param path: optional string with path to store (for display only)
         """
-        return VCFWriter(stream=stream, path=path)
+        return VCFWriter(header, samples, stream, path)
 
     @classmethod
-    def from_path(klass, path):
+    def from_path(klass, header, samples, path):
         """Create new :py:class:`VCFWriter` from path
 
+        :param header: VCF header to use
+        :param samples: VCFSamplesInfos to use
         :param path: the path to load from (converted to ``str`` for
             compatibility with ``path.py``)
         """
@@ -41,7 +47,7 @@ class VCFWriter:
             raise NotImplementedError('Writing to bgzf not supported')
         else:
             f = open(path, 'wt')
-        return klass.from_file(stream=f, path=path)
+        return klass.from_file(header, samples, f, path)
 
     def __init__(self, header, samples, stream, path=None):
         #: the :py:class:~vcfpy.header.VCFHeader` written out
@@ -52,6 +58,24 @@ class VCFWriter:
         self.stream = stream
         #: optional ``str`` with the path to the stream
         self.path = path
+        # write out headers
+        self._write_header()
+
+    def _write_header(self):
+        """Write out the header"""
+        for line in self.header.lines:
+            print(line.serialize(), sep='', file=self.stream)
+        if self.samples.names:
+            print('\t'.join(
+                list(parser.REQUIRE_SAMPLE_HEADER) + self.samples.names),
+                file=self.stream)
+        else:
+            print('\t'.join(
+                parser.REQUIRE_NO_SAMPLE_HEADER), file=self.stream)
+
+    def close(self):
+        """Close underlying stream"""
+        self.stream.close()
 
     def write_record(self, record):
         """Write out the given :py:class:`vcfpy.record.VCFRecord` to this

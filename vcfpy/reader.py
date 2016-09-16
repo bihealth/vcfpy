@@ -70,6 +70,10 @@ class VCFReader:
         """
         raise NotImplementedError('Implement me!')
 
+    def close(self):
+        """Close underlying stream"""
+        self.stream.close()
+
     def __iter__(self):
         return self
 

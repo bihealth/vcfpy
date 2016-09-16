@@ -5,6 +5,7 @@ The VCF header class structure is modeled after HTSJDK
 """
 
 import collections
+import json
 import sys
 
 from . import exceptions
@@ -35,6 +36,23 @@ HEADER_NUMBER_UNBOUNDED = '.'
 def _warn_missing(msg):
     """Print warning message in case of missing attributes"""
     print('[vcfpy] WARNING: {}'.format(msg), file=sys.stderr)
+
+
+# header files to enforce double-quoting for
+QUOTE_FIELDS = ('Description', 'Source', 'Version')
+
+
+def serialize_for_header(key, value):
+    """Serialize value for the given mapping key for a VCF header line"""
+    if key in QUOTE_FIELDS:
+        return json.dumps(value)
+    elif type(value) is str:
+        if ' ' in value or '\t' in value:
+            return json.dumps(value)
+        else:
+            return value
+    else:
+        return str(value)
 
 
 class FieldInfo:
@@ -95,6 +113,10 @@ class VCFHeaderLine:
         #: ``str`` with raw value of header line
         self.value = value
 
+    def serialize(self):
+        """Return VCF-serialized version of this header line"""
+        return ''.join(('##', self.key, '=', self.value))
+
     def __str__(self):
         return 'VCFHeaderLine({}, {})'.format(
             *map(repr, (self.key, self.value)))
@@ -120,6 +142,15 @@ class VCFSimpleHeaderLine(VCFHeaderLine):
                     key, value))
         #: ``collections.OrderedDict`` with key/value mapping of the attributes
         self.mapping = collections.OrderedDict(mapping.items())
+
+    def serialize(self):
+        result = ['##', self.key, '=<']
+        for i, (key, value) in enumerate(self.mapping.items()):
+            if i > 0:
+                result.append(',')
+            result += [key, '=', serialize_for_header(key, value)]
+        result += ['>']
+        return ''.join(map(str, result))
 
     def __str__(self):
         return 'VCFSimpleHeaderLine({}, {}, {})'.format(
@@ -209,6 +240,15 @@ class VCFCompoundHeaderLine(VCFHeaderLine):
                 return number
             else:
                 raise e
+
+    def serialize(self):
+        result = ['##', self.key, '=<']
+        for i, (key, value) in enumerate(self.mapping.items()):
+            if i > 0:
+                result.append(',')
+            result += [key, '=', serialize_for_header(key, value)]
+        result += ['>']
+        return ''.join(map(str, result))
 
     def __str__(self):
         return 'VCFCompoundHeaderLine({}, {}, {})'.format(
