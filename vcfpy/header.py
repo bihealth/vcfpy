@@ -64,6 +64,12 @@ class FieldInfo:
         #: Number description, either an int or constant
         self.number = number
 
+    def __str__(self):
+        return 'FieldInfo({}, {})'.format(*map(repr, [self.type, self.number]))
+
+    def __repr__(self):
+        return str(self)
+
 
 class VCFHeader:
     """Represent header of VCF file

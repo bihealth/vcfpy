@@ -292,7 +292,10 @@ class VCFRecordParser:
         if arr[5] == '.':
             qual = None
         else:
-            qual = float(arr[5])
+            try:
+                qual = int(arr[5])
+            except ValueError:  # try as float
+                qual = float(arr[5])
         # FILTER
         if arr[6] == '.':
             filt = []
@@ -330,13 +333,14 @@ class VCFRecordParser:
         # programs follow this
         for entry in info_str.split(';'):
             if '=' not in entry:  # flag
-                result[key] = parse_field_value(
+                result[entry] = parse_field_value(
                     entry, self.header.get_info_field_info(entry), True)
             else:
                 key, value = entry.split('=', 1)
                 key = key.strip()  # XXX lenient parsing
                 result[key] = parse_field_value(
                     key, self.header.get_info_field_info(key), value)
+        return result
 
     def _parse_calls_data(self, format, arr):
         """Parse genotype call information from arrays using format array

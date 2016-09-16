@@ -71,7 +71,7 @@ def test_write_minimal_record(header_samples, tmpdir_factory):
     RESULT = path.read()
     LINE = '20\t100\t.\tC\tT\t.\t.\t.\tGT\t0/1\t0/0\t1/1\n'
     EXPECTED = MEDIUM_HEADER + LINE
-    assert RESULT == EXPECTED
+    assert EXPECTED == RESULT
 
 
 def test_write_annotated_record(header_samples, tmpdir_factory):
@@ -109,4 +109,4 @@ def test_write_annotated_record(header_samples, tmpdir_factory):
     RESULT = path.read()
     LINE = '20\t100\trs333;CSN42\tC\tT,G\t50\tPASS\tDP=93;AF=0.3,0.2;DB\tGT:DP:GQ:HQ\t0/1:30:40:1,2\t0/2:31:41:3,4\t1/2:32:42:5,6\n'
     EXPECTED = MEDIUM_HEADER + LINE
-    assert RESULT == EXPECTED
+    assert EXPECTED == RESULT

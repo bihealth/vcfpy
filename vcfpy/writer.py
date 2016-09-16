@@ -9,18 +9,26 @@ from . import parser
 __author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
 
 
+def format_atomic(value):
+    """Format atomic value"""
+    if value is None:
+        return '.'
+    else:
+        return str(value)
+
+
 def format_value(field_info, value):
-    """Format value given the FieldInfo"""
+    """Format possibly compound value given the FieldInfo"""
     if field_info.number == 1:
         if value is None:
             return '.'
         else:
-            return str(value)
+            return format_atomic(value)
     else:
         if not value:
             return '.'
         else:
-            return ','.join(map(str, value))
+            return ','.join(map(format_atomic, value))
 
 
 class VCFWriter:
@@ -102,13 +110,15 @@ class VCFWriter:
         row = [record.CHROM, record.POS]
         row.append(f(';'.join(record.ID)))
         row.append(f(record.REF))
-        row.append(','.join([f(a.value) for a in record.ALT]))
+        if not record.ALT:
+            row.append('.')
+        else:
+            row.append(','.join([f(a.value) for a in record.ALT]))
         row.append(f(record.QUAL))
         row.append(f(';'.join(record.FILTER)))
         row.append(f(self._serialize_info(record)))
         row.append(':'.join(record.FORMAT))
         row += [self._serialize_call(record.FORMAT, c) for c in record.calls]
-        import sys; print(row, file=sys.stderr)
         print(*row, sep='\t', file=self.stream)
 
     def _serialize_info(self, record):
