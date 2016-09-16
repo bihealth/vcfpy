@@ -89,6 +89,15 @@ class Record:
         """Return generator yielding from ``self.calls``"""
         yield from self.calls
 
+    def __str__(self):
+        tpl = 'Record({})'
+        lst = [self.CHROM, self.POS, self.ID, self.REF, self.ALT, self.QUAL,
+               self.FILTER, self.INFO, self.FORMAT, self.calls]
+        return tpl.format(', '.join(map(repr, lst)))
+
+    def __repr__(self):
+        return str(self)
+
 
 class Call:
     """The information for a genotype callable
@@ -111,7 +120,7 @@ class Call:
     def gt_bases(self):
         """Return the actual genotype alleles, e.g. if VCF genotype is 0/1,
         could return A/T"""
-        # TODO
+        raise NotImplementedError('Implement me!')
 
     @property
     def gt_type(self):
@@ -122,26 +131,35 @@ class Call:
         - hom_alt = 2 (which alt is untracked)
         - uncalled = ``None``
         """
+        raise NotImplementedError('Implement me!')
 
     @property
     def is_filtered(self):
         """Return ``True`` for filtered calls"""
-        # TODO
+        raise NotImplementedError('Implement me!')
 
     @property
     def is_het(self):
         """Return ``True`` for filtered calls"""
-        # TODO
+        raise NotImplementedError('Implement me!')
 
     @property
     def is_variant(self):
         """Return ``True`` for filtered calls"""
-        # TODO
+        raise NotImplementedError('Implement me!')
 
     @property
     def is_phased(self):
         """Return ``True`` for phased calls"""
-        # TODO
+        raise NotImplementedError('Implement me!')
+
+    def __str__(self):
+        tpl = 'Call({})'
+        lst = [self.sample, self.data]
+        return tpl.format(', '.join(map(repr, lst)))
+
+    def __repr__(self):
+        return str(self)
 
 
 class AltRecord:

@@ -83,6 +83,14 @@ def test_parse_field_value_integer_more(number):
     assert EXPECTED == RESULT
 
 
+@pytest.mark.parametrize('number', [2, 'A', 'R', 'G', '.'])
+def test_parse_field_value_integer_more_empty(number):
+    EXPECTED = []
+    RESULT = parser.parse_field_value(
+        'KEY', header.FieldInfo('Integer', number), '.')
+    assert EXPECTED == RESULT
+
+
 def test_parse_field_value_string_one():
     EXPECTED = '42'
     RESULT = parser.parse_field_value(
@@ -95,4 +103,12 @@ def test_parse_field_value_string_more(number):
     EXPECTED = ['42', '43']
     RESULT = parser.parse_field_value(
         'KEY', header.FieldInfo('String', number), '42,43')
+    assert EXPECTED == RESULT
+
+
+@pytest.mark.parametrize('number', [2, 'A', 'R', 'G', '.'])
+def test_parse_field_value_integer_more_empty(number):
+    EXPECTED = []
+    RESULT = parser.parse_field_value(
+        'KEY', header.FieldInfo('String', number), '.')
     assert EXPECTED == RESULT

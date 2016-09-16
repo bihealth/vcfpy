@@ -181,8 +181,11 @@ def parse_field_value(key, field_info, value):
     elif field_info.number == 1:
         return convert_field_value(key, field_info.type, value)
     else:
-        return [convert_field_value(key, field_info.type, x)
-                for x in value.split(',')]
+        if value == '.':
+            return []
+        else:
+            return [convert_field_value(key, field_info.type, x)
+                    for x in value.split(',')]
 
 
 def process_alt(header, ref, alt_str):
@@ -276,16 +279,38 @@ class VCFRecordParser:
             return None  # empty line, EOF
         arr = self._split_line(line_str)
         # TODO: check chrom, filter, etc. etc. to be present in header
+        # CHROM
         chrom = arr[0]
+        # POS
         pos = int(arr[1])
-        ids = arr[2].split(';')
+        # IDS
+        if arr[2] == '.':
+            ids = []
+        else:
+            ids = arr[2].split(';')
+        # REF
         ref = arr[3]
-        alts = list(map(lambda x: process_alt(self.header, ref, x),
-                        arr[4].split(',')))
-        qual = float(arr[5])
-        filt = arr[6].split(';')
+        # ALT
+        if arr[4] == '.':
+            alts = []
+        else:
+            alts = list(map(lambda x: process_alt(self.header, ref, x),
+                            arr[4].split(',')))
+        # QUAL
+        if arr[5] == '.':
+            qual = None
+        else:
+            qual = float(arr[5])
+        # FILTER
+        if arr[6] == '.':
+            filt = []
+        else:
+            filt = arr[6].split(';')
+        # INFO
         info = self._parse_info(arr[7])
+        # FORMAT
         format = arr[8].split(':')
+        # per-sample calls
         calls = [record.Call(sample, data) for sample, data in
                  zip(self.samples.names,
                      self._parse_calls_data(format, arr[9:]))]
@@ -306,6 +331,8 @@ class VCFRecordParser:
     def _parse_info(self, info_str):
         """Parse INFO column from string"""
         result = collections.OrderedDict()
+        if info_str == '.':
+            return result
         # The standard is very nice to parsers, we can simply split at
         # semicolon characters, although I (Manuel) don't know how strict
         # programs follow this
