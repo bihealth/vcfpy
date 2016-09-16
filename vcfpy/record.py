@@ -218,7 +218,7 @@ class BreakEnd(AltRecord):
     def __init__(self, type_, value):
         super().__init__(type_)
         #: The alternative base sequence to use in the substitution
-        self.sequevaluence = value
+        self.value = value
 
     def __str__(self):
         tpl = 'Substitution(type_={}, value={})'
@@ -234,7 +234,7 @@ class SingleBreakEnd(AltRecord):
     def __init__(self, type_, value):
         super().__init__(type_)
         #: The alternative base sequence to use in the substitution
-        self.sequevaluence = value
+        self.value = value
 
     def __str__(self):
         tpl = 'Substitution(type_={}, value={})'

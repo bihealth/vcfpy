@@ -9,6 +9,20 @@ from . import parser
 __author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
 
 
+def format_value(field_info, value):
+    """Format value given the FieldInfo"""
+    if field_info.number == 1:
+        if value is None:
+            return '.'
+        else:
+            return str(value)
+    else:
+        if not value:
+            return '.'
+        else:
+            return ','.join(map(str, value))
+
+
 class VCFWriter:
     """Class for writing VCF files to ``file``-like objects
 
@@ -87,24 +101,32 @@ class VCFWriter:
         f = self._empty_to_dot
         row = [record.CHROM, record.POS]
         row += f(';'.join(record.ID))
-        row.append(f(record.REF_))
+        row.append(f(record.REF))
         row += [f(a.value) for a in record.ALT]
         row.append(f(record.QUAL))
         row.append(f(';'.join(record.FILTER)))
         row.append(f(self._serialize_info(record)))
         row.append(':'.join(record.FORMAT))
-        row += [self._serialize_call(record.format, c) for c in record.calls]
+        row += [self._serialize_call(record.FORMAT, c) for c in record.calls]
+        import sys; print(row, file=sys.stderr)
         print(*row, sep='\t', file=self.stream)
 
     def _serialize_info(self, record):
         """Return serialized version of record.INFO"""
-        arr = []
-        return ';'.join(arr)
-        raise NotImplementedError('Implement me!')
+        result = []
+        for key, value in record.INFO.items():
+            info = self.header.get_info_field_info(key)
+            if info.type == 'Flag':
+                result.append(key)
+            else:
+                result.append('{}={}'.format(key, format_value(info, value)))
+        return ';'.join(result)
 
     def _serialize_call(self, format, call):
         """Return serialized version of the Call using the record's FORMAT'"""
-        raise NotImplementedError('Implement me!')
+        result = [format_value(self.header.get_format_field_info(key),
+                               call.data[key]) for key in format]
+        return ':'.join(result)
 
     def _empty_to_dot(self, val):
         """Return val or '.' if empty value"""

@@ -1,15 +1,19 @@
 # -*- coding: utf-8 -*-
-"""Test parsing of full VCF header
+"""Writing of VCF records
 """
 
+import collections
 import io
 import textwrap
 
 import pytest
 
 from vcfpy import parser
+from vcfpy import writer
+from vcfpy import record
 
 __author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
+
 
 MEDIUM_HEADER = """
 ##fileformat=VCFv4.3
@@ -35,21 +39,35 @@ MEDIUM_HEADER = """
 
 
 @pytest.fixture(scope='function')
-def medium_header():
-    return io.StringIO(MEDIUM_HEADER)
+def header_samples():
+    p = parser.VCFParser(stream=io.StringIO(MEDIUM_HEADER), path='<builtin>')
+    p.parse_header()
+    return (p.header, p.samples)
 
 
-def test_parse_header(medium_header):
-    p = parser.VCFParser(stream=medium_header, path='<builtin>')
-    header = p.parse_header()
-    assert header.lines
-    assert len(header.lines) == 18
-    EXPECTED = "VCFHeaderLine('fileformat', 'VCFv4.3')"
-    assert str(header.lines[0]) == EXPECTED
-    EXPECTED = (
-        "VCFFormatHeaderLine('FORMAT', '<ID=HQ,Number=2,Type=Integer,"
-        "Description=\"Haplotype Quality\">', OrderedDict([('ID', 'HQ'), "
-        "('Number', 2), ('Type', 'Integer'), ('Description', "
-        "'Haplotype Quality')]))")
-    assert str(header.lines[-1]) == EXPECTED
-    assert header.samples.names == ['NA00001', 'NA00002', 'NA00003']
+def test_write_minimal_record(header_samples, tmpdir_factory):
+    O = collections.OrderedDict
+    S = record.Substitution
+    # open temporary file and setup the VCFWriter with header
+    path = tmpdir_factory.mktemp('write_header').join('out.vcf')
+    header, samples = header_samples
+    w = writer.VCFWriter.from_path(header, samples, path)
+    # construct record to write out from scratch
+    # def __init__(self, CHROM, POS, ID, REF, ALT, QUAL, FILTER, INFO, FORMAT,
+    #             calls):
+    r = record.Record(
+        '20', 100, [], 'C', [record.Substitution(record.SNV, 'T')],
+        None, [], O(), ['GT'],
+        [
+            record.Call('NA00001', O(GT='0/1')),
+            record.Call('NA00002', O(GT='0/0')),
+            record.Call('NA00003', O(GT='1/1')),
+        ])
+    # write out the record, close file to ensure flushing to disk
+    w.write_record(r)
+    w.close()
+    # compare actual result with expected
+    RESULT = path.read()
+    LINE = '20\t100\t.\tC\tT\t.\t.\t.\tGT\t0/1\t0/0\t1/1\n'
+    EXPECTED = MEDIUM_HEADER + LINE
+    assert RESULT == EXPECTED
