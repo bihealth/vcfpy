@@ -5,6 +5,7 @@
 import ast
 import collections
 import itertools
+import sys
 
 from . import header
 from . import record
@@ -19,14 +20,21 @@ __author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
 # TODO: interpret escaping of parameters
 
 
-# expected "#CHROM" header prefix
+# expected "#CHROM" header prefix when there are samples
 REQUIRE_SAMPLE_HEADER = (
-    '#CHROM', 'POS', 'ID', 'REF', 'ALT', 'QUAL', 'FILTER', 'INFO',
-    'FORMAT')
+    '#CHROM', 'POS', 'ID', 'REF', 'ALT', 'QUAL', 'FILTER', 'INFO', 'FORMAT')
+# expected "#CHROM" header prefix when there are no samples
+REQUIRE_NO_SAMPLE_HEADER = (
+    '#CHROM', 'POS', 'ID', 'REF', 'ALT', 'QUAL', 'FILTER', 'INFO')
 
 #: Supported VCF versions, a warning will be issued otherwise
 SUPPORTED_VCF_VERSIONS = (
     'VCFv4.0', 'VCFv4.1', 'VCFv4.2', 'VCFv4.3')
+
+
+def _warn(msg):
+    """Print warning message"""
+    print('[vcfpy] WARNING: {}'.format(msg), file=sys.stderr)
 
 
 def split_quoted_string(s, delim=',', quote='"'):
@@ -71,7 +79,7 @@ def parse_mapping(value):
     for certain known keys, exceptions are made, depending on the tag key.
     this, however, only gets important when serializing.
 
-    :raises: :py:class:`pyvcf.exceptions.InvalidHeaderException` if
+    :raises: :py:class:`vcfpy.exceptions.InvalidHeaderException` if
         there was a problem parsing the file
     """
     if not value.startswith('<') or not value.endswith('>'):
@@ -85,6 +93,7 @@ def parse_mapping(value):
     for pair in pairs:
         if '=' in pair:
             key, value = pair.split('=', 1)
+            key = key.strip()  # TODO: warn if this is necessary?
             if value.startswith('"') and value.endswith('"'):
                 value = ast.literal_eval(value)
         else:
@@ -231,7 +240,7 @@ class VCFHeaderParser:
         :param dict sub_parsers: ``dict`` mapping header line types to
             appropriate parser objects
         :returns: appropriate :py:class:`VCFHeaderLine` parsed from ``line``
-        :raises: :py:class:`pyvcf.exceptions.InvalidHeaderException` if
+        :raises: :py:class:`vcfpy.exceptions.InvalidHeaderException` if
             there was a problem parsing the file
         """
         if not line or not line.startswith('##'):
@@ -244,6 +253,7 @@ class VCFHeaderParser:
         line = line[len('##'):].rstrip()  # trim '^##' and trailing whitespace
         # split key/value pair at "="
         key, value = line.split('=', 1)
+        key = key.strip()  # TODO: warn if this is necessary?
         sub_parser = self.sub_parsers.get(key, self.sub_parsers['__default__'])
         return sub_parser.parse_key_value(key, value)
 
@@ -305,6 +315,7 @@ class VCFRecordParser:
                     entry, self.header.get_info_field_info(entry), True)
             else:
                 key, value = entry.split('=', 1)
+                key = key.strip()  # TODO: warn if this is necessary?
                 result[key] = parse_field_value(
                     key, self.header.get_info_field_info(key), value)
 
@@ -377,8 +388,26 @@ class VCFParser:
         if not self._line or not self._line.startswith('#CHROM'):
             raise exceptions.IncorrectVCFFormat(
                 'Missing line starting with "#CHROM"')
-        arr = self._line.rstrip().split('\t')
-        if tuple(arr[:len(REQUIRE_SAMPLE_HEADER)]) != REQUIRE_SAMPLE_HEADER:
+        # check for space before INFO
+        line = self._line.rstrip()
+        pos = line.find('FORMAT') if ('FORMAT' in line) else line.find('INFO')
+        if pos == -1:
+            raise exceptions.IncorrectVCFFormat(
+                'Ill-formatted line starting with "#CHROM"')
+        if ' ' in line[:pos]:
+            _warn('Found space in #CHROM line, splitting at whitespace '
+                  'instead of tab; this VCF file is ill-formatted')
+            arr = self._line.rstrip().split()
+        else:
+            arr = self._line.rstrip().split('\t')
+
+        if len(arr) <= len(REQUIRE_NO_SAMPLE_HEADER):
+            if tuple(arr) != REQUIRE_NO_SAMPLE_HEADER:
+                raise exceptions.IncorrectVCFFormat(
+                    'Sample header line indicates no sample but does not '
+                    'equal required prefix {}'.format(
+                        '\t'.join(REQUIRE_NO_SAMPLE_HEADER)))
+        elif tuple(arr[:len(REQUIRE_SAMPLE_HEADER)]) != REQUIRE_SAMPLE_HEADER:
             raise exceptions.IncorrectVCFFormat(
                 'Sample header line (starting with "#CHROM") does not '
                 'start with required prefix {}'.format(

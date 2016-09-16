@@ -1,0 +1,34 @@
+##fileformat=VCFv4.1
+##fileDate=20110603
+##source=myImputationProgramV4.1
+##reference=file:/seq/references/reference.fasta
+##phasing=partial
+##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">
+##INFO=<ID=MATEID,Number=1,Type=String,Description="ID of the mate breakend">
+##INFO=<ID=REVERSE,Number=0,Type=Flag,Description="Indicates a breakend on the 5' end of a reference segment">
+##INFO=<ID=MATEPOS,Number=1,Type=Integer,Description="Position of the mate breakend">
+##INFO=<ID=MATECHR,Number=1,Type=String,Description="Chromosome containing the mate breakend">
+##INFO=<ID=SVLEN,Number=-1,Type=Integer,Description="Length of ALT alleles">
+##INFO=<ID=CN,Number=-1,Type=Integer,Description="Copy number of segment containing breakend">
+##INFO=<ID=CNADJ,Number=-1,Type=Integer,Description="Copy number of adjacency">
+##FILTER=<ID=q10,Description="Quality below 10">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=GQ,Number=G,Type=Integer,Description="Genotype Quality">
+##FORMAT=<ID=DP,Number=G,Type=Integer,Description="Read Depth">
+##FORMAT=<ID=HQ,Number=G,Type=Integer,Description="Haplotype Quality">
+##FORMAT=<ID=BHAP,Number=G,Type=String,Description="Bundle Phase Set ">
+##FORMAT=<ID=BCN,Number=G,Type=String,Description="Bundle copy number">
+##PEDIGREE=<Derived="Tumor",Original="Germline">
+##SAMPLE=<SampleName=<GermlineS>,Genomes=<Germline>,Mixture=<1.0>,Description=<"Germline genome"> >
+##SAMPLE=<SampleName=<TumorS>,Genomes=<Germline,Tumor>,Mixture=<0.1,0.9>,Description=<"Germline contamination","Tumor genome"> >
+#CHROM POS ID	REF ALT	QUAL FILTER INFO	FORMAT	Germline	Tumor
+1	2	snp1	A	T	40	PASS		GT:MQ:HAP	0|1:0,40:35,46	0|1:0,0:35,46
+1	2	bnd1	T	T[2:3[	40	PASS	SVTYPE=BND;MATEID=bnd4	GT:MQ:BHAP	0|0:0,0:35>35,46>46	0|1:0,40:35>35,46>17
+1	3	bnd2	A	]2:2]A	40	PASS	SVTYPE=BND;MATEID=bnd3	GT:MQ:BHAP	0|0:0,0:35>35,46>46	0|1:0,40:35>35,46>17
+2	1	snp2	G	T	40	PASS		GT:MQ:HAP	1|0:0,40:17,23	1|0:0,0:17,23
+2	2	bnd3	G	G[1:3[	40	PASS	SVTYPE=BND;MATEID=bnd2	GT:MQ:BHAP:BCN	0|0:0,0:17>17,23>23:1,1	0|1:0,40:23>23,17>46:2,1
+2	3	bnd4	G	]1:2]G	40	PASS	SVTYPE=BND;MATEID=bnd1	GT:MQ:BHAP:BCN	0|0:0,0:17>17,23>23:1,1	0|1:0,40:23>23,17>46:2,1
+2	4	bnd5	G	]2:6]G	40	PASS	SVTYPE=BND;MATEID=bnd6	GT:MQ:BHAP:AHAP:BCN	0|0:0,0:17>17,23>23:17,23:1,1	0|0|1:0,0,40:17>17,23>23,24>23:17,23,23:1,2,2
+2	6	bnd6	T	T[2:4[	40	PASS	SVTYPE=BND;MATEID=bnd5	GT:MQ:BHAP:AHAP:BCN	0|0:0,0:17>17,23>23:17,23:1,1	0|1|0:0,40,0:17>17,23>24,24>24:17,23,23:1,2,2
+2	6	snp3	T	A	40	PASS		GT:MQ:HAP:AHAP	0|1:0,40:23,17:23,17	0|1|1:0,0,0:17,23,24:17,23,23
+2	8	snp4	T	A	40	PASS		GT:MQ:HAP:AHAP	0|0:0,0:23,17:23,17	0|1|1:0,40,40:17,23,24:17,23,23

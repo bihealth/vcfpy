@@ -1,0 +1,8 @@
+##fileformat=VCFv4.1
+##INFO=<ID=FLOAT_1,Number=1,Type=Float,Description="A floating point value">
+##INFO=<ID=CHAR_1,Number=1,Type=Character,Description="A character value">
+##INFO=<ID=FLOAT_N,Number=.,Type=Float,Description="Floating point values">
+##INFO=<ID=CHAR_N,Number=.,Type=Character,Description="Character values">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	Sample
+chr1	100	id1	G	A	.	.	FLOAT_1=123.456;CHAR_1=Y;FLOAT_N=123.456;CHAR_N=Y	GT	0/1

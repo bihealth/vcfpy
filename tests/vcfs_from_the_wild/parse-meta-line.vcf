@@ -1,0 +1,6 @@
+##fileformat=VCFv4.1
+##INFO=<ID=NS,Number=1,Type=Integer,Description="Number of Samples With Data">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##MYFIELD=<ID=SomeField,Version=3.4-0-g7e26428,Date="Wed Oct 07 09:11:47 CEST 2015",Options="< 4 and > 3">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	Sample
+chr1	100	id1	G	A	.	.	NS=3	GT	0/1

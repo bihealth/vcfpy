@@ -21,7 +21,7 @@ class VCFReader:
 
     On construction, the header will be read from the file which can cause
     problems.  After construction, :py:class:`~VCFReader` can be used as
-    an iterable of :py:class:`~pyvcf.record.VCFRecord`.
+    an iterable of :py:class:`~vcfpy.record.VCFRecord`.
 
     :raises: :py:class:`~vcfpy.exceptions.InvalidHeaderException` in the case
         of problems reading the header
@@ -59,7 +59,7 @@ class VCFReader:
         self.parser = parser.VCFParser(stream)
         #: the VCFHeader
         self.header = self.parser.parse_header()
-        #: the :py:class:`pyvcf.header.SamplesInfos` object with the sample
+        #: the :py:class:`vcfpy.header.SamplesInfos` object with the sample
         #: name information
         self.samples = self.header.samples
 

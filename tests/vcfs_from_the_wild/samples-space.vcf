@@ -1,0 +1,10 @@
+##fileformat=VCFv4.0
+##FILTER=<ID=q10,Description="Quality below 10">
+##FILTER=<ID=s50,Description="Less than 50% of samples have data">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=GQ,Number=1,Type=Integer,Description="Genotype Quality">
+##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read Depth">
+##FORMAT=<ID=HQ,Number=2,Type=Integer,Description="Haplotype Quality">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	NA 00001	NA 00002	NA 00003
+20	14370	rs6054257	G	A	29	PASS	.	GT:GQ:DP:HQ	0|0:48:1:51,51	1|0:48:8:51,51	./.
+20	76766	rs6054257	C	T	29	PASS	.	GT:GQ:DP:HQ	0|0:48:1:51,51	1|0:48:8:51,51	./.

@@ -193,14 +193,14 @@ class VCFCompoundHeaderLine(VCFHeaderLine):
         self.mapping = collections.OrderedDict(mapping.items())
         # check that 'Number' is given and use "." otherwise
         if 'Number' not in self.mapping:
-            print(('[pyvcf] WARNING: missing number, using '
+            print(('[vcfpy] WARNING: missing number, using '
                    'unbounded/"." instead'), file=sys.stderr)
             self.mapping['Number'] = '.'
         try:
             self.mapping['Number'] = self._parse_number(
                 self.mapping['Number'])
         except ValueError:
-            print(('[pyvcf] WARNING: invalid number {}, using '
+            print(('[vcfpy] WARNING: invalid number {}, using '
                    'unbounded/"." instead').format(self.mapping['Number']),
                   file=sys.stderr)
             self.mapping['Number'] = '.'

@@ -1,0 +1,34 @@
+##fileformat=VCFv4.1
+##INFO=<ID=LDAF,Number=1,Type=Float,Description="MLE Allele Frequency Accounting for LD">
+##INFO=<ID=AVGPOST,Number=1,Type=Float,Description="Average posterior probability from MaCH/Thunder">
+##INFO=<ID=RSQ,Number=1,Type=Float,Description="Genotype imputation quality from MaCH/Thunder">
+##INFO=<ID=ERATE,Number=1,Type=Float,Description="Per-marker Mutation rate from MaCH/Thunder">
+##INFO=<ID=THETA,Number=1,Type=Float,Description="Per-marker Transition rate from MaCH/Thunder">
+##INFO=<ID=CIEND,Number=2,Type=Integer,Description="Confidence interval around END for imprecise variants">
+##INFO=<ID=CIPOS,Number=2,Type=Integer,Description="Confidence interval around POS for imprecise variants">
+##INFO=<ID=END,Number=1,Type=Integer,Description="End position of the variant described in this record">
+##INFO=<ID=HOMLEN,Number=.,Type=Integer,Description="Length of base pair identical micro-homology at event breakpoints">
+##INFO=<ID=HOMSEQ,Number=.,Type=String,Description="Sequence of base pair identical micro-homology at event breakpoints">
+##INFO=<ID=SVLEN,Number=1,Type=Integer,Description="Difference in length between REF and ALT alleles">
+##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">
+##INFO=<ID=AC,Number=.,Type=Integer,Description="Alternate Allele Count">
+##INFO=<ID=AN,Number=1,Type=Integer,Description="Total Allele Count">
+##ALT=<ID=DEL,Description="Deletion">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=DS,Number=1,Type=Float,Description="Genotype dosage from MaCH/Thunder">
+##FORMAT=<ID=GL,Number=.,Type=Float,Description="Genotype Likelihoods">
+##INFO=<ID=AA,Number=1,Type=String,Description="Ancestral Allele, ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/pilot_data/technical/reference/ancestral_alignments/README">
+##INFO=<ID=AF,Number=1,Type=Float,Description="Global Allele Frequency based on AC/AN">
+##INFO=<ID=AMR_AF,Number=1,Type=Float,Description="Allele Frequency for samples from AMR based on AC/AN">
+##INFO=<ID=ASN_AF,Number=1,Type=Float,Description="Allele Frequency for samples from ASN based on AC/AN">
+##INFO=<ID=AFR_AF,Number=1,Type=Float,Description="Allele Frequency for samples from AFR based on AC/AN">
+##INFO=<ID=EUR_AF,Number=1,Type=Float,Description="Allele Frequency for samples from EUR based on AC/AN">
+##INFO=<ID=VT,Number=1,Type=String,Description="indicates what type of variant the line represents">
+##INFO=<ID=SNPSOURCE,Number=.,Type=String,Description="indicates if a snp was called when analysing the low coverage or exome alignment data">
+##reference=GRCh37
+#CHROM    POS    ID    REF    ALT    QUAL    FILTER    INFO
+1    10583    rs58108140    G    A    100    PASS    AVGPOST=0.7707;RSQ=0.4319;LDAF=0.2327;ERATE=0.0161;AN=2184;VT=SNP;AA=.;THETA=0.0046;AC=314;SNPSOURCE=LOWCOV;AF=0.14;ASN_AF=0.13;AMR_AF=0.17;AFR_AF=0.04;EUR_AF=0.21
+1    10611    rs189107123    C    G    100    PASS    AN=2184;THETA=0.0077;VT=SNP;AA=.;AC=41;ERATE=0.0048;SNPSOURCE=LOWCOV;AVGPOST=0.9330;LDAF=0.0479;RSQ=0.3475;AF=0.02;ASN_AF=0.01;AMR_AF=0.03;AFR_AF=0.01;EUR_AF=0.02
+1    13302    rs180734498    C    T    100    PASS    THETA=0.0048;AN=2184;AC=249;VT=SNP;AA=.;RSQ=0.6281;LDAF=0.1573;SNPSOURCE=LOWCOV;AVGPOST=0.8895;ERATE=0.0058;AF=0.11;ASN_AF=0.02;AMR_AF=0.08;AFR_AF=0.21;EUR_AF=0.14
+1    947117    rs145699537    C    T    100    PASS    RSQ=0.9336;AA=C;AN=2184;LDAF=0.0010;VT=SNP;SNPSOURCE=LOWCOV;THETA=0.0007;ERATE=0.0003;AC=2;AVGPOST=0.9999;AF=0.0009;AFR_AF=0.0041
+1    947121    MERGED_DEL_2_94    GCCTCAGTCCTTTTCATGGCTGCATAATATTCCGTTGTGTGGACATTCCACACTTTGTGTGTCCATCCATCACTGATGGACATGTGCTCCGTTCCTGCTACTTGTTTATTGTAAACTGTGCTGCCATGGACATTTGTATGCAAGTATTTGAACACCTATTTTCAATTCTTTTGGACACATGCCTAGAAGTGGAACTGCTGGGTTCCCAATAATTCTGTTGAACGTTTTGAGCATCGCGGCGGCCGCACTGTTTTACATTCTCAACAGCAATGCATGTACCAGGATTCCAGTTCCTCTATGTATTCCCCAGTGCTTGTTACTGCCTTTATGTTTATTTTATATTATTTTTTGAGACTGTCTTGCTCTGCTGCCCAGGCTGGAGTGCATTGGTGCAATCTTGGCTCACCACAATCTCTGCCTCCTGGGTTCAAGGGATTCTCCCGCCTCAGCCTCCCAAGTAGCTGGGATTACAGGCGTGCACCACCACGCCCAGCTAATTTTTGTATTTTTAGTAGAGATGGGGTTTCTACTAAAAATGTTGGCCAGGCTGGTCTCAAACTCCTGACCTTAGGTGATCCGCCCGCCTCAGCCTCCCAAAGTGTTGGGATTGCAGGCGTGAGCCACCGCACCCGGCCTGGCCTTTATTTTTATTATTACAGTCATACCAGCAGGAAATAGCATCTCACTGGGGTTTTGATTTGCATTTCCCCAATTAATAATGATGTTGAACATCACTTTACAGCCGTTTCTATGTCATTGGAGAAATGTCTATTGAAGTCTTTTGGCCATTTGAAAATTGAGTTGCCTTTTTTTTTTATTTTTATTTTTTATTGAGTTGTAAGAGTTCTCTATATGTCCTGGATGCTATGCCCTCATCAGAT    GAA    .    PASS    AN=2184;HOMSEQ;HOMLEN=0;RSQ=0.3628;CIEND=-17,33;THETA=0.0008;ERATE=0.0026;AVGPOST=0.9799;LDAF=0.0126;VT=SV;SVLEN=-878;END=948001;CIPOS=-18,19;AC=11;SVTYPE=DEL;AF=0.01;ASN_AF=0.0035;AFR_AF=0.02
