@@ -4,22 +4,25 @@
 The VCF record structure is modeled after the one of PyVCF
 """
 
-#: Code for single nucleotide variant
+#: Code for single nucleotide variant allele
 SNV = 'SNV'
-#: Code for a multi nucleotide variant
+#: Code for a multi nucleotide variant allele
 MNV = 'MNV'
-#: Code for "clean" deletion
+#: Code for "clean" deletion allele
 DEL = 'DEL'
-#: Code for "clean" insertion
+#: Code for "clean" insertion allele
 INS = 'INS'
-#: Code for indel, includes substitutions of unequal length
+#: Code for indel allele, includes substitutions of unequal length
 INDEL = 'INDEL'
-#: Code for structural variant
+#: Code for structural variant allele
 SV = 'SV'
-#: Code for break-end
+#: Code for break-end allele
 BND = 'BND'
 #: Code for symbolic allele that is neither SV nor BND
 SYMBOLIC = 'SYMBOLIC'
+
+#: Code for mixed variant type
+MIXED = 'MIXED'
 
 #: Codes for structural variants
 SV_CODES = ('DEL', 'INS', 'DUP', 'INV', 'CNV')
@@ -62,6 +65,40 @@ class Record:
             call.site = self
         #: A mapping from sample name to entry in self.calls
         self.call_for_sample = {call.sample: call for call in self.calls}
+
+    @property
+    def affected_start(self):
+        """Return affected start position in 0-based coordinates
+        
+        For SNVs, MNVs, and deletions, the behaviour is the start position.
+        In the case of insertions, the position behind the insert position is
+        returned, yielding a 0-length interval together with
+        :py:method:`affected_end`
+        """
+        types = {alt.type for alt in self.ALT}  # set!
+        BAD_MIX = [INS, SV, BND, SYMBOLIC]  # don't mix well with others
+        if (BAD_MIX & types) and len(types) == 1 and list(types)[0] == INS:
+            # Only insertions, return 0-based position right of first base
+            return self.POS  # right of first base
+        else:  # Return 0-based start position of first REF base
+            return (self.POS - 1)  # left of first base
+
+    @property
+    def affected_end(self):
+        """Return affected start position in 0-based coordinates
+        
+        For SNVs, MNVs, and deletions, the behaviour is based on the start
+        position and the length of the REF.  In the case of insertions, the
+        position behind the insert position is returned, yielding a 0-length
+        interval together with :py:method:`affected_start`
+        """
+        types = {alt.type for alt in self.ALT}  # set!
+        BAD_MIX = [INS, SV, BND, SYMBOLIC]  # don't mix well with others
+        if (BAD_MIX & types) and len(types) == 1 and list(types)[0] == INS:
+            # Only insertions, return 0-based position right of first base
+            return self.POS  # right of first base
+        else:  # Return 0-based end position, behind last REF base
+            return (self.POS - 1) + len(self.REF)
 
     def add_filter(self, label):
         """Add label to FILTER if not set yet"""
