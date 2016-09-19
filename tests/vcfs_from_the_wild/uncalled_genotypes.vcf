@@ -1,0 +1,7 @@
+##fileformat=VCFv4.2
+##INFO=<ID=NS,Number=1,Type=Integer,Description="Number of Samples With Data">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	AB00001	AB00002	AB00003
+20	14370	rs6054257	G	A	29	PASS	NS=3	GT	0|0	./.	1/1
+20	17330	.	T	A	3	q10	NS=3	GT	././.	0|1	0/0
+20	1234567	microsat1	GTC	G,GTCT	50	PASS	NS=3	GT	0/1	0/2	.

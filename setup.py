@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import sys
+
 from setuptools import setup
 
 with open('README.rst') as readme_file:
@@ -13,6 +15,10 @@ requirements = [
     # TODO: put package requirements here
 ]
 
+# Add cyordereddict for Python <=3.5 for performance boost
+if sys.version_info[:2] < (3, 5):
+    requirements.append('cyordereddict>=1.0.0')
+
 test_requirements = [
     # TODO: put package test requirements here
 ]
@@ -24,7 +30,7 @@ setup(
     long_description=readme + '\n\n' + history,
     author="Manuel Holtgrewe",
     author_email='manuel.holtgrewe@bihealth.de',
-    url='https://github.com/holtgrewe/vcfpy',
+    url='https://github.com/bihealth/vcfpy',
     packages=[
         'vcfpy',
     ],
@@ -40,9 +46,6 @@ setup(
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
-        "Programming Language :: Python :: 2",
-        'Programming Language :: Python :: 2.6',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',

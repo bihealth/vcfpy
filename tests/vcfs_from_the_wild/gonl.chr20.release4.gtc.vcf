@@ -1,0 +1,120 @@
+##fileformat=VCFv4.1
+##ApplyRecalibration="analysis_type=ApplyRecalibration input_file=[] read_buffer_size=null phone_home=STANDARD gatk_key=null read_filter=[] intervals=null excludeIntervals=null interval_set_rule=UNION interval_merging=ALL reference_sequence=/target/gpfs2/gcc/resources/hg19/indices/human_g1k_v37.fa rodBind=[] nonDeterministicRandomSeed=false downsampling_type=BY_SAMPLE downsample_to_fraction=null downsample_to_coverage=1000 baq=OFF baqGapOpenPenalty=40.0 performanceLog=null useOriginalQualities=false BQSR=null defaultBaseQualities=-1 validation_strictness=SILENT unsafe=null num_threads=1 num_cpu_threads=null num_io_threads=null num_bam_file_handles=null read_group_black_list=null pedigree=[] pedigreeString=[] pedigreeValidationType=STRICT allow_intervals_with_unindexed_bam=false logging_level=INFO log_to_file=null help=false input=[(RodBinding name=input source=/target/gpfs2/gcc/home/lfrancioli/gonl/projects/trio-analysis/results/snps/UG_raw_biallelic/gonl.biallelic.vcf)] recal_file=/target/gpfs2/gcc/home/lfrancioli/gonl/projects/trio-analysis/intermediate/snps/vqsr_1kg_phase1/gonl.biallelic.vcf.1kg_phase1.2.recal tranches_file=/target/gpfs2/gcc/home/lfrancioli/gonl/projects/trio-analysis/intermediate/snps/vqsr_1kg_phase1/gonl.biallelic.vcf.1kg_phase1.2.tranches out=org.broadinstitute.sting.gatk.io.stubs.VCFWriterStub NO_HEADER=org.broadinstitute.sting.gatk.io.stubs.VCFWriterStub sites_only=org.broadinstitute.sting.gatk.io.stubs.VCFWriterStub ts_filter_level=99.5 ignore_filter=null mode=SNP filter_mismatching_base_and_quals=false"
+##CombineVariants="analysis_type=CombineVariants input_file=[] sample_metadata=[] read_buffer_size=null phone_home=STANDARD read_filter=[] intervals=[1:123000001-126000000] excludeIntervals=null reference_sequence=/humgen/1kg/reference/human_g1k_v37.fasta rodBind=[/humgen/1kg/processing/production_wgs_phase1/consensus_wgs/v2b/calls/chr1/AFR/AFR.phase1.chr1.42.raw.snps.vcf, /humgen/1kg/processing/production_wgs_phase1/consensus_wgs/v2b/calls/chr1/ASN/ASN.phase1.chr1.42.raw.snps.vcf, /humgen/1kg/processing/production_wgs_phase1/consensus_wgs/v2b/calls/chr1/AMR/AMR.phase1.chr1.42.raw.snps.vcf, /humgen/1kg/processing/production_wgs_phase1/consensus_wgs/v2b/calls/chr1/EUR/EUR.phase1.chr1.42.raw.snps.vcf, /humgen/1kg/processing/production_wgs_phase1/consensus_wgs/v2b/calls/chr1/AFR.admix/AFR.admix.phase1.chr1.42.raw.snps.vcf, /humgen/1kg/processing/production_wgs_phase1/consensus_wgs/v2b/calls/chr1/ASN.admix/ASN.admix.phase1.chr1.42.raw.snps.vcf, /humgen/1kg/processing/production_wgs_phase1/consensus_wgs/v2b/calls/chr1/AMR.admix/AMR.admix.phase1.chr1.42.raw.snps.vcf, /humgen/1kg/processing/production_wgs_phase1/consensus_wgs/v2b/calls/chr1/EUR.admix/EUR.admix.phase1.chr1.42.raw.snps.vcf, /humgen/1kg/processing/production_wgs_phase1/consensus_wgs/v2b/calls/chr1/ALL/ALL.phase1.chr1.42.raw.snps.vcf] rodToIntervalTrackName=null BTI_merge_rule=UNION nonDeterministicRandomSeed=false DBSNP=null downsampling_type=null downsample_to_fraction=null downsample_to_coverage=null baq=OFF baqGapOpenPenalty=40.0 performanceLog=null useOriginalQualities=false defaultBaseQualities=-1 validation_strictness=SILENT unsafe=null num_threads=1 interval_merging=ALL read_group_black_list=null processingTracker=null restartProcessingTracker=false processingTrackerStatusFile=null processingTrackerID=-1 allow_intervals_with_unindexed_bam=false disable_experimental_low_memory_sharding=false logging_level=INFO log_to_file=null help=false out=org.broadinstitute.sting.gatk.io.stubs.VCFWriterStub NO_HEADER=org.broadinstitute.sting.gatk.io.stubs.VCFWriterStub sites_only=org.broadinstitute.sting.gatk.io.stubs.VCFWriterStub genotypemergeoption=PRIORITIZE filteredrecordsmergetype=KEEP_IF_ANY_UNFILTERED rod_priority_list=ALL,AFR.admix,AMR.admix,EUR.admix,ASN.admix,AFR,AMR,EUR,ASN printComplexMerges=false filteredAreUncalled=false minimalVCF=false setKey=pop assumeIdenticalSamples=false minimumN=1 masterMerge=false mergeInfoWithMaxAC=true"
+##FILTER=<ID=TruthSensitivityTranche99.50to99.60,Description="Truth sensitivity tranche level at VSQ Lod: 0.0349 <= x < 0.6732">
+##FILTER=<ID=TruthSensitivityTranche99.60to99.70,Description="Truth sensitivity tranche level at VSQ Lod: -1.1344 <= x < 0.0349">
+##FILTER=<ID=TruthSensitivityTranche99.70to99.80,Description="Truth sensitivity tranche level at VSQ Lod: -3.7349 <= x < -1.1344">
+##FILTER=<ID=TruthSensitivityTranche99.80to99.90,Description="Truth sensitivity tranche level at VSQ Lod: -13.9352 <= x < -3.7349">
+##FILTER=<ID=TruthSensitivityTranche99.85to99.87,Description="Truth sensitivity tranche level at VSQ Lod: -0.0128 <= x < 0.5027">
+##FILTER=<ID=TruthSensitivityTranche99.87to99.88,Description="Truth sensitivity tranche level at VSQ Lod: -0.2657 <= x < -0.0128">
+##FILTER=<ID=TruthSensitivityTranche99.88to99.89,Description="Truth sensitivity tranche level at VSQ Lod: -0.5671 <= x < -0.2657">
+##FILTER=<ID=TruthSensitivityTranche99.89to99.90,Description="Truth sensitivity tranche level at VSQ Lod: -0.9162 <= x < -0.5671">
+##FILTER=<ID=TruthSensitivityTranche99.90to100.00+,Description="Truth sensitivity tranche level at VQS Lod < -37539.4862">
+##FILTER=<ID=TruthSensitivityTranche99.90to100.00,Description="Truth sensitivity tranche level at VSQ Lod: -37539.4862 <= x < -13.9352">
+##FILTER=<ID=TruthSensitivityTranche99.90to99.91,Description="Truth sensitivity tranche level at VSQ Lod: -1.2368 <= x < -0.9162">
+##FILTER=<ID=TruthSensitivityTranche99.91to99.92,Description="Truth sensitivity tranche level at VSQ Lod: -1.6803 <= x < -1.2368">
+##FILTER=<ID=TruthSensitivityTranche99.92to99.93,Description="Truth sensitivity tranche level at VSQ Lod: -2.1816 <= x < -1.6803">
+##FILTER=<ID=TruthSensitivityTranche99.93to99.94,Description="Truth sensitivity tranche level at VSQ Lod: -2.8718 <= x < -2.1816">
+##FILTER=<ID=TruthSensitivityTranche99.94to100.00+,Description="Truth sensitivity tranche level at VQS Lod < -Infinity">
+##FILTER=<ID=TruthSensitivityTranche99.94to100.00,Description="Truth sensitivity tranche level at VSQ Lod: -Infinity <= x < -2.8718">
+##INFO=<ID=AC,Number=A,Type=Integer,Description="Allele count in genotypes, for each ALT allele, in the same order as listed">
+##INFO=<ID=AN,Number=1,Type=Integer,Description="Total number of alleles in called genotypes">
+##SelectVariants="analysis_type=SelectVariants input_file=[] read_buffer_size=null phone_home=STANDARD read_filter=[] intervals=[1:1-5000001] excludeIntervals=null interval_set_rule=UNION interval_merging=ALL reference_sequence=/target/gpfs2/gcc/home/lfrancioli/gonl/resources/hg19/indices/human_g1k_v37.fa rodBind=[] nonDeterministicRandomSeed=false downsampling_type=BY_SAMPLE downsample_to_fraction=null downsample_to_coverage=1000 baq=OFF baqGapOpenPenalty=40.0 performanceLog=null useOriginalQualities=false defaultBaseQualities=-1 validation_strictness=SILENT unsafe=null num_threads=1 num_cpu_threads=null num_io_threads=null num_bam_file_handles=null read_group_black_list=null pedigree=[] pedigreeString=[] pedigreeValidationType=STRICT allow_intervals_with_unindexed_bam=false logging_level=INFO log_to_file=null help=false variant=(RodBinding name=variant source=/target/gpfs2/gcc/home/lfrancioli/results/trio-analysis/ug_initial/gonl.1_1-5000001.vcf) discordance=(RodBinding name= source=UNBOUND) concordance=(RodBinding name= source=UNBOUND) out=org.broadinstitute.sting.gatk.io.stubs.VCFWriterStub NO_HEADER=org.broadinstitute.sting.gatk.io.stubs.VCFWriterStub sites_only=org.broadinstitute.sting.gatk.io.stubs.VCFWriterStub sample_name=[] sample_expressions=null sample_file=null exclude_sample_name=[] exclude_sample_file=[] select_expressions=[] excludeNonVariants=false excludeFiltered=false restrictAllelesTo=BIALLELIC keepOriginalAC=false mendelianViolation=false mendelianViolationQualThreshold=0.0 select_random_number=0 select_random_fraction=0.0 remove_fraction_genotypes=0.0 selectTypeToInclude=[] keepIDs=null outMVFile=null filter_mismatching_base_and_quals=false"
+##SetFilterPASS="analysis_type=SetFilterPASS input_file=[] read_buffer_size=null phone_home=STANDARD gatk_key=null tag=NA read_filter=[] intervals=null excludeIntervals=null interval_set_rule=UNION interval_merging=ALL interval_padding=0 reference_sequence=/target/gpfs2/gcc/resources/hg19/indices/human_g1k_v37.fa nonDeterministicRandomSeed=false disableRandomization=false downsampling_type=BY_SAMPLE downsample_to_fraction=null downsample_to_coverage=1000 enable_experimental_downsampling=false baq=OFF baqGapOpenPenalty=40.0 performanceLog=null useOriginalQualities=false BQSR=null quantize_quals=0 disable_indel_quals=false emit_original_quals=false preserve_qscores_less_than=6 defaultBaseQualities=-1 validation_strictness=SILENT remove_program_records=false keep_program_records=false unsafe=null num_threads=1 num_cpu_threads_per_data_thread=1 num_io_threads=0 monitorThreadEfficiency=false num_bam_file_handles=null read_group_black_list=null pedigree=[] pedigreeString=[] pedigreeValidationType=STRICT allow_intervals_with_unindexed_bam=false generateShadowBCF=false logging_level=INFO log_to_file=null help=false variant=(RodBinding name=variant source=/target/gpfs2/gcc/home/lfrancioli/gonl/projects/trio-analysis/intermediate/snps/vqsr_1kg_phase1/gonl.biallelic.vqsr_1kg_phase1.2.99.5.vcf) sites=[(RodBinding name=sites source=/target/gpfs2/gcc/home/lfrancioli/resources/1000GP_hg19/EUR.wgs.project_consensus_vqsr2b.20101123.snps.low_coverage.sites.vcf)] out=org.broadinstitute.sting.gatk.io.stubs.VariantContextWriterStub no_cmdline_in_header=org.broadinstitute.sting.gatk.io.stubs.VariantContextWriterStub sites_only=org.broadinstitute.sting.gatk.io.stubs.VariantContextWriterStub bcf=org.broadinstitute.sting.gatk.io.stubs.VariantContextWriterStub filter_mismatching_base_and_quals=false"
+##UnifiedGenotyper="analysis_type=UnifiedGenotyper input_file=[/humgen/1kg/phase1_cleaned_bams/bams/chr1/CHB.phase1.chr1.42.cleaned.bam, /humgen/1kg/phase1_cleaned_bams/bams/chr1/CHS.phase1.chr1.42.cleaned.bam, /humgen/1kg/phase1_cleaned_bams/bams/chr1/CLM.phase1.chr1.42.cleaned.bam, /humgen/1kg/phase1_cleaned_bams/bams/chr1/JPT.phase1.chr1.42.cleaned.bam, /humgen/1kg/phase1_cleaned_bams/bams/chr1/MXL.phase1.chr1.42.cleaned.bam, /humgen/1kg/phase1_cleaned_bams/bams/chr1/PUR.phase1.chr1.42.cleaned.bam] sample_metadata=[] read_buffer_size=null phone_home=STANDARD read_filter=[] intervals=[1:123000001-126000000] excludeIntervals=null reference_sequence=/humgen/1kg/reference/human_g1k_v37.fasta rodBind=[/humgen/1kg/processing/production_wgs_phase1/consensus/ALL.phase1.wgs.unionBC1.pass.sites.vcf, /humgen/gsa-hpprojects/GATK/data/dbsnp_132_b37.leftAligned.vcf] rodToIntervalTrackName=null BTI_merge_rule=UNION nonDeterministicRandomSeed=false DBSNP=null downsampling_type=null downsample_to_fraction=null downsample_to_coverage=50 baq=CALCULATE_AS_NECESSARY baqGapOpenPenalty=40.0 performanceLog=null useOriginalQualities=false defaultBaseQualities=-1 validation_strictness=SILENT unsafe=null num_threads=1 interval_merging=ALL read_group_black_list=null processingTracker=null restartProcessingTracker=false processingTrackerStatusFile=null processingTrackerID=-1 allow_intervals_with_unindexed_bam=false disable_experimental_low_memory_sharding=false logging_level=INFO log_to_file=null help=false genotype_likelihoods_model=SNP p_nonref_model=EXACT heterozygosity=0.0010 pcr_error_rate=1.0E-4 genotyping_mode=GENOTYPE_GIVEN_ALLELES output_mode=EMIT_VARIANTS_ONLY standard_min_confidence_threshold_for_calling=4.0 standard_min_confidence_threshold_for_emitting=4.0 noSLOD=false assume_single_sample_reads=null abort_at_too_much_coverage=-1 min_base_quality_score=17 min_mapping_quality_score=20 max_deletion_fraction=0.05 min_indel_count_for_genotyping=5 indel_heterozygosity=1.25E-4 indelGapContinuationPenalty=10.0 indelGapOpenPenalty=45.0 indelHaplotypeSize=80 doContextDependentGapPenalties=true getGapPenaltiesFromData=false indel_recal_file=indel.recal_data.csv indelDebug=false dovit=false GSA_PRODUCTION_ONLY=false exactCalculation=LINEAR_EXPERIMENTAL ignoreSNPAlleles=false output_all_callable_bases=false genotype=false out=org.broadinstitute.sting.gatk.io.stubs.VCFWriterStub NO_HEADER=org.broadinstitute.sting.gatk.io.stubs.VCFWriterStub sites_only=org.broadinstitute.sting.gatk.io.stubs.VCFWriterStub debug_file=null metrics_file=null annotation=[]"
+##VariantAnnotator="analysis_type=VariantAnnotator input_file=[] read_buffer_size=null phone_home=STANDARD read_filter=[] intervals=[1:1-5000001] excludeIntervals=null interval_set_rule=UNION interval_merging=ALL reference_sequence=/target/gpfs2/gcc/home/lfrancioli/gonl/resources/hg19/indices/human_g1k_v37.fa rodBind=[] nonDeterministicRandomSeed=false downsampling_type=BY_SAMPLE downsample_to_fraction=null downsample_to_coverage=1000 baq=OFF baqGapOpenPenalty=40.0 performanceLog=null useOriginalQualities=false defaultBaseQualities=-1 validation_strictness=SILENT unsafe=null num_threads=1 num_cpu_threads=null num_io_threads=null num_bam_file_handles=null read_group_black_list=null pedigree=[/target/gpfs2/gcc/home/lfrancioli/gonl/resources/UnifiedGenotyper/GoNL.ped] pedigreeString=[] pedigreeValidationType=STRICT allow_intervals_with_unindexed_bam=false logging_level=INFO log_to_file=null help=false variant=(RodBinding name=variant source=/target/gpfs2/gcc/home/lfrancioli/results/trio-analysis/snps/gonl.1_1-5000001.biallelic.vcf) snpEffFile=(RodBinding name= source=UNBOUND) dbsnp=(RodBinding name= source=UNBOUND) comp=[] resource=[] out=org.broadinstitute.sting.gatk.io.stubs.VCFWriterStub NO_HEADER=org.broadinstitute.sting.gatk.io.stubs.VCFWriterStub sites_only=org.broadinstitute.sting.gatk.io.stubs.VCFWriterStub annotation=[TransmissionDisequilibriumTest, InbreedingCoeff, AlleleDosage, ChromosomeCounts] excludeAnnotation=[] group=[] expression=[] useAllAnnotations=false list=false vcfContainsOnlyIndels=false MendelViolationGenotypeQualityThreshold=0.0 requireStrictAlleleMatch=false filter_mismatching_base_and_quals=false"
+##contig=<ID=1,assembly=b37,length=249250621>
+##contig=<ID=10,assembly=b37,length=135534747>
+##contig=<ID=11,assembly=b37,length=135006516>
+##contig=<ID=12,assembly=b37,length=133851895>
+##contig=<ID=13,assembly=b37,length=115169878>
+##contig=<ID=14,assembly=b37,length=107349540>
+##contig=<ID=15,assembly=b37,length=102531392>
+##contig=<ID=16,assembly=b37,length=90354753>
+##contig=<ID=17,assembly=b37,length=81195210>
+##contig=<ID=18,assembly=b37,length=78077248>
+##contig=<ID=19,assembly=b37,length=59128983>
+##contig=<ID=2,assembly=b37,length=243199373>
+##contig=<ID=20,assembly=b37,length=63025520>
+##contig=<ID=21,assembly=b37,length=48129895>
+##contig=<ID=22,assembly=b37,length=51304566>
+##contig=<ID=3,assembly=b37,length=198022430>
+##contig=<ID=4,assembly=b37,length=191154276>
+##contig=<ID=5,assembly=b37,length=180915260>
+##contig=<ID=6,assembly=b37,length=171115067>
+##contig=<ID=7,assembly=b37,length=159138663>
+##contig=<ID=8,assembly=b37,length=146364022>
+##contig=<ID=9,assembly=b37,length=141213431>
+##contig=<ID=GL000191.1,assembly=b37,length=106433>
+##contig=<ID=GL000192.1,assembly=b37,length=547496>
+##contig=<ID=GL000193.1,assembly=b37,length=189789>
+##contig=<ID=GL000194.1,assembly=b37,length=191469>
+##contig=<ID=GL000195.1,assembly=b37,length=182896>
+##contig=<ID=GL000196.1,assembly=b37,length=38914>
+##contig=<ID=GL000197.1,assembly=b37,length=37175>
+##contig=<ID=GL000198.1,assembly=b37,length=90085>
+##contig=<ID=GL000199.1,assembly=b37,length=169874>
+##contig=<ID=GL000200.1,assembly=b37,length=187035>
+##contig=<ID=GL000201.1,assembly=b37,length=36148>
+##contig=<ID=GL000202.1,assembly=b37,length=40103>
+##contig=<ID=GL000203.1,assembly=b37,length=37498>
+##contig=<ID=GL000204.1,assembly=b37,length=81310>
+##contig=<ID=GL000205.1,assembly=b37,length=174588>
+##contig=<ID=GL000206.1,assembly=b37,length=41001>
+##contig=<ID=GL000207.1,assembly=b37,length=4262>
+##contig=<ID=GL000208.1,assembly=b37,length=92689>
+##contig=<ID=GL000209.1,assembly=b37,length=159169>
+##contig=<ID=GL000210.1,assembly=b37,length=27682>
+##contig=<ID=GL000211.1,assembly=b37,length=166566>
+##contig=<ID=GL000212.1,assembly=b37,length=186858>
+##contig=<ID=GL000213.1,assembly=b37,length=164239>
+##contig=<ID=GL000214.1,assembly=b37,length=137718>
+##contig=<ID=GL000215.1,assembly=b37,length=172545>
+##contig=<ID=GL000216.1,assembly=b37,length=172294>
+##contig=<ID=GL000217.1,assembly=b37,length=172149>
+##contig=<ID=GL000218.1,assembly=b37,length=161147>
+##contig=<ID=GL000219.1,assembly=b37,length=179198>
+##contig=<ID=GL000220.1,assembly=b37,length=161802>
+##contig=<ID=GL000221.1,assembly=b37,length=155397>
+##contig=<ID=GL000222.1,assembly=b37,length=186861>
+##contig=<ID=GL000223.1,assembly=b37,length=180455>
+##contig=<ID=GL000224.1,assembly=b37,length=179693>
+##contig=<ID=GL000225.1,assembly=b37,length=211173>
+##contig=<ID=GL000226.1,assembly=b37,length=15008>
+##contig=<ID=GL000227.1,assembly=b37,length=128374>
+##contig=<ID=GL000228.1,assembly=b37,length=129120>
+##contig=<ID=GL000229.1,assembly=b37,length=19913>
+##contig=<ID=GL000230.1,assembly=b37,length=43691>
+##contig=<ID=GL000231.1,assembly=b37,length=27386>
+##contig=<ID=GL000232.1,assembly=b37,length=40652>
+##contig=<ID=GL000233.1,assembly=b37,length=45941>
+##contig=<ID=GL000234.1,assembly=b37,length=40531>
+##contig=<ID=GL000235.1,assembly=b37,length=34474>
+##contig=<ID=GL000236.1,assembly=b37,length=41934>
+##contig=<ID=GL000237.1,assembly=b37,length=45867>
+##contig=<ID=GL000238.1,assembly=b37,length=39939>
+##contig=<ID=GL000239.1,assembly=b37,length=33824>
+##contig=<ID=GL000240.1,assembly=b37,length=41933>
+##contig=<ID=GL000241.1,assembly=b37,length=42152>
+##contig=<ID=GL000242.1,assembly=b37,length=43523>
+##contig=<ID=GL000243.1,assembly=b37,length=43341>
+##contig=<ID=GL000244.1,assembly=b37,length=39929>
+##contig=<ID=GL000245.1,assembly=b37,length=36651>
+##contig=<ID=GL000246.1,assembly=b37,length=38154>
+##contig=<ID=GL000247.1,assembly=b37,length=36422>
+##contig=<ID=GL000248.1,assembly=b37,length=39786>
+##contig=<ID=GL000249.1,assembly=b37,length=38502>
+##contig=<ID=MT,assembly=b37,length=16569>
+##contig=<ID=X,assembly=b37,length=155270560>
+##contig=<ID=Y,assembly=b37,length=59373566>
+##reference=file:///target/gpfs2/gcc/resources/hg19/indices/human_g1k_v37.fa
+##source=SelectVariants
+##INFO=<ID=GTC,Number=G,Type=Integer,Description="GenoType Counts. For each ALT allele in the same order as listed = 0/0,0/1,1/1,0/2,1/2,2/2,0/3,1/3,2/3,3/3,etc. Phasing is ignored; hence 1/0, 0|1 and 1|0 are all counted as 0/1. When one or more alleles is not called for a genotype in a specific sample (./., ./0, ./1, ./2, etc.), that sample's genotype is completely discarded for calculating GTC.">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+20	60309	.	G	T	991.76	PASS	AC=4;AN=996;GTC=494,4,0
+20	60573	.	T	C	124.17	PASS	AC=1;AN=996;GTC=497,1,0
+20	60828	.	T	G	807.71	PASS	AC=6;AN=996;GTC=492,6,0
+20	61098	rs6078030	C	T	51254.56	PASS	AC=225;AN=996;GTC=304,163,31
+20	61270	.	A	C	2414.84	PASS	AC=20;AN=992;GTC=476,20,0
+20	61289	.	A	C	419.41	TruthSensitivityTranche99.70to99.80	AC=71;AN=960;GTC=411,67,2
+20	61682	.	C	T	12.27	PASS	AC=1;AN=996;GTC=497,1,0

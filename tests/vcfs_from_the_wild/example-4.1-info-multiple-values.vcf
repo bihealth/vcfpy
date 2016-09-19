@@ -1,0 +1,7 @@
+##fileformat=VCFv4.1
+##contig=<ID=Pf3D7_01_v3,length=640851>
+##INFO=<ID=RepeatCopies,Number=.,Type=Float,Description="Number of copies aligned with the consensus pattern">
+##INFO=<ID=RepeatSize,Number=.,Type=Integer,Description="Size of consensus pattern (may differ slightly from the period size)">
+##INFO=<ID=RepeatConsensus,Number=.,Type=String,Description="Repeat consensus sequence">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT
+Pf3D7_01_v3	401	.	C	T	53.99	PASS	RepeatCopies=19.3,47.4,14.0;RepeatSize=42,14,56;RepeatConsensus=TCTTATCTTCTTACTTTTCATTCCTTACTCTTACTTACTTAC,TTACTCTTACTTAC,TTACTCTTACTTACTTACTCTTACTTACTTACTCTTACTTACTTACTCTTATCTTC	

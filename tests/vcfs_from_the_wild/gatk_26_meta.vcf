@@ -1,0 +1,4 @@
+##fileformat=VCFv4.1
+##GATKCommandLine=<ID=LeftAlignAndTrimVariants,Version=2.6-4-g3e5ff60,Date="Thu Jul 11 13:48:05 BST 2013",Epoch=1373546885069,CommandLineOptions="analysis_type=LeftAlignAndTrimVariants">
+##GATKCommandLine=<ID=VariantAnnotator,Version=2.6-4-g3e5ff60,Date="Thu Jul 11 13:48:41 BST 2013",Epoch=1373546921584,CommandLineOptions="analysis_type=VariantAnnotator annotation=[HomopolymerRun, VariantType, TandemRepeatAnnotator]">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT

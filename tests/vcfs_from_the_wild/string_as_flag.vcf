@@ -1,0 +1,8 @@
+##fileformat=VCFv4.1
+##INFO=<ID=AB,Number=1,Type=String,Description="Alt Base">
+##INFO=<ID=CD,Number=.,Type=String,Description="Alt Base">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	test
+chr2	21	.	A	G	.	.		GT	.
+chr2	24	.	G	T	.	.	AB	GT	.
+chr2	48	.	C	T	.	.	CD	GT	.
+chr2	75	.	T	C	.	.	AB;CD	GT	.
