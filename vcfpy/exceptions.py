@@ -2,8 +2,6 @@
 """Exceptions for the vcfpy module
 """
 
-__author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
-
 
 class VCFPyException(RuntimeError):
     """Base class for module's exception"""
@@ -23,3 +21,6 @@ class IncorrectVCFFormat(VCFPyException):
 
 class HeaderNotFound(VCFPyException):
     """Raised when a VCF header could not be found"""
+
+
+__author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'

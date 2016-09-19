@@ -3,58 +3,77 @@
 """
 
 import gzip
+import os
+
+import pysam
 
 from . import parser
 
 __author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
 
 
-class VCFReader:
+class Reader:
     """Class for parsing of files from ``file``-like objects
 
     Instead of using the constructor, use the class methods
-    :py:meth:`~VCFReader.from_file` and
-    :py:meth:`~VCFReader.from_path`.
+    :py:meth:`~Reader.from_file` and
+    :py:meth:`~Reader.from_path`.
 
     On construction, the header will be read from the file which can cause
-    problems.  After construction, :py:class:`~VCFReader` can be used as
-    an iterable of :py:class:`~vcfpy.record.VCFRecord`.
+    problems.  After construction, :py:class:`~Reader` can be used as
+    an iterable of :py:class:`~vcfpy.record.Record`.
 
     :raises: :py:class:`~vcfpy.exceptions.InvalidHeaderException` in the case
         of problems reading the header
     """
 
     @classmethod
-    def from_file(klass, stream, path=None):
-        """Create new :py:class:`VCFReader` from file
+    def from_file(klass, stream, path=None, tabix_path=None):
+        """Create new :py:class:`Reader` from file
 
         :param stream: ``file``-like object to read from
         :param path: optional string with path to store (for display only)
         """
-        return VCFReader(stream=stream, path=path)
+        if tabix_path and not path:
+            raise ValueError('Must give path if tabix_path is given')
+        return Reader(stream=stream, path=path, tabix_path=tabix_path)
 
     @classmethod
-    def from_path(klass, path):
-        """Create new :py:class:`VCFReader` from path
+    def from_path(klass, path, tabix_path=None):
+        """Create new :py:class:`Reader` from path
 
         :param path: the path to load from (converted to ``str`` for
             compatibility with ``path.py``)
+        :param tabix_path: optional string with path to TBI index,
+            automatic inferral from ``path`` will be tried on the fly
+            if not given
         """
         path = str(path)
         if path.endswith('.gz'):
             f = gzip.open(path, 'rt')
+            if not tabix_path:
+                tabix_path = path + '.tbi'
+                if not os.path.exists(tabix_path):
+                    tabix_path = None  # guessing path failed
         else:
             f = open(path, 'rt')
-        return klass.from_file(stream=f, path=path)
+        return klass.from_file(stream=f, path=path, tabix_path=tabix_path)
 
-    def __init__(self, stream, path=None):
+    def __init__(self, stream, path=None, tabix_path=None):
         #: stream (``file``-like object) to read from
         self.stream = stream
         #: optional ``str`` with the path to the stream
         self.path = path
+        #: optional ``str`` with path to tabix file
+        self.tabix_path = tabix_path
+        #: the ``pysam.TabixFile`` used for reading from index bgzip-ed VCF;
+        #: constructed on the fly
+        self.tabix_file = None
+        # the iterator through the Tabix file to use
+        self.tabix_iter = None
         #: the parser to use
-        self.parser = parser.VCFParser(stream)
-        #: the VCFHeader
+        self.parser = parser.Parser(stream)
+        #: the Header
         self.header = self.parser.parse_header()
         #: the :py:class:`vcfpy.header.SamplesInfos` object with the sample
         #: name information
@@ -68,11 +87,23 @@ class VCFReader:
         :param int begin: 0-based begin position (inclusive)
         :param int end: 0-based end position (exclusive)
         """
-        raise NotImplementedError('Implement me!')
+        # close tabix file if any and is open
+        if self.tabix_file and not self.tabix_file.closed:
+            self.tabix_file.close()
+        # open tabix file if not yet open
+        if not self.tabix_file:
+            self.tabix_file = pysam.TabixFile(
+                filename=self.path, index=self.tabix_path)
+        # jump to the next position
+        self.tabix_iter = self.tabix_file.fetch(chrom, begin, end)
+        return self
 
     def close(self):
         """Close underlying stream"""
-        self.stream.close()
+        if self.tabix_file and not self.tabix_file.closed:
+            self.tabix_file.close()
+        if self.stream:
+            self.stream.close()
 
     def __iter__(self):
         return self
@@ -85,8 +116,11 @@ class VCFReader:
             problems reading the record
         :raises: ``StopException`` if at end
         """
-        result = self.parser.parse_next_record()
-        if result is None:
-            raise StopIteration()
+        if self.tabix_iter:
+            return self.parser.parse_line(str(next(self.tabix_iter)))
         else:
-            return result
+            result = self.parser.parse_next_record()
+            if result is None:
+                raise StopIteration()
+            else:
+                return result

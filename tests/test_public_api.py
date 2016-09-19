@@ -14,15 +14,15 @@ def test_from_exceptions():
 
 
 def test_from_header():
-    assert vcfpy.VCFHeader
-    assert vcfpy.VCFHeaderLine
-    assert vcfpy.VCFSimpleHeaderLine
-    assert vcfpy.VCFSimpleHeaderLine
-    assert vcfpy.VCFContigHeaderLine
-    assert vcfpy.VCFFilterHeaderLine
-    assert vcfpy.VCFCompoundHeaderLine
-    assert vcfpy.VCFInfoHeaderLine
-    assert vcfpy.VCFFormatHeaderLine
+    assert vcfpy.Header
+    assert vcfpy.HeaderLine
+    assert vcfpy.SimpleHeaderFile
+    assert vcfpy.SimpleHeaderFile
+    assert vcfpy.ContigHeaderLine
+    assert vcfpy.FilterHeaderLine
+    assert vcfpy.CompoundHeaderLine
+    assert vcfpy.InfoHeaderLine
+    assert vcfpy.FormatHeaderLine
     assert vcfpy.SamplesInfos
 
 
@@ -37,8 +37,8 @@ def test_from_record():
 
 
 def test_from_reader():
-    assert vcfpy.VCFReader
+    assert vcfpy.Reader
 
 
 def test_from_writer():
-    assert vcfpy.VCFWriter
+    assert vcfpy.Writer

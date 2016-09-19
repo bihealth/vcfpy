@@ -14,7 +14,7 @@ __author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
 
 @pytest.fixture
 def vcf_header():
-    return header.VCFHeader()
+    return header.Header()
 
 
 # result type Substitution ----------------------------------------------------

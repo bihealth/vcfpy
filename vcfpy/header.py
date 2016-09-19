@@ -77,7 +77,7 @@ class FieldInfo:
         return str(self)
 
 
-class VCFHeader:
+class Header:
     """Represent header of VCF file
 
     While this class allows mutating records, it should not be changed once it
@@ -85,7 +85,7 @@ class VCFHeader:
     """
 
     def __init__(self, lines=[], samples=None):
-        #: ``list`` of :py:VCFHeaderLine objects
+        #: ``list`` of :py:HeaderLine objects
         self.lines = list(lines)
         #: :py:class:`SamplesInfo` object
         self.samples = samples
@@ -125,14 +125,14 @@ class VCFHeader:
         return FieldInfo('String', HEADER_NUMBER_UNBOUNDED)
 
     def __str__(self):
-        tpl = 'VCFHeader(lines={}, samples={})'
+        tpl = 'Header(lines={}, samples={})'
         return tpl.format(*map(repr, (self.lines, self.samples)))
 
     def __repr__(self):
         return str(self)
 
 
-class VCFHeaderLine:
+class HeaderLine:
     """Base class for VCF header lines
     """
 
@@ -147,14 +147,14 @@ class VCFHeaderLine:
         return ''.join(('##', self.key, '=', self.value))
 
     def __str__(self):
-        return 'VCFHeaderLine({}, {})'.format(
+        return 'HeaderLine({}, {})'.format(
             *map(repr, (self.key, self.value)))
 
     def __repr__(self):
         return str(self)
 
 
-class VCFSimpleHeaderLine(VCFHeaderLine):
+class SimpleHeaderFile(HeaderLine):
     """Base class for simple header lines, currently contig and filter
     header lines
 
@@ -182,11 +182,11 @@ class VCFSimpleHeaderLine(VCFHeaderLine):
         return ''.join(map(str, result))
 
     def __str__(self):
-        return 'VCFSimpleHeaderLine({}, {}, {})'.format(
+        return 'SimpleHeaderFile({}, {}, {})'.format(
             *map(repr, (self.key, self.value, self.mapping)))
 
 
-class VCFContigHeaderLine(VCFSimpleHeaderLine):
+class ContigHeaderLine(SimpleHeaderFile):
     """Contig header line
 
     Most importantly, parses the ``'length'`` key into an integer
@@ -207,11 +207,11 @@ class VCFContigHeaderLine(VCFSimpleHeaderLine):
         self.length = self.mapping.get('length')
 
     def __str__(self):
-        return 'VCFContigHeaderLine({}, {}, {})'.format(
+        return 'ContigHeaderLine({}, {}, {})'.format(
             *map(repr, (self.key, self.value, self.mapping)))
 
 
-class VCFFilterHeaderLine(VCFSimpleHeaderLine):
+class FilterHeaderLine(SimpleHeaderFile):
     """FILTER header line
     """
 
@@ -228,11 +228,11 @@ class VCFFilterHeaderLine(VCFSimpleHeaderLine):
         self.description = self.mapping.get('Description')
 
     def __str__(self):
-        return 'VCFFilterHeaderLine({}, {}, {})'.format(
+        return 'FilterHeaderLine({}, {}, {})'.format(
             *map(repr, (self.key, self.value, self.mapping)))
 
 
-class VCFCompoundHeaderLine(VCFHeaderLine):
+class CompoundHeaderLine(HeaderLine):
     """Base class for compound header lines, currently format and header lines
 
     Compound header lines describe fields that can have more than one entry.
@@ -280,11 +280,11 @@ class VCFCompoundHeaderLine(VCFHeaderLine):
         return ''.join(map(str, result))
 
     def __str__(self):
-        return 'VCFCompoundHeaderLine({}, {}, {})'.format(
+        return 'CompoundHeaderLine({}, {}, {})'.format(
             *map(repr, (self.key, self.value, self.mapping)))
 
 
-class VCFInfoHeaderLine(VCFCompoundHeaderLine):
+class InfoHeaderLine(CompoundHeaderLine):
     """Header line for INFO fields
 
     Note that the ``Number`` field will be parsed into an ``int`` if
@@ -324,11 +324,11 @@ class VCFInfoHeaderLine(VCFCompoundHeaderLine):
         self.version = self.mapping.get('Version')
 
     def __str__(self):
-        return 'VCFInfoHeaderLine({}, {}, {})'.format(
+        return 'InfoHeaderLine({}, {}, {})'.format(
             *map(repr, (self.key, self.value, self.mapping)))
 
 
-class VCFFormatHeaderLine(VCFCompoundHeaderLine):
+class FormatHeaderLine(CompoundHeaderLine):
     """Header line for FORMAT fields
     """
 
@@ -365,7 +365,7 @@ class VCFFormatHeaderLine(VCFCompoundHeaderLine):
         self.version = self.mapping.get('Version')
 
     def __str__(self):
-        return 'VCFFormatHeaderLine({}, {}, {})'.format(
+        return 'FormatHeaderLine({}, {}, {})'.format(
             *map(repr, (self.key, self.value, self.mapping)))
 
 

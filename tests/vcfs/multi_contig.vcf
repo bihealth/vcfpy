@@ -1,23 +1,10 @@
-# -*- coding: utf-8 -*-
-"""Writing of VCF headers
-"""
-
-import io
-import textwrap
-
-import pytest
-
-from vcfpy import parser
-from vcfpy import writer
-
-__author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
-
-MEDIUM_HEADER = """
 ##fileformat=VCFv4.3
 ##fileDate=20090805
 ##source=myImputationProgramV3.1
 ##reference=file:///seq/references/1000GenomesPilot-NCBI36.fasta
-##contig=<ID=20,length=62435964,assembly=B36,md5=f126cdf8a6e0c7f379d618ff66beb2da,species="Homo sapiens",taxonomy=x>
+##contig=<ID=1,length=249250621>
+##contig=<ID=2,length=243199373>
+##contig=<ID=20,length=62435964>
 ##phasing=partial
 ##INFO=<ID=NS,Number=1,Type=Integer,Description="Number of Samples With Data">
 ##INFO=<ID=DP,Number=1,Type=Integer,Description="Total Depth">
@@ -31,22 +18,9 @@ MEDIUM_HEADER = """
 ##FORMAT=<ID=GQ,Number=1,Type=Integer,Description="Genotype Quality">
 ##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read Depth">
 ##FORMAT=<ID=HQ,Number=2,Type=Integer,Description="Haplotype Quality">
-#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tNA00001\tNA00002\tNA00003
-""".lstrip()
-
-
-@pytest.fixture(scope='function')
-def header_samples():
-    p = parser.Parser(stream=io.StringIO(MEDIUM_HEADER), path='<builtin>')
-    p.parse_header()
-    return (p.header, p.samples)
-
-
-def test_write_header(header_samples, tmpdir_factory):
-    path = tmpdir_factory.mktemp('write_header').join('out.vcf')
-    header, samples = header_samples
-    w = writer.Writer.from_path(header, samples, path)
-    w.close()
-    RESULT = path.read()
-    EXPECTED = MEDIUM_HEADER
-    assert RESULT == EXPECTED
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	NA00001	NA00002	NA00003
+1	14370	rs6054257	G	A	29	PASS	NS=3;DP=14;AF=0.5;DB;H2	GT:GQ:DP:HQ	0|0:48:1:51,51	1|0:48:8:51,51	1/1:43:5:.,.
+2	17330	.	T	A	3	q10	NS=3;DP=11;AF=0.017	GT:GQ:DP:HQ	0|0:49:3:58,50	0|1:3:5:65,3	0/0:41:3:40,30
+20	1110696	rs6040355	A	G,T	67	PASS	NS=2;DP=10;AF=0.333,0.667;AA=T;DB	GT:GQ:DP:HQ	1|2:21:6:23,27	2|1:2:0:18,2	2/2:35:4:40,30
+20	1230237	.	T	.	47	PASS	NS=3;DP=13;AA=T	GT:GQ:DP:HQ	0|0:54:7:56,60	0|0:48:4:51,51	0/0:61:2:40,30
+20	1234567	microsat1	GTC	G,GTCT	50	PASS	NS=3;DP=9;AA=G	GT:GQ:DP	0/1:35:4	0/2:17:2	1/1:40:3

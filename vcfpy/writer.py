@@ -31,14 +31,14 @@ def format_value(field_info, value):
             return ','.join(map(format_atomic, value))
 
 
-class VCFWriter:
+class Writer:
     """Class for writing VCF files to ``file``-like objects
 
     Instead of using the constructor, use the class methods
-    :py:meth:`~VCFWriter.from_file` and
-    :py:meth:`~VCFWriter.from_path`.
+    :py:meth:`~Writer.from_file` and
+    :py:meth:`~Writer.from_path`.
 
-    The writer has to be constructed with a :py:class:`~vcfpy.header.VCFHeader`
+    The writer has to be constructed with a :py:class:`~vcfpy.header.Header`
     and a :py:class:`~vcfpy.header.SamplesInfos` object and the full VCF
     header will be written immediately on construction.  This, of course,
     implies that modifying the header after construction is illegal.
@@ -46,21 +46,21 @@ class VCFWriter:
 
     @classmethod
     def from_file(klass, header, samples, stream, path=None):
-        """Create new :py:class:`VCFWriter` from file
+        """Create new :py:class:`Writer` from file
 
         :param header: VCF header to use
-        :param samples: VCFSamplesInfos to use
+        :param samples: SamplesInfos to use
         :param stream: ``file``-like object to write to
         :param path: optional string with path to store (for display only)
         """
-        return VCFWriter(header, samples, stream, path)
+        return Writer(header, samples, stream, path)
 
     @classmethod
     def from_path(klass, header, samples, path):
-        """Create new :py:class:`VCFWriter` from path
+        """Create new :py:class:`Writer` from path
 
         :param header: VCF header to use
-        :param samples: VCFSamplesInfos to use
+        :param samples: SamplesInfos to use
         :param path: the path to load from (converted to ``str`` for
             compatibility with ``path.py``)
         """
@@ -72,7 +72,7 @@ class VCFWriter:
         return klass.from_file(header, samples, f, path)
 
     def __init__(self, header, samples, stream, path=None):
-        #: the :py:class:~vcfpy.header.VCFHeader` written out
+        #: the :py:class:~vcfpy.header.Header` written out
         self.header = header
         #: the :py:class:~vcfpy.header.SamplesInfos` written out
         self.samples = samples
@@ -100,12 +100,12 @@ class VCFWriter:
         self.stream.close()
 
     def write_record(self, record):
-        """Write out the given :py:class:`vcfpy.record.VCFRecord` to this
-        VCFWriter"""
+        """Write out the given :py:class:`vcfpy.record.Record` to this
+        Writer"""
         self._serialize_record(record)
 
     def _serialize_record(self, record):
-        """Serialize whole VCFRecord"""
+        """Serialize whole Record"""
         f = self._empty_to_dot
         row = [record.CHROM, record.POS]
         row.append(f(';'.join(record.ID)))

@@ -11,14 +11,14 @@ __author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
 
 def test_read_text():
     path = os.path.join(os.path.dirname(__file__), 'vcfs/from_vcf43.vcf')
-    r = reader.VCFReader.from_path(path)
+    r = reader.Reader.from_path(path)
     assert r.parser
     assert r.header
     assert len(r.header.lines) == 18
-    EXPECTED = "VCFHeaderLine('fileformat', 'VCFv4.3')"
+    EXPECTED = "HeaderLine('fileformat', 'VCFv4.3')"
     assert str(r.header.lines[0]) == EXPECTED
     EXPECTED = (
-        "VCFFormatHeaderLine('FORMAT', '<ID=HQ,Number=2,Type=Integer,"
+        "FormatHeaderLine('FORMAT', '<ID=HQ,Number=2,Type=Integer,"
         "Description=\"Haplotype Quality\">', OrderedDict([('ID', 'HQ'), "
         "('Number', 2), ('Type', 'Integer'), ('Description', "
         "'Haplotype Quality')]))")
@@ -29,14 +29,14 @@ def test_read_text():
 
 def test_read_bgzip():
     path = os.path.join(os.path.dirname(__file__), 'vcfs/from_vcf43.vcf.gz')
-    r = reader.VCFReader.from_path(path)
+    r = reader.Reader.from_path(path)
     assert r.parser
     assert r.header
     assert len(r.header.lines) == 18
-    EXPECTED = "VCFHeaderLine('fileformat', 'VCFv4.3')"
+    EXPECTED = "HeaderLine('fileformat', 'VCFv4.3')"
     assert str(r.header.lines[0]) == EXPECTED
     EXPECTED = (
-        "VCFFormatHeaderLine('FORMAT', '<ID=HQ,Number=2,Type=Integer,"
+        "FormatHeaderLine('FORMAT', '<ID=HQ,Number=2,Type=Integer,"
         "Description=\"Haplotype Quality\">', OrderedDict([('ID', 'HQ'), "
         "('Number', 2), ('Type', 'Integer'), ('Description', "
         "'Haplotype Quality')]))")

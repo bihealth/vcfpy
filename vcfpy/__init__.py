@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
 
-__version__ = '0.1.0'
-
 from .exceptions import VCFPyException, InvalidHeaderException, \
     InvalidRecordException, IncorrectVCFFormat, HeaderNotFound
 
-from .header import VCFHeader, VCFHeaderLine, VCFSimpleHeaderLine, \
-    VCFSimpleHeaderLine, VCFContigHeaderLine, VCFFilterHeaderLine, \
-    VCFCompoundHeaderLine, VCFInfoHeaderLine, VCFFormatHeaderLine, \
+from .header import Header, HeaderLine, SimpleHeaderFile, \
+    SimpleHeaderFile, ContigHeaderLine, FilterHeaderLine, \
+    CompoundHeaderLine, InfoHeaderLine, FormatHeaderLine, \
     SamplesInfos
 
 from .record import Record, Call, AltRecord, Substitution, SV, BreakEnd, \
     SymbolicAllele
 
-from .reader import VCFReader
+from .reader import Reader
 
-from .writer import VCFWriter
+from .writer import Writer
+
+__version__ = '0.2.0'

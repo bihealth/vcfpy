@@ -36,13 +36,12 @@ MEDIUM_HEADER = """
 
 
 def vcf_parser(lines):
-    return parser.VCFParser(io.StringIO(MEDIUM_HEADER + lines), '<builtin>')
+    return parser.Parser(io.StringIO(MEDIUM_HEADER + lines), '<builtin>')
 
 
 def test_parse_minimal_record():
     # Setup parser with stock header and lines to parse
     LINES = '20\t1\t.\tC\tG\t.\t.\t.\tGT\t0/1\t0/2\t.\n'
-    import sys; print(LINES, file=sys.stderr)
     p = vcf_parser(LINES)
     hdr = p.parse_header()
     # Perform the actual test

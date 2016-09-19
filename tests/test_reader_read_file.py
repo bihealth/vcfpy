@@ -11,7 +11,7 @@ __author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
 
 def test_read_text():
     path = os.path.join(os.path.dirname(__file__), 'vcfs/full_vcf43.vcf')
-    r = reader.VCFReader.from_path(path)
+    r = reader.Reader.from_path(path)
     assert r.parser
     assert r.header
     assert len(r.header.lines) == 18
@@ -25,7 +25,7 @@ def test_read_text():
 
 def test_read_bgzip():
     path = os.path.join(os.path.dirname(__file__), 'vcfs/full_vcf43.vcf.gz')
-    r = reader.VCFReader.from_path(path)
+    r = reader.Reader.from_path(path)
     assert r.parser
     assert r.header
     assert len(r.header.lines) == 18
