@@ -113,6 +113,22 @@ class Header:
                 result[line.key].append(line)
         return result
 
+    def add_filter_line(self, mapping):
+        """Add FILTER header line constructed from the given mapping"""
+        self.add_line(FilterHeaderLine.from_mapping(mapping))
+
+    def add_contig_line(self, mapping):
+        """Add "contig" header line constructed from the given mapping"""
+        self.add_line(ContigHeaderLine.from_mapping(mapping))
+
+    def add_info_line(self, mapping):
+        """Add INFO header line constructed from the given mapping"""
+        self.add_line(InfoHeaderLine.from_mapping(mapping))
+
+    def add_format_line(self, mapping):
+        """Add FORMAT header line constructed from the given mapping"""
+        self.add_line(FormatHeaderLine.from_mapping(mapping))
+
     def add_line(self, header_line):
         """Add header line, updating any necessary support indices"""
         self.lines.append(header_line)
@@ -177,6 +193,17 @@ class HeaderLine:
         return str(self)
 
 
+def mapping_to_str(mapping):
+    """Convert mapping to string"""
+    result = ['<']
+    for i, (key, value) in enumerate(mapping.items()):
+        if i > 0:
+            result.append(',')
+        result += [key, '=', serialize_for_header(key, value)]
+    result += ['>']
+    return ''.join(result)
+
+
 class SimpleHeaderFile(HeaderLine):
     """Base class for simple header lines, currently contig and filter
     header lines
@@ -197,13 +224,7 @@ class SimpleHeaderFile(HeaderLine):
 
     @property
     def value(self):
-        result = ['<']
-        for i, (key, value) in enumerate(self.mapping.items()):
-            if i > 0:
-                result.append(',')
-            result += [key, '=', serialize_for_header(key, value)]
-        result += ['>']
-        return ''.join(result)
+        return mapping_to_str(self.mapping)
 
     def serialize(self):
         return ''.join(map(str, ['##', self.key, '=', self.value]))
@@ -218,6 +239,11 @@ class ContigHeaderLine(SimpleHeaderFile):
 
     Most importantly, parses the ``'length'`` key into an integer
     """
+
+    @classmethod
+    def from_mapping(klass, mapping):
+        """Construct from mapping, not requiring the string value"""
+        return ContigHeaderLine('contig', mapping_to_str(mapping), mapping)
 
     def __init__(self, key, value, mapping):
         super().__init__(key, value, mapping)
@@ -241,6 +267,11 @@ class ContigHeaderLine(SimpleHeaderFile):
 class FilterHeaderLine(SimpleHeaderFile):
     """FILTER header line
     """
+    
+    @classmethod
+    def from_mapping(klass, mapping):
+        """Construct from mapping, not requiring the string value"""
+        return FilterHeaderLine('FILTER', mapping_to_str(mapping), mapping)
 
     def __init__(self, key, value, mapping):
         super().__init__(key, value, mapping)
@@ -299,13 +330,7 @@ class CompoundHeaderLine(HeaderLine):
 
     @property
     def value(self):
-        result = ['<']
-        for i, (key, value) in enumerate(self.mapping.items()):
-            if i > 0:
-                result.append(',')
-            result += [key, '=', serialize_for_header(key, value)]
-        result += ['>']
-        return ''.join(result)
+        return mapping_to_str(self.mapping)
 
     def serialize(self):
         return ''.join(map(str, ['##', self.key, '=', self.value]))
@@ -321,6 +346,11 @@ class InfoHeaderLine(CompoundHeaderLine):
     Note that the ``Number`` field will be parsed into an ``int`` if
     possible.  Otherwise, the constants ``HEADER_NUMBER_*`` will be used.
     """
+    
+    @classmethod
+    def from_mapping(klass, mapping):
+        """Construct from mapping, not requiring the string value"""
+        return InfoHeaderLine('INFO', mapping_to_str(mapping), mapping)
 
     def __init__(self, key, value, mapping):
         super().__init__(key, value, mapping)
@@ -362,6 +392,11 @@ class InfoHeaderLine(CompoundHeaderLine):
 class FormatHeaderLine(CompoundHeaderLine):
     """Header line for FORMAT fields
     """
+    
+    @classmethod
+    def from_mapping(klass, mapping):
+        """Construct from mapping, not requiring the string value"""
+        return FormatHeaderLine('FORMAT', mapping_to_str(mapping), mapping)
 
     def __init__(self, key, value, mapping):
         super().__init__(key, value, mapping)

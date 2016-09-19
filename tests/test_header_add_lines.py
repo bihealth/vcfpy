@@ -92,6 +92,42 @@ def test_add_contig_line(vcf_header):
     assert vcf_header.lines[-1].mapping['taxonomy'] == 'x'
 
 
+def test_add_contig_line_shortcut(vcf_header):
+    # check header before adding
+    assert len(vcf_header.lines) == 18
+    assert '20a' not in vcf_header._indices['contig']
+
+    # add header line
+    mapping = vcfpy.OrderedDict([
+        ('ID', '20a'),
+        ('length', 62435964),
+        ('assembly', 'B36'),
+        ('md5', 'f126cdf8a6e0c7f379d618ff66beb2da'),
+        ('species', 'Homo sapiens'),
+        ('taxonomy', 'x')])
+    vcf_header.add_contig_line(mapping)
+
+    # check header after adding
+    assert len(vcf_header.lines) == 19
+    assert '20a' in vcf_header._indices['contig']
+    assert vcf_header._indices['contig']['20a'] is vcf_header.lines[-1]
+
+    # Check resulting added header line
+    assert vcf_header.lines[-1].key == 'contig'
+    VALUE = (
+        '<ID=20a,length=62435964,assembly=B36,'
+        'md5=f126cdf8a6e0c7f379d618ff66beb2da,'
+        'species="Homo sapiens",taxonomy=x>')
+    assert vcf_header.lines[-1].value == VALUE
+    assert len(vcf_header.lines[-1].mapping) == 6
+    assert vcf_header.lines[-1].mapping['ID'] == '20a'
+    assert vcf_header.lines[-1].mapping['length'] == 62435964
+    assert vcf_header.lines[-1].mapping['assembly'] == 'B36'
+    assert vcf_header.lines[-1].mapping['md5'] == 'f126cdf8a6e0c7f379d618ff66beb2da'
+    assert vcf_header.lines[-1].mapping['species'] == 'Homo sapiens'
+    assert vcf_header.lines[-1].mapping['taxonomy'] == 'x'
+
+
 def test_add_filter_line(vcf_header):
     # check header before adding
     assert len(vcf_header.lines) == 18
@@ -110,6 +146,29 @@ def test_add_filter_line(vcf_header):
 
     # Check resulting added header line
     assert vcf_header.lines[-1].key == 'FILTER'
+    assert vcf_header.lines[-1].value == VALUE
+    assert len(vcf_header.lines[-1].mapping) == 2
+    assert vcf_header.lines[-1].mapping['ID'] == 'q10a'
+    assert vcf_header.lines[-1].mapping['Description'] == 'Quality below 10'
+
+
+def test_add_filter_line_shortcut(vcf_header):
+    # check header before adding
+    assert len(vcf_header.lines) == 18
+
+    # add header line
+    mapping = vcfpy.OrderedDict(
+        [('ID', 'q10a'), ('Description', 'Quality below 10')])
+    vcf_header.add_filter_line(mapping)
+
+    # check header after adding
+    assert len(vcf_header.lines) == 19
+    assert 'q10a' in vcf_header._indices['FILTER']
+    assert vcf_header._indices['FILTER']['q10a'] is vcf_header.lines[-1]
+
+    # Check resulting added header line
+    assert vcf_header.lines[-1].key == 'FILTER'
+    VALUE = '<ID=q10a,Description="Quality below 10">'
     assert vcf_header.lines[-1].value == VALUE
     assert len(vcf_header.lines[-1].mapping) == 2
     assert vcf_header.lines[-1].mapping['ID'] == 'q10a'
@@ -145,6 +204,34 @@ def test_add_format_line(vcf_header):
     assert vcf_header.lines[-1].mapping['Description'] == 'Genotype'
 
 
+def test_add_format_line_shortcut(vcf_header):
+    # check header before adding
+    assert len(vcf_header.lines) == 18
+
+    # add header line
+    mapping = vcfpy.OrderedDict(
+        [('ID', 'GTa'),
+         ('Number', 1),
+         ('Type', 'String'),
+         ('Description', 'Genotype')])
+    vcf_header.add_format_line(mapping)
+
+    # check header after adding
+    assert len(vcf_header.lines) == 19
+    assert 'GTa' in vcf_header._indices['FORMAT']
+    assert vcf_header._indices['FORMAT']['GTa'] is vcf_header.lines[-1]
+
+    # Check resulting added header line
+    assert vcf_header.lines[-1].key == 'FORMAT'
+    VALUE = '<ID=GTa,Number=1,Type=String,Description="Genotype">'
+    assert vcf_header.lines[-1].value == VALUE
+    assert len(vcf_header.lines[-1].mapping) == 4
+    assert vcf_header.lines[-1].mapping['ID'] == 'GTa'
+    assert vcf_header.lines[-1].mapping['Number'] == 1
+    assert vcf_header.lines[-1].mapping['Type'] == 'String'
+    assert vcf_header.lines[-1].mapping['Description'] == 'Genotype'
+
+
 def test_add_info_line(vcf_header):
     # check header before adding
     assert len(vcf_header.lines) == 18
@@ -158,6 +245,35 @@ def test_add_info_line(vcf_header):
              ('Type', 'Integer'),
              ('Description', 'Total Depth')]))
     vcf_header.add_line(line)
+    assert len(vcf_header.lines) == 19
+
+    # check header after adding
+    assert len(vcf_header.lines) == 19
+    assert 'DPa' in vcf_header._indices['INFO']
+    assert vcf_header._indices['INFO']['DPa'] is vcf_header.lines[-1]
+
+    # Check resulting added header line
+    assert vcf_header.lines[-1].key == 'INFO'
+    assert vcf_header.lines[-1].value == VALUE
+    assert len(vcf_header.lines[-1].mapping) == 4
+    assert vcf_header.lines[-1].mapping['ID'] == 'DPa'
+    assert vcf_header.lines[-1].mapping['Number'] == 1
+    assert vcf_header.lines[-1].mapping['Type'] == 'Integer'
+    assert vcf_header.lines[-1].mapping['Description'] == 'Total Depth'
+
+
+def test_add_info_line_shortcut(vcf_header):
+    # check header before adding
+    assert len(vcf_header.lines) == 18
+
+    # add header line
+    VALUE = '<ID=DPa,Number=1,Type=Integer,Description="Total Depth">'
+    mapping = vcfpy.OrderedDict(
+        [('ID', 'DPa'),
+         ('Number', 1),
+         ('Type', 'Integer'),
+         ('Description', 'Total Depth')])
+    vcf_header.add_info_line(mapping)
     assert len(vcf_header.lines) == 19
 
     # check header after adding
