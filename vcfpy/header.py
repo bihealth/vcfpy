@@ -99,10 +99,15 @@ class Header:
 
     def _build_indices(self):
         """Build indices for the different field types"""
-        result = {'FILTER': {}, 'FORMAT': {}, 'INFO': {}, 'contig': {}}
+        result = {
+            'FILTER': OrderedDict(),
+            'FORMAT': OrderedDict(),
+            'INFO': OrderedDict(),
+            'contig': OrderedDict(),
+        }
         for line in self.lines:
             if line.key in LINES_WITH_ID:
-                result.setdefault(line.key, {})
+                result.setdefault(line.key, OrderedDict())
                 if line.mapping['ID'] in result[line.key]:
                     _warn(('Seen {} header more than once: {}, using first'
                            'occurence').format(line.key, line.mapping['ID']))
@@ -129,10 +134,17 @@ class Header:
         """Add FORMAT header line constructed from the given mapping"""
         self.add_line(FormatHeaderLine.from_mapping(mapping))
 
+    def get_lines(self, key):
+        """Return header lines having the given ``key`` as their type"""
+        if key in self._indices:
+            return self._indices[key].values()
+        else:
+            return []
+
     def add_line(self, header_line):
         """Add header line, updating any necessary support indices"""
         self.lines.append(header_line)
-        self._indices.setdefault(header_line.key, {})
+        self._indices.setdefault(header_line.key, OrderedDict())
         if not hasattr(header_line, 'mapping'):
             return  # no registration required
         if header_line.mapping['ID'] in self._indices[header_line.key]:
