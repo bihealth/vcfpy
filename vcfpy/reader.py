@@ -79,7 +79,7 @@ class Reader:
         #: name information
         self.samples = self.header.samples
 
-    def jump_to(self, chrom, begin, end):
+    def fetch(self, chrom, begin, end):
         """Jump to the start position of the given chromosomal position
         and limit iteration to the end position
 
