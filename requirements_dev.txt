@@ -25,7 +25,7 @@ pytz==2016.6.1
 PyYAML==3.11
 six==1.10.0
 snowballstemmer==1.2.1
-Sphinx==1.4.4
+Sphinx==1.4.5
 sphinx-rtd-theme==0.1.9
 tox==2.3.1
 virtualenv==15.0.3
