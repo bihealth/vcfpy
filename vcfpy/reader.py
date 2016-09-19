@@ -12,16 +12,16 @@ from . import parser
 __author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
 
 
-class VCFReader:
+class Reader:
     """Class for parsing of files from ``file``-like objects
 
     Instead of using the constructor, use the class methods
-    :py:meth:`~VCFReader.from_file` and
-    :py:meth:`~VCFReader.from_path`.
+    :py:meth:`~Reader.from_file` and
+    :py:meth:`~Reader.from_path`.
 
     On construction, the header will be read from the file which can cause
-    problems.  After construction, :py:class:`~VCFReader` can be used as
-    an iterable of :py:class:`~vcfpy.record.VCFRecord`.
+    problems.  After construction, :py:class:`~Reader` can be used as
+    an iterable of :py:class:`~vcfpy.record.Record`.
 
     :raises: :py:class:`~vcfpy.exceptions.InvalidHeaderException` in the case
         of problems reading the header
@@ -29,18 +29,18 @@ class VCFReader:
 
     @classmethod
     def from_file(klass, stream, path=None, tabix_path=None):
-        """Create new :py:class:`VCFReader` from file
+        """Create new :py:class:`Reader` from file
 
         :param stream: ``file``-like object to read from
         :param path: optional string with path to store (for display only)
         """
         if tabix_path and not path:
             raise ValueError('Must give path if tabix_path is given')
-        return VCFReader(stream=stream, path=path, tabix_path=tabix_path)
+        return Reader(stream=stream, path=path, tabix_path=tabix_path)
 
     @classmethod
     def from_path(klass, path, tabix_path=None):
-        """Create new :py:class:`VCFReader` from path
+        """Create new :py:class:`Reader` from path
 
         :param path: the path to load from (converted to ``str`` for
             compatibility with ``path.py``)
@@ -72,8 +72,8 @@ class VCFReader:
         # the iterator through the Tabix file to use
         self.tabix_iter = None
         #: the parser to use
-        self.parser = parser.VCFParser(stream)
-        #: the VCFHeader
+        self.parser = parser.Parser(stream)
+        #: the Header
         self.header = self.parser.parse_header()
         #: the :py:class:`vcfpy.header.SamplesInfos` object with the sample
         #: name information

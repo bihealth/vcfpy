@@ -37,7 +37,7 @@ MEDIUM_HEADER = """
 
 @pytest.fixture(scope='function')
 def header_samples():
-    p = parser.VCFParser(stream=io.StringIO(MEDIUM_HEADER), path='<builtin>')
+    p = parser.Parser(stream=io.StringIO(MEDIUM_HEADER), path='<builtin>')
     p.parse_header()
     return (p.header, p.samples)
 
@@ -45,7 +45,7 @@ def header_samples():
 def test_write_header(header_samples, tmpdir_factory):
     path = tmpdir_factory.mktemp('write_header').join('out.vcf')
     header, samples = header_samples
-    w = writer.VCFWriter.from_path(header, samples, path)
+    w = writer.Writer.from_path(header, samples, path)
     w.close()
     RESULT = path.read()
     EXPECTED = MEDIUM_HEADER

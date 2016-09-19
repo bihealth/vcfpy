@@ -57,4 +57,4 @@ FILENAMES = [
 def test_read_vcfs_from_the_wild(filename):
     path = os.path.join(os.path.dirname(__file__), 'vcfs_from_the_wild',
                         filename)
-    r = reader.VCFReader.from_path(path)
+    r = reader.Reader.from_path(path)

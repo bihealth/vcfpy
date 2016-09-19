@@ -15,10 +15,10 @@ __author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
 def test_vcf_roundtrip(tmpdir_factory):
     # open reader with VCF file to read from
     in_path = os.path.join(os.path.dirname(__file__), 'vcfs/full_vcf43.vcf')
-    r = reader.VCFReader.from_path(in_path)
-    # open temporary file and setup the VCFWriter with header info from reader
+    r = reader.Reader.from_path(in_path)
+    # open temporary file and setup the Writer with header info from reader
     out_path = tmpdir_factory.mktemp('write_header').join('out.vcf')
-    w = writer.VCFWriter.from_path(r.header, r.samples, out_path)
+    w = writer.Writer.from_path(r.header, r.samples, out_path)
     # copy records to output file
     for rec in r:
         w.write_record(rec)

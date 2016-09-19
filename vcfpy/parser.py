@@ -102,28 +102,28 @@ def parse_mapping(value):
     return OrderedDict(key_values)
 
 
-class VCFHeaderLineParserBase:
-    """Parse into appropriate VCFHeaderLine"""
+class HeaderLineParserBase:
+    """Parse into appropriate HeaderLine"""
 
     def parse_key_value(self, key, value):
         """Parse the key/value pair
 
         :param str key: the key to use in parsing
         :param str value: the value to parse
-        :returns: :py:class:`vcfpy.header.VCFHeaderLine` object
+        :returns: :py:class:`vcfpy.header.HeaderLine` object
         """
         raise NotImplementedError('Must be overridden')
 
 
-class StupidVCFHeaderLineParser(VCFHeaderLineParserBase):
-    """Parse into VCFHeaderLine (no particular structure)"""
+class StupidHeaderLineParser(HeaderLineParserBase):
+    """Parse into HeaderLine (no particular structure)"""
 
     def parse_key_value(self, key, value):
-        return header.VCFHeaderLine(key, value)
+        return header.HeaderLine(key, value)
 
 
-class MappingVCFHeaderLineParser(VCFHeaderLineParserBase):
-    """Parse into VCFHeaderLine (no particular structure)"""
+class MappingHeaderLineParser(HeaderLineParserBase):
+    """Parse into HeaderLine (no particular structure)"""
 
     def __init__(self, line_class):
         """Initialize the parser"""
@@ -137,11 +137,11 @@ class MappingVCFHeaderLineParser(VCFHeaderLineParserBase):
 
 # Parsers to use for each VCF header type (given left of '=')
 HEADER_PARSERS = {
-    'FILTER': MappingVCFHeaderLineParser(header.VCFFilterHeaderLine),
-    'FORMAT': MappingVCFHeaderLineParser(header.VCFFormatHeaderLine),
-    'INFO': MappingVCFHeaderLineParser(header.VCFInfoHeaderLine),
-    'contig': MappingVCFHeaderLineParser(header.VCFContigHeaderLine),
-    '__default__': StupidVCFHeaderLineParser(),  # fallback
+    'FILTER': MappingHeaderLineParser(header.FilterHeaderLine),
+    'FORMAT': MappingHeaderLineParser(header.FormatHeaderLine),
+    'INFO': MappingHeaderLineParser(header.InfoHeaderLine),
+    'contig': MappingHeaderLineParser(header.ContigHeaderLine),
+    '__default__': StupidHeaderLineParser(),  # fallback
     # 'ALT': None,
     # 'assembly': None,
     # 'META': None,
@@ -187,7 +187,7 @@ def parse_field_value(key, field_info, value):
 
 
 def process_alt(header, ref, alt_str):
-    """Process alternative value using VCFHeader in ``header``"""
+    """Process alternative value using Header in ``header``"""
     # By its nature, this function contains a large number of case distinctions
     if ']' in alt_str or '[' in alt_str:
         return record.BreakEnd(record.BND, alt_str)
@@ -227,7 +227,7 @@ def process_alt(header, ref, alt_str):
                 return record.Substitution(record.INDEL, alt_str)
 
 
-class VCFHeaderParser:
+class HeaderParser:
     """Helper class for parsing a VCF header
     """
 
@@ -240,7 +240,7 @@ class VCFHeaderParser:
         :param str line: ``str`` with line to parse
         :param dict sub_parsers: ``dict`` mapping header line types to
             appropriate parser objects
-        :returns: appropriate :py:class:`VCFHeaderLine` parsed from ``line``
+        :returns: appropriate :py:class:`HeaderLine` parsed from ``line``
         :raises: :py:class:`vcfpy.exceptions.InvalidHeaderException` if
             there was a problem parsing the file
         """
@@ -259,11 +259,11 @@ class VCFHeaderParser:
         return sub_parser.parse_key_value(key, value)
 
 
-class VCFRecordParser:
+class RecordParser:
     """Helper class for parsing VCF records"""
 
     def __init__(self, header, samples):
-        #: VCFHeader with the meta information
+        #: Header with the meta information
         self.header = header
         #: SamplesInfos with sample information
         self.samples = samples
@@ -277,7 +277,7 @@ class VCFRecordParser:
 
     def parse_line(self, line_str):
         """Parse line from file (including trailing line break) and return
-        resulting VCFRecord
+        resulting Record
         """
         line_str = line_str.rstrip()
         if not line_str:
@@ -382,10 +382,10 @@ class VCFRecordParser:
         return result
 
 
-class VCFParser:
+class Parser:
     """Class for line-wise parsing of VCF files
 
-    In most cases, you want to use :py:class:`vcfpy.reader.VCFReader` instead.
+    In most cases, you want to use :py:class:`vcfpy.reader.Reader` instead.
 
     :param stream: ``file``-like object to read from
     :param str path: path the VCF is parsed from, for display purposes
@@ -412,15 +412,15 @@ class VCFParser:
         return prev_line
 
     def parse_header(self):
-        """Read and parse :py:class:`vcfpy.header.VCFHeader` from file, set
+        """Read and parse :py:class:`vcfpy.header.Header` from file, set
         into ``self.header`` and return it
 
-        :returns: ``vcfpy.header.VCFHeader``
+        :returns: ``vcfpy.header.Header``
         :raises: ``vcfpy.exceptions.InvalidHeaderException`` in the case of
             problems reading the header
         """
         # parse header lines
-        sub_parser = VCFHeaderParser(HEADER_PARSERS)
+        sub_parser = HeaderParser(HEADER_PARSERS)
         header_lines = []
         while self._line and self._line.startswith('##'):
             header_lines.append(sub_parser.parse_line(self._line))
@@ -456,10 +456,10 @@ class VCFParser:
                 'start with required prefix {}'.format(
                     '\t'.join(REQUIRE_SAMPLE_HEADER)))
         self.samples = header.SamplesInfos(arr[len(REQUIRE_SAMPLE_HEADER):])
-        # construct VCFHeader object
-        self.header = header.VCFHeader(header_lines, self.samples)
+        # construct Header object
+        self.header = header.Header(header_lines, self.samples)
         # construct record parser
-        self._record_parser = VCFRecordParser(self.header, self.samples)
+        self._record_parser = RecordParser(self.header, self.samples)
         # read next line, must not be header
         self._read_next_line()
         if self._line and self._line.startswith('#'):
@@ -490,7 +490,7 @@ class VCFParser:
         return self._record_parser.parse_line(line)
 
     def parse_next_record(self):
-        """Read, parse and return next :py:class:`vcfpy.record.VCFRecord`
+        """Read, parse and return next :py:class:`vcfpy.record.Record`
 
         :returns: next VCF record or ``None`` if at end
         :raises: ``vcfpy.exceptions.InvalidRecordException`` in the case of

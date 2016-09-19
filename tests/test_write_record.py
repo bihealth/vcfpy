@@ -41,7 +41,7 @@ MEDIUM_HEADER = """
 
 @pytest.fixture(scope='function')
 def header_samples():
-    p = parser.VCFParser(stream=io.StringIO(MEDIUM_HEADER), path='<builtin>')
+    p = parser.Parser(stream=io.StringIO(MEDIUM_HEADER), path='<builtin>')
     p.parse_header()
     return (p.header, p.samples)
 
@@ -49,10 +49,10 @@ def header_samples():
 def test_write_minimal_record(header_samples, tmpdir_factory):
     O = collections.OrderedDict
     S = record.Substitution
-    # open temporary file and setup the VCFWriter with header
+    # open temporary file and setup the Writer with header
     path = tmpdir_factory.mktemp('write_header').join('out.vcf')
     header, samples = header_samples
-    w = writer.VCFWriter.from_path(header, samples, path)
+    w = writer.Writer.from_path(header, samples, path)
     # construct record to write out from scratch
     # def __init__(self, CHROM, POS, ID, REF, ALT, QUAL, FILTER, INFO, FORMAT,
     #             calls):
@@ -77,10 +77,10 @@ def test_write_minimal_record(header_samples, tmpdir_factory):
 def test_write_annotated_record(header_samples, tmpdir_factory):
     O = collections.OrderedDict
     S = record.Substitution
-    # open temporary file and setup the VCFWriter with header
+    # open temporary file and setup the Writer with header
     path = tmpdir_factory.mktemp('write_annotated_record').join('out.vcf')
     header, samples = header_samples
-    w = writer.VCFWriter.from_path(header, samples, path)
+    w = writer.Writer.from_path(header, samples, path)
     # construct record to write out from scratch
     # def __init__(self, CHROM, POS, ID, REF, ALT, QUAL, FILTER, INFO, FORMAT,
     #             calls):
