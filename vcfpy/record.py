@@ -61,8 +61,7 @@ class Record:
         for call in self.calls:
             call.site = self
         #: A mapping from sample name to entry in self.calls
-        self.call_for_sample = dict(
-            [(call.sample, call) for call in self.calls])
+        self.call_for_sample = {call.sample: call for call in self.calls}
 
     def add_filter(self, label):
         """Add label to FILTER if not set yet"""

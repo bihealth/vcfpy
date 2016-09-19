@@ -288,11 +288,10 @@ class VCFRecordParser:
         # REF
         ref = arr[3]
         # ALT
-        if arr[4] == '.':
-            alts = []
-        else:
-            alts = list(map(lambda x: process_alt(self.header, ref, x),
-                            arr[4].split(',')))
+        alts = []
+        if arr[4] != '.':
+            for alt in arr[4].split(','):
+                alts.append(process_alt(self.header, ref, alt))
         # QUAL
         if arr[5] == '.':
             qual = None
@@ -315,8 +314,8 @@ class VCFRecordParser:
             format = arr[8].split(':')
             # per-sample calls
             calls = [record.Call(sample, data) for sample, data in
-                    zip(self.samples.names,
-                        self._parse_calls_data(format, arr[9:]))]
+                     zip(self.samples.names,
+                         self._parse_calls_data(format, arr[9:]))]
         return record.Record(
             chrom, pos, ids, ref, alts, qual, filt, info, format, calls)
 
