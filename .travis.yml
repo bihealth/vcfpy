@@ -32,7 +32,7 @@ deploy:
       TjJGY1Y5UStpY2piMjMvRmx2a1pzZCtLUU90eTY0SytGR3JMUWNKWnppaWZJMmJjR0JnL0l2Snc9
   true:
     condition: $TOXENV == py33
-    repo: holtgrewe/vcfpy
+    repo: bihealth/vcfpy
     tags: true
   user: Manuel.Holtgrewe
   provider: pypi

@@ -6,15 +6,15 @@ VCFPy
 .. image:: https://img.shields.io/pypi/v/vcfpy.svg
         :target: https://pypi.python.org/pypi/vcfpy
 
-.. image:: https://img.shields.io/travis/holtgrewe/vcfpy.svg
-        :target: https://travis-ci.org/holtgrewe/vcfpy
+.. image:: https://img.shields.io/travis/bihealth/vcfpy.svg
+        :target: https://travis-ci.org/bihealth/vcfpy
 
 .. image:: https://readthedocs.org/projects/vcfpy/badge/?version=latest
         :target: https://vcfpy.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
 
-.. image:: https://pyup.io/repos/github/holtgrewe/vcfpy/shield.svg
-     :target: https://pyup.io/repos/github/holtgrewe/vcfpy/
+.. image:: https://pyup.io/repos/github/bihealth/vcfpy/shield.svg
+     :target: https://pyup.io/repos/github/bihealth/vcfpy/
      :alt: Updates
 
 
