@@ -4,11 +4,15 @@
 The VCF header class structure is modeled after HTSJDK
 """
 
-import collections
 import json
 import sys
 
 from . import exceptions
+
+try:
+    from cyordereddict import OrderedDict
+except ImportError:
+    from collections import OrderedDict
 
 __author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
 
@@ -166,7 +170,7 @@ class VCFSimpleHeaderLine(VCFHeaderLine):
                 'Missing key "ID" in header line "{}={}"'.format(
                     key, value))
         #: ``collections.OrderedDict`` with key/value mapping of the attributes
-        self.mapping = collections.OrderedDict(mapping.items())
+        self.mapping = OrderedDict(mapping.items())
 
     def serialize(self):
         result = ['##', self.key, '=<']
@@ -237,7 +241,7 @@ class VCFCompoundHeaderLine(VCFHeaderLine):
     def __init__(self, key, value, mapping):
         super().__init__(key, value)
         #: OrderedDict with key/value mapping
-        self.mapping = collections.OrderedDict(mapping.items())
+        self.mapping = OrderedDict(mapping.items())
         # check that 'Number' is given and use "." otherwise
         if 'Number' not in self.mapping:
             print(('[vcfpy] WARNING: missing number, using '

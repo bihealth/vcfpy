@@ -13,6 +13,10 @@ requirements = [
     # TODO: put package requirements here
 ]
 
+# Add cyordereddict for Python <=3.5 for performance boost
+if sys.version_info[:2] < (3, 5):
+    requirements.append('cyordereddict>=1.0.0')
+
 test_requirements = [
     # TODO: put package test requirements here
 ]

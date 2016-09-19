@@ -11,6 +11,11 @@ from . import header
 from . import record
 from . import exceptions
 
+try:
+    from cyordereddict import OrderedDict
+except ImportError:
+    from collections import OrderedDict
+
 __author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
 
 
@@ -94,7 +99,7 @@ def parse_mapping(value):
             key, value = pair, True
         key_values.append((key, value))
     # return completely parsed mapping as OrderedDict
-    return collections.OrderedDict(key_values)
+    return OrderedDict(key_values)
 
 
 class VCFHeaderLineParserBase:
@@ -332,7 +337,7 @@ class VCFRecordParser:
 
     def _parse_info(self, info_str):
         """Parse INFO column from string"""
-        result = collections.OrderedDict()
+        result = OrderedDict()
         if info_str == '.':
             return result
         # The standard is very nice to parsers, we can simply split at
@@ -358,7 +363,7 @@ class VCFRecordParser:
         """
         result = []
         for entry in arr:
-            data = collections.OrderedDict()
+            data = OrderedDict()
             # The standard is very nice to parsers, we can simply split at
             # colon characters, although I (Manuel) don't know how strict
             # programs follow this
