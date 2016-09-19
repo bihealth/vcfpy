@@ -11,6 +11,7 @@ from . import header
 from . import record
 from . import exceptions
 
+# TODO: add sphinx documentation for this
 try:
     from cyordereddict import OrderedDict
 except ImportError:

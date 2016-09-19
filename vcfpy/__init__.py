@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
 
+try:
+    from cyordereddict import OrderedDict
+except ImportError:
+    from collections import OrderedDict
+
 from .exceptions import VCFPyException, InvalidHeaderException, \
     InvalidRecordException, IncorrectVCFFormat, HeaderNotFound
 
