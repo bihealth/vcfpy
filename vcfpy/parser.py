@@ -272,6 +272,8 @@ class VCFRecordParser:
             self.expected_fields = 9 + len(self.samples.names)
         else:
             self.expected_fields = 8
+        # Cache of FieldInfo objects by FORMAT string
+        self._format_cache = {}
 
     def parse_line(self, line_str):
         """Parse line from file (including trailing line break) and return
@@ -316,11 +318,17 @@ class VCFRecordParser:
             format, calls = [], []
         else:
             # FORMAT
-            format = arr[8].split(':')
+            format_str = arr[8]
+            format = format_str.split(':')
+            if format_str not in self._format_cache:
+                self._format_cache[format_str] = list(map(
+                    self.header.get_format_field_info,
+                    format))
             # per-sample calls
             calls = [record.Call(sample, data) for sample, data in
                      zip(self.samples.names,
-                         self._parse_calls_data(format, arr[9:]))]
+                         self._parse_calls_data(
+                             format, self._format_cache[format_str], arr[9:]))]
         return record.Record(
             chrom, pos, ids, ref, alts, qual, filt, info, format, calls)
 
@@ -354,7 +362,7 @@ class VCFRecordParser:
                     key, self.header.get_info_field_info(key), value)
         return result
 
-    def _parse_calls_data(self, format, arr):
+    def _parse_calls_data(self, format, infos, arr):
         """Parse genotype call information from arrays using format array
 
         :param list format: List of strings with format names
@@ -367,9 +375,9 @@ class VCFRecordParser:
             # The standard is very nice to parsers, we can simply split at
             # colon characters, although I (Manuel) don't know how strict
             # programs follow this
-            for key, value in zip(format, entry.split(':')):
+            for key, info, value in zip(format, infos, entry.split(':')):
                 data[key] = parse_field_value(
-                    key, self.header.get_format_field_info(key), value)
+                    key, info, value)
             result.append(data)
         return result
 
