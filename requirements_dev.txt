@@ -4,7 +4,7 @@ Babel==2.3.4
 bumpversion==0.5.3
 cffi==1.8.3
 coverage==4.1
-cryptography==1.4
+cryptography==1.5
 docutils==0.12
 flake8==3.0.4
 idna==2.1
