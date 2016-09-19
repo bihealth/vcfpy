@@ -38,7 +38,7 @@ HEADER = """
 
 LINE = """
 20\t14370\trs6054257\tG\tA\t29\tPASS\tNS=3;DP=14;AF=0.5;DB;H2\tGT:GQ:DP:HQ\t0|0:48:1:51,51\t1|0:48:8:51,51\t1/1:43:5:.,.
-"""
+""".lstrip()
 
 
 def run(args):
@@ -51,7 +51,9 @@ def run(args):
     for r in range(args.repetitions):
         begin = time.clock()
         for i in range(args.line_count):
-            p._record_parser.parse_line(LINE)
+            r = p._record_parser.parse_line(LINE)
+            if args.debug:
+                print(r, file=sys.stderr)
         times.append(time.clock() - begin)
     print('Took {:.3} seconds (stdev {:.3})'.format(
         statistics.mean(times), statistics.stdev(times)), file=sys.stderr)
@@ -61,6 +63,8 @@ def main(argv=None):
     """Main program entry point for parsing command line arguments"""
     parser = argparse.ArgumentParser(description='Parser benchmark')
 
+    parser.add_argument('--debug', default=False, action='store_true',
+                        help='Enable debugging')
     parser.add_argument('--repetitions', type=int, default=10,
                         help='Number of repetitions')
     parser.add_argument('--line-count', type=int, default=5000,
