@@ -12,7 +12,7 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 requirements = [
-    # TODO: put package requirements here
+    'pysam>=0.9.1.4',  # for tabix support
 ]
 
 # Add cyordereddict for Python <=3.5 for performance boost

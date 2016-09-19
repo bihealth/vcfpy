@@ -485,6 +485,10 @@ class VCFParser:
                    'going on regardlessly').format(first.value),
                   file=sys.stderr)
 
+    def parse_line(self, line):
+        """Pare the given line without reading another one from the stream"""
+        return self._record_parser.parse_line(line)
+
     def parse_next_record(self):
         """Read, parse and return next :py:class:`vcfpy.record.VCFRecord`
 
@@ -492,4 +496,4 @@ class VCFParser:
         :raises: ``vcfpy.exceptions.InvalidRecordException`` in the case of
             problems reading the record
         """
-        return self._record_parser.parse_line(self._read_next_line())
+        return self.parse_line(self._read_next_line())
