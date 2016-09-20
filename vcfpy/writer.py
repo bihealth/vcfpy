@@ -35,7 +35,7 @@ class Writer:
     """Class for writing VCF files to ``file``-like objects
 
     Instead of using the constructor, use the class methods
-    :py:meth:`~Writer.from_file` and
+    :py:meth:`~Writer.from_stream` and
     :py:meth:`~Writer.from_path`.
 
     The writer has to be constructed with a :py:class:`~vcfpy.header.Header`
@@ -45,7 +45,7 @@ class Writer:
     """
 
     @classmethod
-    def from_file(klass, header, samples, stream, path=None):
+    def from_stream(klass, header, samples, stream, path=None):
         """Create new :py:class:`Writer` from file
 
         :param header: VCF header to use
@@ -69,7 +69,7 @@ class Writer:
             raise NotImplementedError('Writing to bgzf not supported')
         else:
             f = open(path, 'wt')
-        return klass.from_file(header, samples, f, path)
+        return klass.from_stream(header, samples, f, path)
 
     def __init__(self, header, samples, stream, path=None):
         #: the :py:class:~vcfpy.header.Header` written out

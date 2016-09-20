@@ -16,7 +16,7 @@ class Reader:
     """Class for parsing of files from ``file``-like objects
 
     Instead of using the constructor, use the class methods
-    :py:meth:`~Reader.from_file` and
+    :py:meth:`~Reader.from_stream` and
     :py:meth:`~Reader.from_path`.
 
     On construction, the header will be read from the file which can cause
@@ -28,7 +28,7 @@ class Reader:
     """
 
     @classmethod
-    def from_file(klass, stream, path=None, tabix_path=None):
+    def from_stream(klass, stream, path=None, tabix_path=None):
         """Create new :py:class:`Reader` from file
 
         :param stream: ``file``-like object to read from
@@ -57,7 +57,7 @@ class Reader:
                     tabix_path = None  # guessing path failed
         else:
             f = open(path, 'rt')
-        return klass.from_file(stream=f, path=path, tabix_path=tabix_path)
+        return klass.from_stream(stream=f, path=path, tabix_path=tabix_path)
 
     def __init__(self, stream, path=None, tabix_path=None):
         #: stream (``file``-like object) to read from

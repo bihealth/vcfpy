@@ -5,6 +5,7 @@ History
 HEAD
 ----
 
+* Renamed ``from_file`` to ``from_stream``
 * Renamed ``Reader.jump_to`` to ``Reader.fetch``
 * Adding ``header_without_lines`` function
 * Generally extending API to make it esier to use
