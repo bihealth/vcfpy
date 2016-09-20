@@ -280,6 +280,8 @@ class RecordParser:
             self.expected_fields = 8
         # Cache of FieldInfo objects by FORMAT string
         self._format_cache = {}
+        # Cache of FILTER entries, also applied to FORMAT/FT
+        self._filter_ids = set(self.header.filter_ids())
 
     def parse_line(self, line_str):
         """Parse line from file (including trailing line break) and return
@@ -318,6 +320,7 @@ class RecordParser:
             filt = []
         else:
             filt = arr[6].split(';')
+        self._check_filters(filt, 'FILTER')
         # INFO
         info = self._parse_info(arr[7])
         if not self.samples.names:
@@ -335,8 +338,25 @@ class RecordParser:
                      zip(self.samples.names,
                          self._parse_calls_data(
                              format, self._format_cache[format_str], arr[9:]))]
+            for call in calls:
+                self._check_filters(
+                    call.data.get('FT'), 'FORMAT/FT', call.sample)
         return record.Record(
             chrom, pos, ids, ref, alts, qual, filt, info, format, calls)
+
+    def _check_filters(self, filt, source, sample=None):
+        if not filt:
+            return
+        for f in filt:
+            if not f in self._filter_ids:
+                if source == 'FILTER':
+                    _warn(('Filter not found in header: {}; found in '
+                           'FILTER column').format(f))
+                else:
+                    assert source == 'FORMAT/FT' and sample
+                    _warn(('Filter not found in header: {}; found in '
+                           'FORMAT/FT column of sample {}').format(
+                               f, sample))
 
     def _split_line(self, line_str):
         """Split line and check number of columns"""
