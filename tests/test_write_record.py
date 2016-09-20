@@ -52,7 +52,7 @@ def test_write_minimal_record(header_samples, tmpdir_factory):
     # open temporary file and setup the Writer with header
     path = tmpdir_factory.mktemp('write_header').join('out.vcf')
     header, samples = header_samples
-    w = writer.Writer.from_path(header, samples, path)
+    w = writer.Writer.from_path(path, header, samples)
     # construct record to write out from scratch
     # def __init__(self, CHROM, POS, ID, REF, ALT, QUAL, FILTER, INFO, FORMAT,
     #             calls):
@@ -80,7 +80,7 @@ def test_write_annotated_record(header_samples, tmpdir_factory):
     # open temporary file and setup the Writer with header
     path = tmpdir_factory.mktemp('write_annotated_record').join('out.vcf')
     header, samples = header_samples
-    w = writer.Writer.from_path(header, samples, path)
+    w = writer.Writer.from_path(path, header, samples)
     # construct record to write out from scratch
     # def __init__(self, CHROM, POS, ID, REF, ALT, QUAL, FILTER, INFO, FORMAT,
     #             calls):

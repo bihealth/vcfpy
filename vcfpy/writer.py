@@ -45,39 +45,39 @@ class Writer:
     """
 
     @classmethod
-    def from_stream(klass, header, samples, stream, path=None):
+    def from_stream(klass, stream, header, samples, path=None):
         """Create new :py:class:`Writer` from file
 
+        :param stream: ``file``-like object to write to
         :param header: VCF header to use
         :param samples: SamplesInfos to use
-        :param stream: ``file``-like object to write to
         :param path: optional string with path to store (for display only)
         """
-        return Writer(header, samples, stream, path)
+        return Writer(stream, header, samples, path)
 
     @classmethod
-    def from_path(klass, header, samples, path):
+    def from_path(klass, path, header, samples):
         """Create new :py:class:`Writer` from path
 
-        :param header: VCF header to use
-        :param samples: SamplesInfos to use
         :param path: the path to load from (converted to ``str`` for
             compatibility with ``path.py``)
+        :param header: VCF header to use
+        :param samples: SamplesInfos to use
         """
         path = str(path)
         if path.endswith('.gz'):
             raise NotImplementedError('Writing to bgzf not supported')
         else:
             f = open(path, 'wt')
-        return klass.from_stream(header, samples, f, path)
+        return klass.from_stream(f, header, samples, path)
 
-    def __init__(self, header, samples, stream, path=None):
+    def __init__(self, stream, header, samples, path=None):
+        #: stream (``file``-like object) to read from
+        self.stream = stream
         #: the :py:class:~vcfpy.header.Header` written out
         self.header = header
         #: the :py:class:~vcfpy.header.SamplesInfos` written out
         self.samples = samples
-        #: stream (``file``-like object) to read from
-        self.stream = stream
         #: optional ``str`` with the path to the stream
         self.path = path
         # write out headers

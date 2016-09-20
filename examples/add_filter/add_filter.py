@@ -7,7 +7,7 @@ reader = vcfpy.Reader.from_path('input.vcf')
 reader.header.add_filter_line(vcfpy.OrderedDict([
     ('ID', 'DP10'), ('Description', 'total DP < 10')]))
 writer = vcfpy.Writer.from_path(
-    reader.header, reader.samples, '/dev/stdout')
+    '/dev/stdout', reader.header, reader.samples)
 
 # Add "DP10" filter to records having less than 10 reads
 for record in reader:
