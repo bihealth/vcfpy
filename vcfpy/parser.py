@@ -166,6 +166,11 @@ def convert_field_value(key, type_, value):
     """Convert atomic field value according to the type"""
     if value == '.':
         return None
+    elif type_ in ('Character', 'String'):
+        if '%' in value:
+            for k, v in record.UNESCAPE_MAPPING:
+                value = value.replace(k, v)
+        return value
     else:
         return _CONVERTERS[type_](value)
 

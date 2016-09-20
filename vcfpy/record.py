@@ -30,6 +30,16 @@ MIXED = 'MIXED'
 #: Codes for structural variants
 SV_CODES = ('DEL', 'INS', 'DUP', 'INV', 'CNV')
 
+#: Characters reserved in VCF, have to be escaped
+RESERVED_CHARS = ':;=%,\r\n\t'
+#: Mapping for escaping reserved characters
+ESCAPE_MAPPING = [
+    ('%', '%25'), (':', '%3A'), (';', '%3B'), ('=', '%3D'), (',', '%2C'),
+    ('\r', '%0D'), ('\n', '%0A'), ('\t', '%09')
+]
+#: Mapping from escaped characters to reserved one
+UNESCAPE_MAPPING = [(v, k) for k, v in ESCAPE_MAPPING]
+
 
 class Record:
     """Represent one record from the VCF file
@@ -76,7 +86,7 @@ class Record:
     @property
     def affected_start(self):
         """Return affected start position in 0-based coordinates
-        
+
         For SNVs, MNVs, and deletions, the behaviour is the start position.
         In the case of insertions, the position behind the insert position is
         returned, yielding a 0-length interval together with
@@ -93,7 +103,7 @@ class Record:
     @property
     def affected_end(self):
         """Return affected start position in 0-based coordinates
-        
+
         For SNVs, MNVs, and deletions, the behaviour is based on the start
         position and the length of the REF.  In the case of insertions, the
         position behind the insert position is returned, yielding a 0-length
@@ -172,7 +182,7 @@ class Call:
                     self.gt_alleles.append(allele)
                 else:
                     self.gt_alleles.append(int(allele))
-            self.called = all([al != None for al in self.gt_alleles])
+            self.called = all([al is not None for al in self.gt_alleles])
             self.ploidty = len(self.gt_alleles)
 
     @property

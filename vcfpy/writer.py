@@ -5,12 +5,23 @@ Currently, only writing to plain-text files is supported
 """
 
 from . import parser
+from . import record
 
 __author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
 
 
 def format_atomic(value):
-    """Format atomic value"""
+    """Format atomic value
+
+    This function also takes care of escaping the value in case one of the
+    reserved characters occurs in the value.
+    """
+    # Perform escaping
+    if type(value) is str:
+        if any(r in value for r in record.RESERVED_CHARS):
+            for k, v in record.ESCAPE_MAPPING:
+                value = value.replace(k, v)
+    # String-format the given value
     if value is None:
         return '.'
     else:
