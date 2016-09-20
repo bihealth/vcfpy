@@ -11,11 +11,10 @@ from .exceptions import VCFPyException, InvalidHeaderException, \
 from .header import Header, HeaderLine, SimpleHeaderFile, \
     SimpleHeaderFile, ContigHeaderLine, FilterHeaderLine, \
     CompoundHeaderLine, InfoHeaderLine, FormatHeaderLine, \
-    SamplesInfos, \
-    header_without_lines
+    SamplesInfos, FieldInfo, header_without_lines
 
 from .record import Record, Call, AltRecord, Substitution, SV, BreakEnd, \
-    SymbolicAllele
+    SingleBreakEnd, SymbolicAllele
 
 from .reader import Reader
 

@@ -15,8 +15,8 @@ API Documentation
 Project Info
     More information on the project, including the changelog, list of contributing authors, and contribution instructions.
 
-Quick Examples
---------------
+Quick Example
+-------------
 
 .. literalinclude:: ../examples/add_filter/add_filter.py
     :language: python
@@ -70,9 +70,10 @@ What's the aim?
     :maxdepth: 1
     :titlesonly:
 
-    :ref:`genindex`
-    :ref:`modindex`
-    :ref:`search`
+    api_header
+    api_io
+    api_exceptions
+    api_record
 
 .. toctree::
     :caption: Project Info
@@ -84,3 +85,9 @@ What's the aim?
     contributing
     authors
     history
+
+.. Generated pages, should not appear
+
+    * :ref:`genindex`
+    * :ref:`modindex`
+    * :ref:`search`

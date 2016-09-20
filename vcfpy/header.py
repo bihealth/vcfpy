@@ -312,7 +312,7 @@ class ContigHeaderLine(SimpleHeaderFile):
 class FilterHeaderLine(SimpleHeaderFile):
     """FILTER header line
     """
-    
+
     @classmethod
     def from_mapping(klass, mapping):
         """Construct from mapping, not requiring the string value"""
@@ -391,7 +391,7 @@ class InfoHeaderLine(CompoundHeaderLine):
     Note that the ``Number`` field will be parsed into an ``int`` if
     possible.  Otherwise, the constants ``HEADER_NUMBER_*`` will be used.
     """
-    
+
     @classmethod
     def from_mapping(klass, mapping):
         """Construct from mapping, not requiring the string value"""
@@ -437,7 +437,7 @@ class InfoHeaderLine(CompoundHeaderLine):
 class FormatHeaderLine(CompoundHeaderLine):
     """Header line for FORMAT fields
     """
-    
+
     @classmethod
     def from_mapping(klass, mapping):
         """Construct from mapping, not requiring the string value"""
