@@ -44,6 +44,14 @@ vcfpy.record module
     :undoc-members:
     :show-inheritance:
 
+vcfpy.writer module
+-------------------
+
+.. automodule:: vcfpy.writer
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------

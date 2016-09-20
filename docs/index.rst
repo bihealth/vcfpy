@@ -1,25 +1,85 @@
-.. vcfpy documentation master file, created by
-   sphinx-quickstart on Tue Jul  9 22:26:36 2013.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+.. _manual-main:
 
-Welcome to vcfpy's documentation!
-======================================
+Welcome to VCFPy's documentation!
+=================================
 
-Contents:
+VCFPy is a Python 3 module for reading and writing VCF (Variant Call Format) files.
+The documentation is split into three parts (accessible through the navigation on the left):
+
+Installation & Getting Started
+    Instructions for the installation of the module and some examples to get you started.
+
+API Documentation
+    This section contains the API documentation for the module
+
+Project Info
+    More information on the project, including the changelog, list of contributing authors, and contribution instructions.
+
+Quick Examples
+--------------
+
+.. literalinclude:: ../examples/add_filter/add_filter.py
+    :language: python
+
+Frequently Asked Questions
+--------------------------
+
+Why another Python library for VCF?
+    I've been using PyVCF with quite some success in the past.
+    However, the main bottleneck of PyVCF is when you want to modify the per-sample genotype information.
+    There are some issues in the tracker of PyVCF but none of them can really be considered solved.
+    I tried several hours to solve these problems within PyVCF but this never got far or towards a complete rewrite...
+
+    For this reason, VCFPy was born and here it is!
+
+Why Python 3 only?
+    As I'm only using Python 3 code, I see no advantage in carrying around support for legacy Python 2 and maintaining it.
+    At a later point when VCFPy is known to be stable, Python 2 support might be added if someone contributes a pull request.
+
+What's the state?
+    VCFPy is the result of two full days of development plus some maintenance work later now (right now).
+    I'm using it in several projects but it is not as battle-tested as PyVCF.
+
+What's the difference to PyVCF?
+    The main difference is technical.
+    Instead of using ``collections.namedtuple`` for storing the call annotation, VCFPy uses ``collections.OrderedDict``.
+    This has the advantage that (1) access to optional settings is much more pythonic using ``.get(KEY, DEFAULT)`` instead of ``getattr()``.
+    Further, (2) adding call annotations (``FORMAT``) fields is able without any performance penalty where for PyVCF, ``copy.deepcopy`` has to be used at some point which is very slow.
+    There has not been any movement in supporting modifying ``FORMAT`` fields in PyVCF and here is a library that does this well.
+
+What's the aim?
+    The aim of the project is to provide simple yet efficient read and write access to VCF files.
+    Eventually, PySAM will probably be a better choice once it has a Python wrapper for the VCF part of ``htslib``.
+    However, as this is still misssing, ``VCFPy`` is a good solution for the time being.
 
 .. toctree::
-   :maxdepth: 2
+    :caption: Installation & Getting Started
+    :name: getting-started
+    :hidden:
+    :maxdepth: 1
 
-   readme
-   installation
-   usage
-   contributing
-   authorshistory
+    installation
+    getting_started
+    examples
 
-Indices and tables
-==================
+.. toctree::
+    :caption: API Reference
+    :name: api-reference
+    :hidden:
+    :maxdepth: 1
+    :titlesonly:
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+    :ref:`genindex`
+    :ref:`modindex`
+    :ref:`search`
+
+.. toctree::
+    :caption: Project Info
+    :name: project-info
+    :hidden:
+    :maxdepth: 1
+    :titlesonly:
+
+    contributing
+    authors
+    history
