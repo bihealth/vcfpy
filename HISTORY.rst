@@ -5,6 +5,7 @@ History
 HEAD
 ----
 
+* Removing ``example-4.1-bnd.vcf`` example file because v4.1 tumor derival lacks ``ID`` field
 * Warn on missing ``FILTER`` entries on parsing
 * Reordered parameters in ``from_stream`` and ``from_file`` (#18)
 * Renamed ``from_file`` to ``from_stream`` (#18)

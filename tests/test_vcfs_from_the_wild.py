@@ -20,7 +20,6 @@ FILENAMES = [
     'bcftools.vcf',
     'contig_idonly.vcf',
     'example-4.0.vcf',
-    'example-4.1-bnd.vcf',
     'example-4.1-info-multiple-values.vcf',
     'example-4.1-ploidy.vcf',
     'example-4.1-sv.vcf',
