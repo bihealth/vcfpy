@@ -61,6 +61,7 @@ What's the aim?
     installation
     getting_started
     examples
+    best_practice
 
 .. toctree::
     :caption: API Reference
