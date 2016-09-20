@@ -77,6 +77,27 @@ class FieldInfo:
         return str(self)
 
 
+def header_without_lines(header, remove):
+    """Return :py:class:`Header` without lines given in ``remove``
+
+    ``remove`` is an iterable of pairs ``key``/``ID`` with the VCF header key
+    and ``ID`` of entry to remove.  In the case that a line does not have
+    a ``mapping`` entry, you can give the full value to remove.
+    """
+    remove = set(remove)
+    # Copy over lines that are not removed
+    lines = []
+    for line in header.lines:
+        if hasattr(line, 'mapping'):
+            if (line.key, line.mapping.get('ID', None)) in remove:
+                continue  # filter out
+        else:
+            if (line.key, line.value) in remove:
+                continue  # filter out
+        lines.append(line)
+    return Header(lines, header.samples)
+
+
 class Header:
     """Represent header of VCF file
 
@@ -133,6 +154,18 @@ class Header:
     def add_format_line(self, mapping):
         """Add FORMAT header line constructed from the given mapping"""
         self.add_line(FormatHeaderLine.from_mapping(mapping))
+
+    def format_ids(self):
+        """Return list of all format IDs"""
+        return list(self._indices['FORMAT'].keys())
+
+    def filter_ids(self):
+        """Return list of all filter IDs"""
+        return list(self._indices['FILTER'].keys())
+
+    def info_ids(self):
+        """Return list of all info IDs"""
+        return list(self._indices['INFO'].keys())
 
     def get_lines(self, key):
         """Return header lines having the given ``key`` as their type"""

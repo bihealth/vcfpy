@@ -4,6 +4,9 @@
 The VCF record structure is modeled after the one of PyVCF
 """
 
+import re
+
+
 #: Code for single nucleotide variant allele
 SNV = 'SNV'
 #: Code for a multi nucleotide variant allele
@@ -66,6 +69,10 @@ class Record:
         #: A mapping from sample name to entry in self.calls
         self.call_for_sample = {call.sample: call for call in self.calls}
 
+    def is_snv(self):
+        """Return ``True`` if it is a SNV"""
+        return (len(self.REF) == 1 and all(a.type == 'SNV' for a in self.ALT))
+
     @property
     def affected_start(self):
         """Return affected start position in 0-based coordinates
@@ -76,7 +83,7 @@ class Record:
         :py:method:`affected_end`
         """
         types = {alt.type for alt in self.ALT}  # set!
-        BAD_MIX = [INS, SV, BND, SYMBOLIC]  # don't mix well with others
+        BAD_MIX = {INS, SV, BND, SYMBOLIC}  # don't mix well with others
         if (BAD_MIX & types) and len(types) == 1 and list(types)[0] == INS:
             # Only insertions, return 0-based position right of first base
             return self.POS  # right of first base
@@ -93,7 +100,7 @@ class Record:
         interval together with :py:method:`affected_start`
         """
         types = {alt.type for alt in self.ALT}  # set!
-        BAD_MIX = [INS, SV, BND, SYMBOLIC]  # don't mix well with others
+        BAD_MIX = {INS, SV, BND, SYMBOLIC}  # don't mix well with others
         if (BAD_MIX & types) and len(types) == 1 and list(types)[0] == INS:
             # Only insertions, return 0-based position right of first base
             return self.POS  # right of first base
@@ -133,6 +140,9 @@ class Record:
         return str(self)
 
 
+ALLELE_DELIM = re.compile(r'[|/]')
+
+
 class Call:
     """The information for a genotype callable
 
@@ -149,12 +159,44 @@ class Call:
         self.data = data
         #: the :py:class:`Record` of this :py:class:`Call`
         self.site = site
+        #: the allele numbers (0, 1, ...) in this calls or None for no-call
+        self.gt_alleles = None
+        #: whether or not the variant is fully called
+        self.called = None
+        #: the number of alleles in this sample's call
+        self.plodity = None
+        if self.data.get('GT', None) is not None:
+            self.gt_alleles = []
+            for allele in ALLELE_DELIM.split(self.data['GT']):
+                if allele == '.':
+                    self.gt_alleles.append(allele)
+                else:
+                    self.gt_alleles.append(int(allele))
+            self.called = all([al != None for al in self.gt_alleles])
+            self.ploidty = len(self.gt_alleles)
+
+    @property
+    def phased(self):
+        """Return boolean indicating whether this call is phased"""
+        return '|' in self.data.get('GT', '')
+
+    def gt_phase_char(self):
+        """Return character to use for phasing"""
+        return '/' if not self.phased else '|'
 
     @property
     def gt_bases(self):
         """Return the actual genotype alleles, e.g. if VCF genotype is 0/1,
         could return A/T"""
-        raise NotImplementedError('Implement me!')
+        result = []
+        for a in self.gt_alleles:
+            if a is None:
+                result.append(None)
+            elif a == 0:
+                result.append(self.site.REF)
+            else:
+                result.append(self.site.ALT[a - 1])
+        return result
 
     @property
     def gt_type(self):
@@ -165,7 +207,14 @@ class Call:
         - hom_alt = 2 (which alt is untracked)
         - uncalled = ``None``
         """
-        raise NotImplementedError('Implement me!')
+        if not self.called:
+            return None  # not called
+        elif all(a == 0 for a in self.gt_alleles):
+            return 0  # hom ref
+        elif len(set(self.gt_alleles)) == 0:
+            return 2  # hom alt
+        else:
+            return 1  # heterozygous
 
     @property
     def is_filtered(self):

@@ -11,7 +11,8 @@ from .exceptions import VCFPyException, InvalidHeaderException, \
 from .header import Header, HeaderLine, SimpleHeaderFile, \
     SimpleHeaderFile, ContigHeaderLine, FilterHeaderLine, \
     CompoundHeaderLine, InfoHeaderLine, FormatHeaderLine, \
-    SamplesInfos
+    SamplesInfos, \
+    header_without_lines
 
 from .record import Record, Call, AltRecord, Substitution, SV, BreakEnd, \
     SymbolicAllele
