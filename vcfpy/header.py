@@ -77,11 +77,37 @@ class FieldInfo:
         return str(self)
 
 
+def header_without_lines(header, remove):
+    """Return :py:class:`Header` without lines given in ``remove``
+
+    ``remove`` is an iterable of pairs ``key``/``ID`` with the VCF header key
+    and ``ID`` of entry to remove.  In the case that a line does not have
+    a ``mapping`` entry, you can give the full value to remove.
+    """
+    remove = set(remove)
+    # Copy over lines that are not removed
+    lines = []
+    for line in header.lines:
+        if hasattr(line, 'mapping'):
+            if (line.key, line.mapping.get('ID', None)) in remove:
+                continue  # filter out
+        else:
+            if (line.key, line.value) in remove:
+                continue  # filter out
+        lines.append(line)
+    return Header(lines, header.samples)
+
+
 class Header:
     """Represent header of VCF file
 
     While this class allows mutating records, it should not be changed once it
     has been assigned to
+
+    This class provides function for adding lines to a header and updating the
+    supporting index data structures.  There is no explicit API for removing
+    header lines, the best way is to reconstruct a new ``Header`` instance with
+    a filtered list of header lines.
     """
 
     def __init__(self, lines=[], samples=None):
@@ -94,10 +120,15 @@ class Header:
 
     def _build_indices(self):
         """Build indices for the different field types"""
-        result = {}
+        result = {
+            'FILTER': OrderedDict(),
+            'FORMAT': OrderedDict(),
+            'INFO': OrderedDict(),
+            'contig': OrderedDict(),
+        }
         for line in self.lines:
             if line.key in LINES_WITH_ID:
-                result.setdefault(line.key, {})
+                result.setdefault(line.key, OrderedDict())
                 if line.mapping['ID'] in result[line.key]:
                     _warn(('Seen {} header more than once: {}, using first'
                            'occurence').format(line.key, line.mapping['ID']))
@@ -107,6 +138,55 @@ class Header:
                 result.setdefault(line.key, [])
                 result[line.key].append(line)
         return result
+
+    def add_filter_line(self, mapping):
+        """Add FILTER header line constructed from the given mapping"""
+        self.add_line(FilterHeaderLine.from_mapping(mapping))
+
+    def add_contig_line(self, mapping):
+        """Add "contig" header line constructed from the given mapping"""
+        self.add_line(ContigHeaderLine.from_mapping(mapping))
+
+    def add_info_line(self, mapping):
+        """Add INFO header line constructed from the given mapping"""
+        self.add_line(InfoHeaderLine.from_mapping(mapping))
+
+    def add_format_line(self, mapping):
+        """Add FORMAT header line constructed from the given mapping"""
+        self.add_line(FormatHeaderLine.from_mapping(mapping))
+
+    def format_ids(self):
+        """Return list of all format IDs"""
+        return list(self._indices['FORMAT'].keys())
+
+    def filter_ids(self):
+        """Return list of all filter IDs"""
+        return list(self._indices['FILTER'].keys())
+
+    def info_ids(self):
+        """Return list of all info IDs"""
+        return list(self._indices['INFO'].keys())
+
+    def get_lines(self, key):
+        """Return header lines having the given ``key`` as their type"""
+        if key in self._indices:
+            return self._indices[key].values()
+        else:
+            return []
+
+    def add_line(self, header_line):
+        """Add header line, updating any necessary support indices"""
+        self.lines.append(header_line)
+        self._indices.setdefault(header_line.key, OrderedDict())
+        if not hasattr(header_line, 'mapping'):
+            return  # no registration required
+        if header_line.mapping['ID'] in self._indices[header_line.key]:
+            _warn(('Detected duplicate header line with type {} and ID {}. '
+                   'Ignoring this and subsequent one').format(
+                       header_line.key, header_line.mapping['ID']))
+        else:
+            self._indices[header_line.key][
+                header_line.mapping['ID']] = header_line
 
     def get_info_field_info(self, key):
         """Return :py:class:`FieldInfo` for the given INFO field"""
@@ -139,8 +219,12 @@ class HeaderLine:
     def __init__(self, key, value):
         #: ``str`` with key of header line
         self.key = key
-        #: ``str`` with raw value of header line
-        self.value = value
+        # ``str`` with raw value of header line
+        self._value = value
+
+    @property
+    def value(self):
+        return self._value
 
     def serialize(self):
         """Return VCF-serialized version of this header line"""
@@ -152,6 +236,17 @@ class HeaderLine:
 
     def __repr__(self):
         return str(self)
+
+
+def mapping_to_str(mapping):
+    """Convert mapping to string"""
+    result = ['<']
+    for i, (key, value) in enumerate(mapping.items()):
+        if i > 0:
+            result.append(',')
+        result += [key, '=', serialize_for_header(key, value)]
+    result += ['>']
+    return ''.join(result)
 
 
 class SimpleHeaderFile(HeaderLine):
@@ -172,14 +267,12 @@ class SimpleHeaderFile(HeaderLine):
         #: ``collections.OrderedDict`` with key/value mapping of the attributes
         self.mapping = OrderedDict(mapping.items())
 
+    @property
+    def value(self):
+        return mapping_to_str(self.mapping)
+
     def serialize(self):
-        result = ['##', self.key, '=<']
-        for i, (key, value) in enumerate(self.mapping.items()):
-            if i > 0:
-                result.append(',')
-            result += [key, '=', serialize_for_header(key, value)]
-        result += ['>']
-        return ''.join(map(str, result))
+        return ''.join(map(str, ['##', self.key, '=', self.value]))
 
     def __str__(self):
         return 'SimpleHeaderFile({}, {}, {})'.format(
@@ -191,6 +284,11 @@ class ContigHeaderLine(SimpleHeaderFile):
 
     Most importantly, parses the ``'length'`` key into an integer
     """
+
+    @classmethod
+    def from_mapping(klass, mapping):
+        """Construct from mapping, not requiring the string value"""
+        return ContigHeaderLine('contig', mapping_to_str(mapping), mapping)
 
     def __init__(self, key, value, mapping):
         super().__init__(key, value, mapping)
@@ -214,6 +312,11 @@ class ContigHeaderLine(SimpleHeaderFile):
 class FilterHeaderLine(SimpleHeaderFile):
     """FILTER header line
     """
+    
+    @classmethod
+    def from_mapping(klass, mapping):
+        """Construct from mapping, not requiring the string value"""
+        return FilterHeaderLine('FILTER', mapping_to_str(mapping), mapping)
 
     def __init__(self, key, value, mapping):
         super().__init__(key, value, mapping)
@@ -270,14 +373,12 @@ class CompoundHeaderLine(HeaderLine):
             else:
                 raise e
 
+    @property
+    def value(self):
+        return mapping_to_str(self.mapping)
+
     def serialize(self):
-        result = ['##', self.key, '=<']
-        for i, (key, value) in enumerate(self.mapping.items()):
-            if i > 0:
-                result.append(',')
-            result += [key, '=', serialize_for_header(key, value)]
-        result += ['>']
-        return ''.join(map(str, result))
+        return ''.join(map(str, ['##', self.key, '=', self.value]))
 
     def __str__(self):
         return 'CompoundHeaderLine({}, {}, {})'.format(
@@ -290,6 +391,11 @@ class InfoHeaderLine(CompoundHeaderLine):
     Note that the ``Number`` field will be parsed into an ``int`` if
     possible.  Otherwise, the constants ``HEADER_NUMBER_*`` will be used.
     """
+    
+    @classmethod
+    def from_mapping(klass, mapping):
+        """Construct from mapping, not requiring the string value"""
+        return InfoHeaderLine('INFO', mapping_to_str(mapping), mapping)
 
     def __init__(self, key, value, mapping):
         super().__init__(key, value, mapping)
@@ -331,6 +437,11 @@ class InfoHeaderLine(CompoundHeaderLine):
 class FormatHeaderLine(CompoundHeaderLine):
     """Header line for FORMAT fields
     """
+    
+    @classmethod
+    def from_mapping(klass, mapping):
+        """Construct from mapping, not requiring the string value"""
+        return FormatHeaderLine('FORMAT', mapping_to_str(mapping), mapping)
 
     def __init__(self, key, value, mapping):
         super().__init__(key, value, mapping)

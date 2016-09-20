@@ -79,7 +79,7 @@ class Reader:
         #: name information
         self.samples = self.header.samples
 
-    def jump_to(self, chrom, begin, end):
+    def fetch(self, chrom, begin, end):
         """Jump to the start position of the given chromosomal position
         and limit iteration to the end position
 
@@ -91,7 +91,7 @@ class Reader:
         if self.tabix_file and not self.tabix_file.closed:
             self.tabix_file.close()
         # open tabix file if not yet open
-        if not self.tabix_file:
+        if not self.tabix_file or self.tabix_file.closed:
             self.tabix_file = pysam.TabixFile(
                 filename=self.path, index=self.tabix_path)
         # jump to the next position
