@@ -362,6 +362,9 @@ class RecordParser:
     def _check_filters(self, filt, source, sample=None):
         if not filt:
             return
+        # Workaround against 'FT' being a string in the header
+        if type(filt) is str:
+            filt = filt.split(',')
         for f in filt:
             if f not in self._filter_ids:
                 if source == 'FILTER':
