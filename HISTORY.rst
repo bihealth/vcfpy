@@ -5,6 +5,9 @@ History
 HEAD
 ----
 
+0.3.0 (2016-09-21)
+------------------
+
 * ``Reader`` and ``Writer`` can now be used as context manager (with ``with``)
 * Including license in documentation, including Biopython license
 * Adding support for writing bgzf files (taken from Biopython)
