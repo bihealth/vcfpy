@@ -5,6 +5,9 @@ History
 HEAD
 ----
 
+0.3.1 (2016-09-21)
+------------------
+
 * Work around ``FORMAT/FT`` being a string; this is done so in the Delly output
 
 0.3.0 (2016-09-21)
