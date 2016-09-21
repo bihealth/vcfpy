@@ -3,7 +3,7 @@
 Welcome to VCFPy's documentation!
 =================================
 
-VCFPy is a Python 3 module for reading and writing VCF (Variant Call Format) files.
+VCFPy is a Python 3 library with good support for both reading and writing VCF files.
 The documentation is split into three parts (accessible through the navigation on the left):
 
 Installation & Getting Started
@@ -20,6 +20,13 @@ Quick Example
 
 .. literalinclude:: ../examples/add_filter/add_filter.py
     :language: python
+
+Features
+--------
+
+* Support for reading and writing VCF v4.3
+* Interface to ``INFO`` and ``FORMAT`` fields is based on ``OrderedDict`` allows for easier modification than PyVCF (also I find this more pythonic)
+* Read (and jump in) and write BGZF files just using ``vcfpy``
 
 Frequently Asked Questions
 --------------------------
