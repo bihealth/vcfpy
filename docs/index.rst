@@ -85,6 +85,7 @@ What's the aim?
     contributing
     authors
     history
+    license
 
 .. Generated pages, should not appear
 

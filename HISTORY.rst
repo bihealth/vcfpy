@@ -5,6 +5,8 @@ History
 HEAD
 ----
 
+* Including license in documentation, including Biopython license
+* Adding support for writing bgzf files (taken from Biopython)
 * Adding support for parsing arrays in header lines
 * Removing ``example-4.1-bnd.vcf`` example file because v4.1 tumor derival lacks ``ID`` field
 * Adding ``AltAlleleHeaderLine``, ``MetaHeaderLine``, ``PedigreeHeaderLine``, and ``SampleHeaderLine``
