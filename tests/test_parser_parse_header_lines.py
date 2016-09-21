@@ -126,3 +126,57 @@ def test_mapping_vcf_header_parser_parse_line_contig():
                 "('species', 'Homo sapiens'), ('taxonomy', 'x')]))")
     record = p.parse_line(INPUT)
     assert str(p.parse_line(INPUT)) == EXPECTED
+
+
+def test_mapping_vcf_header_parser_parse_line_alt_allele():
+    p = parser.HeaderParser(parser.HEADER_PARSERS)
+    INPUT = ('##ALT='
+             '<ID=R,Description="IUPAC code R = A/G">\n')
+    EXPECTED = ("AltAlleleHeaderLine('ALT', "
+                "'<ID=R,Description=\"IUPAC code R = A/G\">', "
+                "OrderedDict([('ID', 'R'), "
+                "('Description', 'IUPAC code R = A/G')]))")
+    record = p.parse_line(INPUT)
+    assert str(p.parse_line(INPUT)) == EXPECTED
+
+
+def test_mapping_vcf_header_parser_parse_line_meta():
+    p = parser.HeaderParser(parser.HEADER_PARSERS)
+    INPUT = ('##META='
+             '<ID=Assay,Type=String,Number=.,Values=[WholeGenome, Exome]>\n')
+    EXPECTED = (
+        "MetaHeaderLine('META', '<ID=Assay,Type=String,Number=.,"
+        "Values=[WholeGenome, Exome]>', OrderedDict([('ID', 'Assay'), "
+        "('Type', 'String'), ('Number', '.'), ('Values', ['WholeGenome', "
+        "'Exome'])]))")
+    record = p.parse_line(INPUT)
+    assert str(p.parse_line(INPUT)) == EXPECTED
+
+
+def test_mapping_vcf_header_parser_parse_line_pedigree():
+    p = parser.HeaderParser(parser.HEADER_PARSERS)
+    INPUT = ('##PEDIGREE='
+             '<ID=TumourSample,Original=GermlineID>\n')
+    EXPECTED = ("PedigreeHeaderLine('PEDIGREE', "
+                "'<ID=TumourSample,Original=GermlineID>',"
+                " OrderedDict([('ID', 'TumourSample'), "
+                "('Original', 'GermlineID')]))")
+    record = p.parse_line(INPUT)
+    assert str(p.parse_line(INPUT)) == EXPECTED
+
+
+def test_mapping_vcf_header_parser_parse_line_sample():
+    p = parser.HeaderParser(parser.HEADER_PARSERS)
+    INPUT = ('##SAMPLE='
+             '<ID=Sample1,Assay=WholeGenome,Ethnicity=AFR,Disease=None,'
+             'Description="Patient germline genome from unaffected",'
+             'DOI=url>\n')
+    EXPECTED = (
+        "SampleHeaderLine('SAMPLE', '<ID=Sample1,Assay=WholeGenome,"
+        'Ethnicity=AFR,Disease=None,Description="Patient germline genome from '
+        "unaffected\",DOI=url>', OrderedDict([('ID', 'Sample1'), ('Assay', "
+        "'WholeGenome'), ('Ethnicity', 'AFR'), ('Disease', 'None'), "
+        "('Description', 'Patient germline genome from unaffected'), "
+        "('DOI', 'url')]))")
+    record = p.parse_line(INPUT)
+    assert str(p.parse_line(INPUT)) == EXPECTED

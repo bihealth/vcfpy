@@ -31,6 +31,10 @@ MEDIUM_HEADER = """
 ##FORMAT=<ID=GQ,Number=1,Type=Integer,Description="Genotype Quality">
 ##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read Depth">
 ##FORMAT=<ID=HQ,Number=2,Type=Integer,Description="Haplotype Quality">
+##ALT=<ID=R,Description="IUPAC code R = A/G">
+##META=<ID=Assay,Type=String,Number=.,Values=[WholeGenome, Exome]>
+##PEDIGREE=<ID=TumourSample,Original=GermlineID>
+##SAMPLE=<ID=Sample1,Assay=WholeGenome,Ethnicity=AFR,Disease=None,Description="Patient germline genome from unaffected",DOI=url>
 #CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tNA00001\tNA00002\tNA00003
 """.lstrip()
 
@@ -45,7 +49,7 @@ def header_samples():
 def test_write_header(header_samples, tmpdir_factory):
     path = tmpdir_factory.mktemp('write_header').join('out.vcf')
     header, samples = header_samples
-    w = writer.Writer.from_path(header, samples, path)
+    w = writer.Writer.from_path(path, header, samples)
     w.close()
     RESULT = path.read()
     EXPECTED = MEDIUM_HEADER

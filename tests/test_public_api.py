@@ -16,10 +16,13 @@ def test_from_exceptions():
 def test_from_header():
     assert vcfpy.Header
     assert vcfpy.HeaderLine
-    assert vcfpy.SimpleHeaderFile
-    assert vcfpy.SimpleHeaderFile
+    assert vcfpy.SimpleHeaderLine
+    assert vcfpy.AltAlleleHeaderLine
     assert vcfpy.ContigHeaderLine
     assert vcfpy.FilterHeaderLine
+    assert vcfpy.MetaHeaderLine
+    assert vcfpy.PedigreeHeaderLine
+    assert vcfpy.SampleHeaderLine
     assert vcfpy.CompoundHeaderLine
     assert vcfpy.InfoHeaderLine
     assert vcfpy.FormatHeaderLine

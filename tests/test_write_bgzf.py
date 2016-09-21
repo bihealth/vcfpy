@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
-"""Writing of VCF records
+"""Test writing of BGZF files
 """
 
+__author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
+
+import codecs
+import gzip
 import io
 
 import pytest
@@ -11,7 +15,6 @@ from vcfpy import parser
 from vcfpy import writer
 from vcfpy import record
 
-__author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
 
 # TODO: cleanup, refactor tests somewhat
 
@@ -47,11 +50,25 @@ def header_samples():
     return (p.header, p.samples)
 
 
-def test_write_minimal_record(header_samples, tmpdir_factory):
+def check_file(path, line):
+    """Test whether the file is the expected ``.vcf.gz`` file
+    """
+    raw = path.read(mode='rb')
+    assert raw[0] == 0x1f
+    assert raw[1] == 0x8b
+    # compare actual result with expected
+    inflated = gzip.decompress(raw)
+    RESULT = codecs.latin_1_decode(inflated)[0]
+    LINE = '20\t100\t.\tC\tT\t.\t.\t.\tGT\t0/1\t0/0\t1/1\n'
+    EXPECTED = MEDIUM_HEADER + LINE
+    assert EXPECTED == RESULT
+
+
+def test_write_minimal_record_writer_from_path(header_samples, tmpdir_factory):
     O = vcfpy.OrderedDict
     S = record.Substitution
     # open temporary file and setup the Writer with header
-    path = tmpdir_factory.mktemp('write_header').join('out.vcf')
+    path = tmpdir_factory.mktemp('write_header').join('out.vcf.gz')
     header, samples = header_samples
     w = writer.Writer.from_path(path, header, samples)
     # construct record to write out from scratch
@@ -66,75 +83,58 @@ def test_write_minimal_record(header_samples, tmpdir_factory):
     # write out the record, close file to ensure flushing to disk
     w.write_record(r)
     w.close()
-    # compare actual result with expected
-    RESULT = path.read()
+    # check the resulting record
     LINE = '20\t100\t.\tC\tT\t.\t.\t.\tGT\t0/1\t0/0\t1/1\n'
-    EXPECTED = MEDIUM_HEADER + LINE
-    assert EXPECTED == RESULT
+    check_file(path, LINE)
 
 
-def test_write_annotated_record(header_samples, tmpdir_factory):
+def test_write_minimal_record_writer_from_stream_path(
+        header_samples, tmpdir_factory):
     O = vcfpy.OrderedDict
     S = record.Substitution
     # open temporary file and setup the Writer with header
-    path = tmpdir_factory.mktemp('write_annotated_record').join('out.vcf')
+    path = tmpdir_factory.mktemp('write_header').join('out.vcf.gz')
     header, samples = header_samples
-    w = writer.Writer.from_path(path, header, samples)
-    # construct record to write out from scratch
-    r = record.Record(
-        '20',
-        100,
-        ['rs333', 'CSN42'],
-        'C',
-        [
-            record.Substitution(record.SNV, 'T'),
-            record.Substitution(record.SNV, 'G'),
-        ],
-        50,
-        ['PASS'],
-        O([('DP', 93), ('AF', [0.3, 0.2]), ('DB', True)]),
-        ['GT', 'DP', 'GQ', 'HQ'],
-        [
-            record.Call('NA00001', O(GT='0/1', DP=30, GQ=40, HQ=[1, 2])),
-            record.Call('NA00002', O(GT='0/2', DP=31, GQ=41, HQ=[3, 4])),
-            record.Call('NA00003', O(GT='1/2', DP=32, GQ=42, HQ=[5, 6])),
-        ])
-    # write out the record, close file to ensure flushing to disk
-    w.write_record(r)
-    w.close()
-    # compare actual result with expected
-    RESULT = path.read()
-    LINE = '20\t100\trs333;CSN42\tC\tT,G\t50\tPASS\tDP=93;AF=0.3,0.2;DB\tGT:DP:GQ:HQ\t0/1:30:40:1,2\t0/2:31:41:3,4\t1/2:32:42:5,6\n'
-    EXPECTED = MEDIUM_HEADER + LINE
-    assert EXPECTED == RESULT
+    with open(str(path), 'wb') as f:
+        w = writer.Writer.from_stream(f, header, samples, path=str(path))
+        # construct record to write out from scratch
+        r = record.Record(
+            '20', 100, [], 'C', [record.Substitution(record.SNV, 'T')],
+            None, [], O(), ['GT'],
+            [
+                record.Call('NA00001', O(GT='0/1')),
+                record.Call('NA00002', O(GT='0/0')),
+                record.Call('NA00003', O(GT='1/1')),
+            ])
+        # write out the record, close file to ensure flushing to disk
+        w.write_record(r)
+        w.close()
+    # check the resulting record
+    LINE = '20\t100\t.\tC\tT\t.\t.\t.\tGT\t0/1\t0/0\t1/1\n'
+    check_file(path, LINE)
 
 
-def test_write_record_with_escaping(header_samples, tmpdir_factory):
+def test_write_minimal_record_writer_from_stream_use_bgzf(
+        header_samples, tmpdir_factory):
     O = vcfpy.OrderedDict
     S = record.Substitution
     # open temporary file and setup the Writer with header
-    path = tmpdir_factory.mktemp('write_header').join('out.vcf')
+    path = tmpdir_factory.mktemp('write_header').join('out.vcf.gz')
     header, samples = header_samples
-    w = writer.Writer.from_path(path, header, samples)
-    # construct record to write out from scratch
-    r = record.Record(
-        '20', 100, [], 'C', [record.Substitution(record.SNV, 'T')],
-        None, [],
-        O([
-            ('ANNO', ['Here,are%some chars', '%25'])
-        ]),
-        ['GT', 'FT'],
-        [
-            record.Call('NA00001', O(GT='0/1', FT=['%25', 'FOO'])),
-            record.Call('NA00002', O(GT='0/0', FT=[])),
-            record.Call('NA00003', O(GT='1/1', FT=[])),
-        ])
-    # write out the record, close file to ensure flushing to disk
-    w.write_record(r)
-    w.close()
-    # compare actual result with expected
-    RESULT = path.read()
-    LINE = ('20\t100\t.\tC\tT\t.\t.\tANNO=Here%2Care%25some chars,'
-            '%2525\tGT:FT\t0/1:%2525,FOO\t0/0:.\t1/1:.\n')
-    EXPECTED = MEDIUM_HEADER + LINE
-    assert EXPECTED == RESULT
+    with open(str(path), 'wb') as f:
+        w = writer.Writer.from_stream(f, header, samples, use_bgzf=True)
+        # construct record to write out from scratch
+        r = record.Record(
+            '20', 100, [], 'C', [record.Substitution(record.SNV, 'T')],
+            None, [], O(), ['GT'],
+            [
+                record.Call('NA00001', O(GT='0/1')),
+                record.Call('NA00002', O(GT='0/0')),
+                record.Call('NA00003', O(GT='1/1')),
+            ])
+        # write out the record, close file to ensure flushing to disk
+        w.write_record(r)
+        w.close()
+    # check the resulting record
+    LINE = '20\t100\t.\tC\tT\t.\t.\t.\tGT\t0/1\t0/0\t1/1\n'
+    check_file(path, LINE)

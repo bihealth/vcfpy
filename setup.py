@@ -12,7 +12,7 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 requirements = [
-    'pysam>=0.9.1.4',  # for tabix support
+    'pysam>=0.9',  # for tabix support
 ]
 
 # Add cyordereddict for Python <=3.5 for performance boost
@@ -25,7 +25,7 @@ test_requirements = [
 
 setup(
     name='vcfpy',
-    version='0.2.0',
+    version='0.3.0',
     description="Python 3 VCF parser to circumvent problems in PyVCF",
     long_description=readme + '\n\n' + history,
     author="Manuel Holtgrewe",

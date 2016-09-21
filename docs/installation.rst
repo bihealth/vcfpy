@@ -1,3 +1,5 @@
+.. _installation:
+
 .. highlight:: shell
 
 ============
@@ -14,7 +16,7 @@ To install vcfpy, run this command in your terminal:
 
     $ pip install vcfpy
 
-This is the preferred method to install vcfpy, as it will always install the most recent stable release. 
+This is the preferred method to install VCFPy, as it will always install the most recent stable release. 
 
 If you don't have `pip`_ installed, this `Python installation guide`_ can guide
 you through the process.
@@ -32,13 +34,13 @@ You can either clone the public repository:
 
 .. code-block:: console
 
-    $ git clone git://github.com/holtgrewe/vcfpy
+    $ git clone git://github.com/bihealth/vcfpy
 
 Or download the `tarball`_:
 
 .. code-block:: console
 
-    $ curl  -OL https://github.com/holtgrewe/vcfpy/tarball/master
+    $ curl  -OL https://github.com/bihealth/vcfpy/tarball/master
 
 Once you have a copy of the source, you can install it with:
 
@@ -47,5 +49,5 @@ Once you have a copy of the source, you can install it with:
     $ python setup.py install
 
 
-.. _Github repo: https://github.com/holtgrewe/vcfpy
-.. _tarball: https://github.com/holtgrewe/vcfpy/tarball/master
+.. _Github repo: https://github.com/bihealth/vcfpy
+.. _tarball: https://github.com/bihealth/vcfpy/tarball/master

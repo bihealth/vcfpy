@@ -44,6 +44,19 @@ def test_split_quoted_string_two_escape():
     assert EXPECTED == parser.split_quoted_string(INPUT)
 
 
+def test_split_quoted_string_array_syntax_simple():
+    INPUT = 'foo=[1, 2, 3],bar=[baz, gnaa]'
+    EXPECTED = ['foo=[1, 2, 3]', 'bar=[baz, gnaa]']
+    assert EXPECTED == parser.split_quoted_string(INPUT)
+
+
+def test_split_quoted_string_array_syntax_recursion():
+    """Support for only one level, failure is OK here"""
+    INPUT = 'foo=[1, 2, 3],bar=[baz, [], gnaa]'
+    EXPECTED = ['foo=[1, 2, 3]', 'bar=[baz, []', ' gnaa]']
+    assert EXPECTED == parser.split_quoted_string(INPUT)
+
+
 # parser.VCFheaderLineParser.parse_mapping() ----------------------------------
 
 

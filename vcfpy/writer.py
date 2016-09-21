@@ -5,12 +5,24 @@ Currently, only writing to plain-text files is supported
 """
 
 from . import parser
+from . import record
+from . import bgzf
 
 __author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
 
 
 def format_atomic(value):
-    """Format atomic value"""
+    """Format atomic value
+
+    This function also takes care of escaping the value in case one of the
+    reserved characters occurs in the value.
+    """
+    # Perform escaping
+    if type(value) is str:
+        if any(r in value for r in record.RESERVED_CHARS):
+            for k, v in record.ESCAPE_MAPPING:
+                value = value.replace(k, v)
+    # String-format the given value
     if value is None:
         return '.'
     else:
@@ -35,7 +47,7 @@ class Writer:
     """Class for writing VCF files to ``file``-like objects
 
     Instead of using the constructor, use the class methods
-    :py:meth:`~Writer.from_file` and
+    :py:meth:`~Writer.from_stream` and
     :py:meth:`~Writer.from_path`.
 
     The writer has to be constructed with a :py:class:`~vcfpy.header.Header`
@@ -45,39 +57,51 @@ class Writer:
     """
 
     @classmethod
-    def from_file(klass, header, samples, stream, path=None):
+    def from_stream(klass, stream, header, samples, path=None,
+                    use_bgzf=None):
         """Create new :py:class:`Writer` from file
 
+        Note that for getting bgzf support, you have to pass in a stream
+        opened in binary mode.  Further, you either have to provide a ``path``
+        ending in ``".gz"`` or set ``use_bgzf=True``.  Otherwise, you will
+        get the notorious "TypeError: 'str' does not support the buffer
+        interface".
+
+        :param stream: ``file``-like object to write to
         :param header: VCF header to use
         :param samples: SamplesInfos to use
-        :param stream: ``file``-like object to write to
         :param path: optional string with path to store (for display only)
+        :param use_bgzf: indicator whether to write bgzf to ``stream``
+            if ``True``, prevent if ``False``, interpret ``path`` if ``None``
         """
-        return Writer(header, samples, stream, path)
+        if use_bgzf or (use_bgzf is None and path and path.endswith('.gz')):
+            stream = bgzf.BgzfWriter(fileobj=stream)
+        return Writer(stream, header, samples, path)
 
     @classmethod
-    def from_path(klass, header, samples, path):
+    def from_path(klass, path, header, samples):
         """Create new :py:class:`Writer` from path
 
-        :param header: VCF header to use
-        :param samples: SamplesInfos to use
         :param path: the path to load from (converted to ``str`` for
             compatibility with ``path.py``)
+        :param header: VCF header to use
+        :param samples: SamplesInfos to use
         """
         path = str(path)
+        use_bgzf = False  # we already interpret path
         if path.endswith('.gz'):
-            raise NotImplementedError('Writing to bgzf not supported')
+            f = bgzf.BgzfWriter(filename=path)
         else:
             f = open(path, 'wt')
-        return klass.from_file(header, samples, f, path)
+        return klass.from_stream(f, header, samples, path, use_bgzf=use_bgzf)
 
-    def __init__(self, header, samples, stream, path=None):
+    def __init__(self, stream, header, samples, path=None):
+        #: stream (``file``-like object) to read from
+        self.stream = stream
         #: the :py:class:~vcfpy.header.Header` written out
         self.header = header
         #: the :py:class:~vcfpy.header.SamplesInfos` written out
         self.samples = samples
-        #: stream (``file``-like object) to read from
-        self.stream = stream
         #: optional ``str`` with the path to the stream
         self.path = path
         # write out headers
@@ -86,7 +110,7 @@ class Writer:
     def _write_header(self):
         """Write out the header"""
         for line in self.header.lines:
-            print(line.serialize(), sep='', file=self.stream)
+            print(line.serialize(), file=self.stream)
         if self.samples.names:
             print('\t'.join(
                 list(parser.REQUIRE_SAMPLE_HEADER) + self.samples.names),
@@ -144,3 +168,9 @@ class Writer:
             return '.'
         else:
             return val
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.close()

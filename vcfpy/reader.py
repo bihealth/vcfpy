@@ -16,7 +16,7 @@ class Reader:
     """Class for parsing of files from ``file``-like objects
 
     Instead of using the constructor, use the class methods
-    :py:meth:`~Reader.from_file` and
+    :py:meth:`~Reader.from_stream` and
     :py:meth:`~Reader.from_path`.
 
     On construction, the header will be read from the file which can cause
@@ -28,7 +28,7 @@ class Reader:
     """
 
     @classmethod
-    def from_file(klass, stream, path=None, tabix_path=None):
+    def from_stream(klass, stream, path=None, tabix_path=None):
         """Create new :py:class:`Reader` from file
 
         :param stream: ``file``-like object to read from
@@ -57,7 +57,7 @@ class Reader:
                     tabix_path = None  # guessing path failed
         else:
             f = open(path, 'rt')
-        return klass.from_file(stream=f, path=path, tabix_path=tabix_path)
+        return klass.from_stream(stream=f, path=path, tabix_path=tabix_path)
 
     def __init__(self, stream, path=None, tabix_path=None):
         #: stream (``file``-like object) to read from
@@ -79,7 +79,7 @@ class Reader:
         #: name information
         self.samples = self.header.samples
 
-    def jump_to(self, chrom, begin, end):
+    def fetch(self, chrom, begin, end):
         """Jump to the start position of the given chromosomal position
         and limit iteration to the end position
 
@@ -91,7 +91,7 @@ class Reader:
         if self.tabix_file and not self.tabix_file.closed:
             self.tabix_file.close()
         # open tabix file if not yet open
-        if not self.tabix_file:
+        if not self.tabix_file or self.tabix_file.closed:
             self.tabix_file = pysam.TabixFile(
                 filename=self.path, index=self.tabix_path)
         # jump to the next position
@@ -104,6 +104,12 @@ class Reader:
             self.tabix_file.close()
         if self.stream:
             self.stream.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.close()
 
     def __iter__(self):
         return self
