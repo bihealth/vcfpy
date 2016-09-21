@@ -25,7 +25,7 @@ test_requirements = [
 
 setup(
     name='vcfpy',
-    version='0.2.1',
+    version='0.3.0',
     description="Python 3 VCF parser to circumvent problems in PyVCF",
     long_description=readme + '\n\n' + history,
     author="Manuel Holtgrewe",
