@@ -37,12 +37,20 @@ def _warn(msg):
     print('[vcfpy] WARNING: {}'.format(msg), file=sys.stderr)
 
 
-def split_quoted_string(s, delim=',', quote='"'):
-    """Split string ``s`` at delimiter, correctly interpreting quotes"""
+def split_quoted_string(s, delim=',', quote='"', brackets='[]'):
+    """Split string ``s`` at delimiter, correctly interpreting quotes
+
+    Further, interprets arrays wrapped in one level of ``[]``.  No recursive
+    brackets are interpreted (as this would make the grammar non-regular and
+    currently this complexity is not needed).  Currently, quoting inside of
+    braces is not supported either.  This is just to support the example
+    from VCF v4.3.
+    """
+    assert len(brackets) == 2
     # collect positions
     begins, ends = [0], []
     # run state automaton
-    NORMAL, QUOTED, ESCAPED, DELIM = 0, 1, 2, 3
+    NORMAL, QUOTED, ESCAPED, ARRAY, DELIM = 0, 1, 2, 3, 4
     state = NORMAL
     for pos, c in enumerate(s):
         if state == NORMAL:
@@ -51,12 +59,19 @@ def split_quoted_string(s, delim=',', quote='"'):
                 state = DELIM
             elif c == quote:
                 state = QUOTED
+            elif c == brackets[0]:
+                state = ARRAY
             else:
                 pass  # noop
         elif state == QUOTED:
             if c == '\\':
                 state = ESCAPED
             elif c == quote:
+                state = NORMAL
+            else:
+                pass  # noop
+        elif state == ARRAY:
+            if c == brackets[1]:
                 state = NORMAL
             else:
                 pass  # noop
@@ -96,6 +111,8 @@ def parse_mapping(value):
             key = key.strip()  # XXX lenient parsing
             if value.startswith('"') and value.endswith('"'):
                 value = ast.literal_eval(value)
+            elif value.startswith('[') and value.endswith(']'):
+                value = [v.strip() for v in value[1:-1].split(',')]
         else:
             key, value = pair, True
         key_values.append((key, value))
@@ -138,17 +155,15 @@ class MappingHeaderLineParser(HeaderLineParserBase):
 
 # Parsers to use for each VCF header type (given left of '=')
 HEADER_PARSERS = {
+    'ALT': MappingHeaderLineParser(header.AltAlleleHeaderLine),
+    'contig': MappingHeaderLineParser(header.ContigHeaderLine),
     'FILTER': MappingHeaderLineParser(header.FilterHeaderLine),
     'FORMAT': MappingHeaderLineParser(header.FormatHeaderLine),
     'INFO': MappingHeaderLineParser(header.InfoHeaderLine),
-    'contig': MappingHeaderLineParser(header.ContigHeaderLine),
+    'META': MappingHeaderLineParser(header.MetaHeaderLine),
+    'PEDIGREE': MappingHeaderLineParser(header.PedigreeHeaderLine),
+    'SAMPLE': MappingHeaderLineParser(header.SampleHeaderLine),
     '__default__': StupidHeaderLineParser(),  # fallback
-    # 'ALT': None,
-    # 'assembly': None,
-    # 'META': None,
-    # 'SAMPLE': None,
-    # 'PEDIGREE': None,
-    # 'pedigreeDB': None,
 }
 
 
@@ -348,7 +363,7 @@ class RecordParser:
         if not filt:
             return
         for f in filt:
-            if not f in self._filter_ids:
+            if f not in self._filter_ids:
                 if source == 'FILTER':
                     _warn(('Filter not found in header: {}; found in '
                            'FILTER column').format(f))

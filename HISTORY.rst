@@ -5,7 +5,10 @@ History
 HEAD
 ----
 
+* Adding support for parsing arrays in header lines
 * Removing ``example-4.1-bnd.vcf`` example file because v4.1 tumor derival lacks ``ID`` field
+* Adding ``AltAlleleHeaderLine``, ``MetaHeaderLine``, ``PedigreeHeaderLine``, and ``SampleHeaderLine``
+* Renaming ``SimpleHeaderFile`` to ``SimpleHeaderLine``
 * Warn on missing ``FILTER`` entries on parsing
 * Reordered parameters in ``from_stream`` and ``from_file`` (#18)
 * Renamed ``from_file`` to ``from_stream`` (#18)

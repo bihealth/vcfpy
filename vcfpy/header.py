@@ -25,7 +25,8 @@ FORMAT_TYPES = ('Integer', 'Float', 'Character', 'String')
 #: valid values for "Number" entries, except for integers
 VALID_NUMBERS = ('A', 'R', 'G', '.')
 #: header lines that contain an "ID" entry
-LINES_WITH_ID = ('FORMAT', 'INFO', 'FILTER', 'contig')
+LINES_WITH_ID = ('ALT', 'contig', 'FILTER', 'FORMAT', 'INFO', 'META',
+                 'PEDIGREE', 'SAMPLE')
 
 # Constants for "Number" entries ----------------------------------------------
 #
@@ -57,6 +58,8 @@ def serialize_for_header(key, value):
             return json.dumps(value)
         else:
             return value
+    elif type(value) is list:
+        return '[{}]'.format(', '.join(value))
     else:
         return str(value)
 
@@ -120,12 +123,7 @@ class Header:
 
     def _build_indices(self):
         """Build indices for the different field types"""
-        result = {
-            'FILTER': OrderedDict(),
-            'FORMAT': OrderedDict(),
-            'INFO': OrderedDict(),
-            'contig': OrderedDict(),
-        }
+        result = {key: OrderedDict() for key in LINES_WITH_ID}
         for line in self.lines:
             if line.key in LINES_WITH_ID:
                 result.setdefault(line.key, OrderedDict())
@@ -249,7 +247,7 @@ def mapping_to_str(mapping):
     return ''.join(result)
 
 
-class SimpleHeaderFile(HeaderLine):
+class SimpleHeaderLine(HeaderLine):
     """Base class for simple header lines, currently contig and filter
     header lines
 
@@ -275,11 +273,33 @@ class SimpleHeaderFile(HeaderLine):
         return ''.join(map(str, ['##', self.key, '=', self.value]))
 
     def __str__(self):
-        return 'SimpleHeaderFile({}, {}, {})'.format(
+        return 'SimpleHeaderLine({}, {}, {})'.format(
             *map(repr, (self.key, self.value, self.mapping)))
 
 
-class ContigHeaderLine(SimpleHeaderFile):
+class AltAlleleHeaderLine(SimpleHeaderLine):
+    """Alternative allele header line
+
+    Mostly used for defining symbolic alleles for structural variants and
+    IUPAC ambiguity codes
+    """
+
+    @classmethod
+    def from_mapping(klass, mapping):
+        """Construct from mapping, not requiring the string value"""
+        return AltAlleleHeaderLine('ALT', mapping_to_str(mapping), mapping)
+
+    def __init__(self, key, value, mapping):
+        super().__init__(key, value, mapping)
+        #: name of the alternative allele
+        self.id = self.mapping['ID']
+
+    def __str__(self):
+        return 'AltAlleleHeaderLine({}, {}, {})'.format(
+            *map(repr, (self.key, self.value, self.mapping)))
+
+
+class ContigHeaderLine(SimpleHeaderLine):
     """Contig header line
 
     Most importantly, parses the ``'length'`` key into an integer
@@ -309,7 +329,7 @@ class ContigHeaderLine(SimpleHeaderFile):
             *map(repr, (self.key, self.value, self.mapping)))
 
 
-class FilterHeaderLine(SimpleHeaderFile):
+class FilterHeaderLine(SimpleHeaderLine):
     """FILTER header line
     """
 
@@ -332,6 +352,65 @@ class FilterHeaderLine(SimpleHeaderFile):
 
     def __str__(self):
         return 'FilterHeaderLine({}, {}, {})'.format(
+            *map(repr, (self.key, self.value, self.mapping)))
+
+
+class MetaHeaderLine(SimpleHeaderLine):
+    """Alternative allele header line
+
+    Used for defining set of valid values for samples keys
+    """
+
+    @classmethod
+    def from_mapping(klass, mapping):
+        """Construct from mapping, not requiring the string value"""
+        return MetaHeaderLine('META', mapping_to_str(mapping), mapping)
+
+    def __init__(self, key, value, mapping):
+        super().__init__(key, value, mapping)
+        #: name of the alternative allele
+        self.id = self.mapping['ID']
+
+    def __str__(self):
+        return 'MetaHeaderLine({}, {}, {})'.format(
+            *map(repr, (self.key, self.value, self.mapping)))
+
+
+class PedigreeHeaderLine(SimpleHeaderLine):
+    """Header line for defining a pedigree entry
+    """
+
+    @classmethod
+    def from_mapping(klass, mapping):
+        """Construct from mapping, not requiring the string value"""
+        return PedigreeHeaderLine('PEDIGREE', mapping_to_str(mapping), mapping)
+
+    def __init__(self, key, value, mapping):
+        super().__init__(key, value, mapping)
+        #: name of the alternative allele
+        self.id = self.mapping['ID']
+
+    def __str__(self):
+        return 'PedigreeHeaderLine({}, {}, {})'.format(
+            *map(repr, (self.key, self.value, self.mapping)))
+
+
+class SampleHeaderLine(SimpleHeaderLine):
+    """Header line for defining a SAMPLE entry
+    """
+
+    @classmethod
+    def from_mapping(klass, mapping):
+        """Construct from mapping, not requiring the string value"""
+        return PedigreeHeaderLine('SAMPLE', mapping_to_str(mapping), mapping)
+
+    def __init__(self, key, value, mapping):
+        super().__init__(key, value, mapping)
+        #: name of the alternative allele
+        self.id = self.mapping['ID']
+
+    def __str__(self):
+        return 'SampleHeaderLine({}, {}, {})'.format(
             *map(repr, (self.key, self.value, self.mapping)))
 
 

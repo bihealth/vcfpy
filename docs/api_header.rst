@@ -38,6 +38,30 @@ vcfpy.SimpleHeaderFile
 .. autoclass:: vcfpy.SimpleHeaderFile
     :members:
 
+vcfpy.AltAlleleHeaderLine
+-------------------------
+
+.. autoclass:: vcfpy.AltAlleleHeaderLine
+    :members:
+
+vcfpy.MetaHeaderLine
+-------------------------
+
+.. autoclass:: vcfpy.MetaHeaderLine
+    :members:
+
+vcfpy.PedigreeHeaderLine
+-------------------------
+
+.. autoclass:: vcfpy.PedigreeHeaderLine
+    :members:
+
+vcfpy.SampleHeaderLine
+-------------------------
+
+.. autoclass:: vcfpy.SampleHeaderLine
+    :members:
+
 vcfpy.ContigHeaderLine
 ----------------------
 

@@ -8,10 +8,10 @@ except ImportError:
 from .exceptions import VCFPyException, InvalidHeaderException, \
     InvalidRecordException, IncorrectVCFFormat, HeaderNotFound
 
-from .header import Header, HeaderLine, SimpleHeaderFile, \
-    SimpleHeaderFile, ContigHeaderLine, FilterHeaderLine, \
-    CompoundHeaderLine, InfoHeaderLine, FormatHeaderLine, \
-    SamplesInfos, FieldInfo, header_without_lines
+from .header import Header, HeaderLine, SimpleHeaderLine, \
+    AltAlleleHeaderLine, ContigHeaderLine, FilterHeaderLine, MetaHeaderLine, \
+    PedigreeHeaderLine, SampleHeaderLine, CompoundHeaderLine, InfoHeaderLine, \
+    FormatHeaderLine, SamplesInfos, FieldInfo, header_without_lines
 
 from .record import Record, Call, AltRecord, Substitution, SV, BreakEnd, \
     SingleBreakEnd, SymbolicAllele

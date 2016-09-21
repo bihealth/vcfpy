@@ -128,7 +128,7 @@ def test_write_record_with_escaping(header_samples, tmpdir_factory):
         '20', 100, [], 'C', [record.Substitution(record.SNV, 'T')],
         None, [],
         O([
-            ('ANNO', ['Here,are%some chars','%25'])
+            ('ANNO', ['Here,are%some chars', '%25'])
         ]),
         ['GT', 'FT'],
         [
