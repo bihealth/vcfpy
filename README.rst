@@ -23,6 +23,14 @@ Python 3 VCF parser that allows both reading and writing
 * Free software: MIT license
 * Documentation: https://vcfpy.readthedocs.io.
 
+
+Features
+--------
+
+- Support for reading and writing VCF v4.3
+- Interface to ``INFO`` and ``FORMAT`` fields is based on ``OrderedDict`` allows for easier modification than PyVCF (also I find this more pythonic)
+- Read (and jump in) and write BGZF files just using ``vcfpy``
+
 Why another VCF parser for Python!
 ----------------------------------
 

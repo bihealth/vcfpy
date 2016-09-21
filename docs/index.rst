@@ -21,6 +21,13 @@ Quick Example
 .. literalinclude:: ../examples/add_filter/add_filter.py
     :language: python
 
+Features
+--------
+
+* Support for reading and writing VCF v4.3
+* Interface to ``INFO`` and ``FORMAT`` fields is based on ``OrderedDict`` allows for easier modification than PyVCF (also I find this more pythonic)
+* Read (and jump in) and write BGZF files just using ``vcfpy``
+
 Frequently Asked Questions
 --------------------------
 
