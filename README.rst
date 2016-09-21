@@ -18,7 +18,7 @@ VCFPy
      :alt: Updates
 
 
-Python 3 VCF parser that allows both reading and writing
+Python 3 VCF library with good support for both reading and writing
 
 * Free software: MIT license
 * Documentation: https://vcfpy.readthedocs.io.
