@@ -5,6 +5,7 @@ History
 HEAD
 ----
 
+* ``Reader`` and ``Writer`` can now be used as context manager (with ``with``)
 * Including license in documentation, including Biopython license
 * Adding support for writing bgzf files (taken from Biopython)
 * Adding support for parsing arrays in header lines
