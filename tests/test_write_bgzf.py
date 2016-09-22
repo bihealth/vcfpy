@@ -2,8 +2,6 @@
 """Test writing of BGZF files
 """
 
-__author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
-
 import codecs
 import gzip
 import io
@@ -15,8 +13,8 @@ from vcfpy import parser
 from vcfpy import writer
 from vcfpy import record
 
+__author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
 
-# TODO: cleanup, refactor tests somewhat
 
 MEDIUM_HEADER = """
 ##fileformat=VCFv4.3

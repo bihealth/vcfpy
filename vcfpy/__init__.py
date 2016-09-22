@@ -16,6 +16,10 @@ from .header import Header, HeaderLine, SimpleHeaderLine, \
 from .record import Record, Call, AltRecord, Substitution, SV, BreakEnd, \
     SingleBreakEnd, SymbolicAllele
 
+from .record import SNV, MNV, DEL, INS, INDEL, SV, BND, SYMBOLIC, MIXED
+
+from .record import HOM_REF, HET, HOM_ALT
+
 from .reader import Reader
 
 from .writer import Writer

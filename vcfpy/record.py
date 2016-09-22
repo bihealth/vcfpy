@@ -27,6 +27,13 @@ SYMBOLIC = 'SYMBOLIC'
 #: Code for mixed variant type
 MIXED = 'MIXED'
 
+#: Code for homozygous reference
+HOM_REF = 0
+#: Code for heterozygous
+HET = 1
+#: Code for homozygous alternative
+HOM_ALT = 2
+
 #: Codes for structural variants
 SV_CODES = ('DEL', 'INS', 'DUP', 'INV', 'CNV')
 
@@ -118,8 +125,12 @@ class Record:
             return (self.POS - 1) + len(self.REF)
 
     def add_filter(self, label):
-        """Add label to FILTER if not set yet"""
+        """Add label to FILTER if not set yet, removing ``PASS`` entry if
+        present
+        """
         if label not in self.FILTER:
+            if 'PASS' in self.FILTER:
+                self.FILTER = [f for f in self.FILTER if f != 'PASS']
             self.FILTER.append(label)
 
     def add_format(self, key, value=None):
@@ -186,18 +197,20 @@ class Call:
             self.ploidty = len(self.gt_alleles)
 
     @property
-    def phased(self):
+    def is_phased(self):
         """Return boolean indicating whether this call is phased"""
         return '|' in self.data.get('GT', '')
 
+    @property
     def gt_phase_char(self):
         """Return character to use for phasing"""
-        return '/' if not self.phased else '|'
+        return '/' if not self.is_phased else '|'
 
     @property
     def gt_bases(self):
-        """Return the actual genotype alleles, e.g. if VCF genotype is 0/1,
-        could return A/T"""
+        """Return the actual genotype bases, e.g. if VCF genotype is 0/1,
+        could return ('A', 'T')
+        """
         result = []
         for a in self.gt_alleles:
             if a is None:
@@ -205,46 +218,51 @@ class Call:
             elif a == 0:
                 result.append(self.site.REF)
             else:
-                result.append(self.site.ALT[a - 1])
-        return result
+                result.append(self.site.ALT[a - 1].value)
+        return tuple(result)
 
     @property
     def gt_type(self):
-        """The type of genotype, mapping is
-
-        - hom_ref = 0
-        - het = 1
-        - hom_alt = 2 (which alt is untracked)
-        - uncalled = ``None``
+        """The type of genotype, returns one of ``HOM_REF``, ``HOM_ALT``, and
+        ``HET``.
         """
         if not self.called:
             return None  # not called
         elif all(a == 0 for a in self.gt_alleles):
-            return 0  # hom ref
-        elif len(set(self.gt_alleles)) == 0:
-            return 2  # hom alt
+            return HOM_REF
+        elif len(set(self.gt_alleles)) == 1:
+            return HOM_ALT
         else:
-            return 1  # heterozygous
+            return HET
 
-    @property
-    def is_filtered(self):
-        """Return ``True`` for filtered calls"""
-        raise NotImplementedError('Implement me!')
+    def is_filtered(self, require=None, ignore=['PASS']):
+        """Return ``True`` for filtered calls
+
+        :param iterable ignore: if set, the filters to ignore, make sure to
+            include 'PASS', when setting
+        :param iterable require: if set, the filters to require for returning
+            ``True``
+        """
+        if 'FT' not in self.data or not self.data['FT']:
+            return False
+        for ft in self.data['FT']:
+            if ft in ignore:
+                continue  # skip
+            if not require:
+                return True
+            elif ft in require:
+                return True
+        return False
 
     @property
     def is_het(self):
-        """Return ``True`` for filtered calls"""
-        raise NotImplementedError('Implement me!')
+        """Return ``True`` for heterozygous calls"""
+        return self.gt_type == HET
 
     @property
     def is_variant(self):
-        """Return ``True`` for filtered calls"""
-        raise NotImplementedError('Implement me!')
-
-    @property
-    def is_phased(self):
-        """Return ``True`` for phased calls"""
-        raise NotImplementedError('Implement me!')
+        """Return ``True`` for non-hom-ref calls"""
+        return self.gt_type != HOM_REF
 
     def __str__(self):
         tpl = 'Call({})'
