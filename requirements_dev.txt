@@ -43,5 +43,6 @@ Sphinx==1.4.6
 sphinx-rtd-theme==0.1.9
 tornado==4.4.1
 tox==2.3.1
+-e git+git@github.com:bihealth/vcfpy.git@040e28f4517b6e31468c38db07c43bb029e40c47#egg=vcfpy
 virtualenv==15.0.3
 watchdog==0.8.3
