@@ -85,7 +85,6 @@ def test_reader_fetch():
     assert records[0].POS == 1110696
 
 
-
 def test_writer(header_samples, tmpdir_factory):
     O = vcfpy.OrderedDict
     S = record.Substitution

@@ -2,8 +2,24 @@
 History
 =======
 
-HEAD
-----
+0.4.1 (2016-09-22)
+------------------
+
+* Initially enabling codeclimate
+
+0.4.0 (2016-09-22)
+------------------
+
+* Exporting constants for encoding variant types
+* Exporting genotype constants ``HOM_REF``, ``HOM_ALT``, ``HET``
+* Implementing ``Call.is_phased``, ``Call.is_het``, ``Call.is_variant``, ``Call.is_phased``, ``Call.is_hom_ref``, ``Call.is_hom_alt``
+* Removing ``Call.phased`` (breaks API, next release is 0.4.0)
+* Adding tests, fixing bugs for methods of ``Call``
+
+0.3.1 (2016-09-21)
+------------------
+
+* Work around ``FORMAT/FT`` being a string; this is done so in the Delly output
 
 0.3.0 (2016-09-21)
 ------------------
