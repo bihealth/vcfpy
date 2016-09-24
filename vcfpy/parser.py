@@ -668,6 +668,24 @@ class Parser:
             header_lines.append(sub_parser.parse_line(self._line))
             self._read_next_line()
         # parse sample info line
+        self.samples = self._handle_sample_line()
+        # construct Header object
+        self.header = header.Header(header_lines, self.samples)
+        # check header for consistency
+        self._header_checker.run(self.header)
+        # construct record parser
+        self._record_parser = RecordParser(
+            self.header, self.samples, self.warning_helper,
+            self.record_checks)
+        # read next line, must not be header
+        self._read_next_line()
+        if self._line and self._line.startswith('#'):
+            raise exceptions.IncorrectVCFFormat(
+                'Expecting non-header line or EOF after "#CHROM" line')
+        return self.header
+
+    def _handle_sample_line(self):
+        """"Check and interpret the "##CHROM" line and return samples"""
         if not self._line or not self._line.startswith('#CHROM'):
             raise exceptions.IncorrectVCFFormat(
                 'Missing line starting with "#CHROM"')
@@ -685,6 +703,11 @@ class Parser:
         else:
             arr = self._line.rstrip().split('\t')
 
+        self._check_samples_line(arr)
+        return header.SamplesInfos(arr[len(REQUIRE_SAMPLE_HEADER):])
+
+    def _check_samples_line(self, arr):
+        """Peform additional check on samples line"""
         if len(arr) <= len(REQUIRE_NO_SAMPLE_HEADER):
             if tuple(arr) != REQUIRE_NO_SAMPLE_HEADER:
                 raise exceptions.IncorrectVCFFormat(
@@ -696,21 +719,6 @@ class Parser:
                 'Sample header line (starting with "#CHROM") does not '
                 'start with required prefix {}'.format(
                     '\t'.join(REQUIRE_SAMPLE_HEADER)))
-        self.samples = header.SamplesInfos(arr[len(REQUIRE_SAMPLE_HEADER):])
-        # construct Header object
-        self.header = header.Header(header_lines, self.samples)
-        # check header for consistency
-        self._header_checker.run(self.header)
-        # construct record parser
-        self._record_parser = RecordParser(
-            self.header, self.samples, self.warning_helper,
-            self.record_checks)
-        # read next line, must not be header
-        self._read_next_line()
-        if self._line and self._line.startswith('#'):
-            raise exceptions.IncorrectVCFFormat(
-                'Expecting non-header line or EOF after "#CHROM" line')
-        return self.header
 
     def parse_line(self, line):
         """Pare the given line without reading another one from the stream"""
