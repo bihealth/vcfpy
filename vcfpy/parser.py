@@ -5,11 +5,14 @@
 import ast
 import collections
 import itertools
+import functools
+import math
 import sys
 
 from . import header
 from . import record
 from . import exceptions
+from .warnings import WarningHelper
 
 try:
     from cyordereddict import OrderedDict
@@ -164,7 +167,8 @@ class MappingHeaderLineParser(HeaderLineParserBase):
 
     def parse_key_value(self, key, value):
         return self.line_class(
-            key, value, parse_mapping(value, self.warning_helper))
+            key, value, parse_mapping(value, self.warning_helper),
+            self.warning_helper)
 
 
 def build_header_parsers(warning_helper):
@@ -329,6 +333,8 @@ class RecordParser:
         self._filter_ids = set(self.header.filter_ids())
         # Helper for checking INFO fields
         self._info_checker = InfoChecker(self.header, self.warning_helper)
+        # Helper for checking FORMAT fields
+        self._format_checker = FormatChecker(self.header, self.warning_helper)
 
     def parse_line(self, line_str):
         """Parse line from file (including trailing line break) and return
@@ -386,7 +392,8 @@ class RecordParser:
                          self._parse_calls_data(
                              format, self._format_cache[format_str], arr[9:]))]
             for call in calls:
-                self._check_filters(
+                self._format_checker.run(call, len(alts))
+                self._check_filters(  # TODO: move into checker
                     call.data.get('FT'), 'FORMAT/FT', call.sample)
         return record.Record(
             chrom, pos, ids, ref, alts, qual, filt, info, format, calls)
@@ -460,39 +467,6 @@ class RecordParser:
         return result
 
 
-class WarningHelper:
-    """Helper class for checkers
-
-    This class implements a "warn_once" function that allows to print warnings
-    only once and a "print_summary" function that, in the end, allows to print
-    a summary table with number of warnings.
-    """
-
-    def __init__(self, prefix='[vcfpy] ', stream=sys.stderr):
-        #: string to prepend before all warnings
-        self.prefix = prefix
-        #: the stream to write warnings to
-        self.stream = stream
-        #: mapping from warning string to counter
-        self.warning_counter = OrderedDict()
-
-    def warn_once(self, message):
-        """Warn once with message"""
-        if message in self.warning_counter:
-            self.warning_counter[message] += 1
-        else:
-            print('{}{}'.format(self.prefix, message), file=self.stream)
-            print('(Subsequent identical messages will not be printed)',
-                  file=self.stream)
-            self.warning_counter[message] = 1
-
-    def print_summary(self, title='WARNINGS', format='{: 6}\t{}'):
-        """Print warning messages and count to ``self.stream``"""
-        print('{}\n'.format(title), file=self.stream)
-        for msg, count in self.warning_counter.items():
-            print(format.format(count, msg), file=self.stream)
-
-
 class HeaderChecker:
     """Helper class for checking a VCF header
     """
@@ -528,6 +502,15 @@ class HeaderChecker:
                  'going on regardlessly').format(first.value))
 
 
+@functools.lru_cache(maxsize=32)
+def binomial(n, k):
+    try:
+        res = math.factorial(n) // math.factorial(k) // math.factorial(n - k)
+    except ValueError:
+        res = 0
+    return res
+
+
 class InfoChecker:
     """Helper class for checking an INFO field"""
 
@@ -540,10 +523,60 @@ class InfoChecker:
     def run(self, key, value, num_alts):
         """Check value in INFO[key] of record
 
+        Currently, only checks for consistent counts are implemented
+
         :param str key: key of INFO entry to check
         :param value: value to check
-        :param list alts: list of alternative alleles, for length
+        :param int alts: list of alternative alleles, for length
         """
+        field_info = self.header.get_info_field_info(key)
+        if type(value) is not list:
+            return
+        TABLE = {
+            '.': len(value),
+            'A': num_alts,
+            'R': num_alts + 1,
+            'G': binomial(num_alts + 1, 2),  # diploid only at the moment
+        }
+        expected = TABLE[field_info.number]
+        if len(value) != expected:
+            tpl = 'Number of elements for INFO field {} is {} instead of {}'
+            self.warning_helper.warn_once(tpl.format(
+                key, len(value), field_info.number))
+
+
+class FormatChecker:
+    """Helper class for checking a FORMAT field"""
+
+    def __init__(self, header, warning_helper):
+        #: VCFHeader to use for checking
+        self.header = header
+        #: helper class for printing warnings
+        self.warning_helper = warning_helper
+
+    def run(self, call, num_alts):
+        """Check ``FORMAT`` of a record.Call
+
+        Currently, only checks for consistent counts are implemented
+        """
+        for key, value in call.data.items():
+            self._check_count(call, key, value, num_alts)
+
+    def _check_count(self, call, key, value, num_alts):
+        field_info = self.header.get_info_field_info(key)
+        if type(value) is not list:
+            return
+        TABLE = {
+            '.': len(value),
+            'A': num_alts,
+            'R': num_alts + 1,
+            'G': binomial(num_alts + 1, len(call.gt_alleles or [])),
+        }
+        expected = TABLE[field_info.number]
+        if len(value) != expected:
+            tpl = 'Number of elements for INFO field {} is {} instead of {}'
+            self.warning_helper.warn_once(tpl.format(
+                key, len(value), field_info.number))
 
 
 class Parser:
@@ -568,9 +601,10 @@ class Parser:
         self.samples = None
         # helper for parsing the records
         self._record_parser = None
-        # helpers for checking the header
-        self._warning_helper = WarningHelper()
-        self._header_checker = HeaderChecker(self._warning_helper)
+        #: helper for printing warnings
+        self.warning_helper = WarningHelper()
+        # helper for checking the header
+        self._header_checker = HeaderChecker(self.warning_helper)
 
     def _read_next_line(self):
         """Read next line store in self._line and return old one"""
@@ -587,7 +621,7 @@ class Parser:
             problems reading the header
         """
         # parse header lines
-        sub_parser = HeaderParser(self._warning_helper)
+        sub_parser = HeaderParser(self.warning_helper)
         header_lines = []
         while self._line and self._line.startswith('##'):
             header_lines.append(sub_parser.parse_line(self._line))
@@ -603,7 +637,7 @@ class Parser:
             raise exceptions.IncorrectVCFFormat(
                 'Ill-formatted line starting with "#CHROM"')
         if ' ' in line[:pos]:
-            self._warning_helper.warn_once(
+            self.warning_helper.warn_once(
                 'Found space in #CHROM line, splitting at whitespace '
                 'instead of tab; this VCF file is ill-formatted')
             arr = self._line.rstrip().split()
@@ -628,7 +662,7 @@ class Parser:
         self._header_checker.run(self.header)
         # construct record parser
         self._record_parser = RecordParser(
-            self.header, self.samples, self._warning_helper)
+            self.header, self.samples, self.warning_helper)
         # read next line, must not be header
         self._read_next_line()
         if self._line and self._line.startswith('#'):
@@ -651,4 +685,4 @@ class Parser:
 
     def print_warn_summary(self):
         """If there were any warnings, print summary with warnings"""
-        self._warning_helper.print_summary('Parser Warnings')
+        self.warning_helper.print_summary('Parser Warnings')

@@ -8,6 +8,7 @@ import json
 import sys
 
 from . import exceptions
+from .warnings import WarningHelper
 
 try:
     from cyordereddict import OrderedDict
@@ -192,11 +193,6 @@ RESERVED_FORMAT = {
 }
 
 
-def _warn(msg):
-    """Print warning message in case of missing attributes"""
-    print('[vcfpy] WARNING: {}'.format(msg), file=sys.stderr)
-
-
 # header files to enforce double-quoting for
 QUOTE_FIELDS = ('Description', 'Source', 'Version')
 
@@ -249,11 +245,13 @@ class Header:
     a filtered list of header lines.
     """
 
-    def __init__(self, lines=[], samples=None):
+    def __init__(self, lines=[], samples=None, warning_helper=WarningHelper()):
         #: ``list`` of :py:HeaderLine objects
         self.lines = list(lines)
         #: :py:class:`SamplesInfo` object
         self.samples = samples
+        # helper for printing warnings
+        self.warning_helper = warning_helper
         # build indices for the different field types
         self._indices = self._build_indices()
 
@@ -264,8 +262,9 @@ class Header:
             if line.key in LINES_WITH_ID:
                 result.setdefault(line.key, OrderedDict())
                 if line.mapping['ID'] in result[line.key]:
-                    _warn(('Seen {} header more than once: {}, using first'
-                           'occurence').format(line.key, line.mapping['ID']))
+                    self.warning_helper.warn_once(
+                        ('Seen {} header more than once: {}, using first'
+                         'occurence').format(line.key, line.mapping['ID']))
                 else:
                     result[line.key][line.mapping['ID']] = line
             else:
@@ -315,9 +314,10 @@ class Header:
         if not hasattr(header_line, 'mapping'):
             return  # no registration required
         if header_line.mapping['ID'] in self._indices[header_line.key]:
-            _warn(('Detected duplicate header line with type {} and ID {}. '
-                   'Ignoring this and subsequent one').format(
-                       header_line.key, header_line.mapping['ID']))
+            self.warning_helper.warn_once(
+                ('Detected duplicate header line with type {} and ID {}. '
+                 'Ignoring this and subsequent one').format(
+                     header_line.key, header_line.mapping['ID']))
         else:
             self._indices[header_line.key][
                 header_line.mapping['ID']] = header_line
@@ -334,8 +334,8 @@ class Header:
         result = self._indices[type_].get(key)
         if result:
             return result
-        _warn('{} {} not found using String/"." instead'.format(
-            type_, key))
+        self.warning_helper.warn_once(
+            '{} {} not found using String/"." instead'.format(type_, key))
         return FieldInfo('String', HEADER_NUMBER_UNBOUNDED)
 
     def __str__(self):
@@ -350,11 +350,13 @@ class HeaderLine:
     """Base class for VCF header lines
     """
 
-    def __init__(self, key, value):
+    def __init__(self, key, value, warning_helper=WarningHelper()):
         #: ``str`` with key of header line
         self.key = key
         # ``str`` with raw value of header line
         self._value = value
+        #: Helper for printing warnings
+        self.warning_helper = warning_helper
 
     @property
     def value(self):
@@ -391,8 +393,8 @@ class SimpleHeaderLine(HeaderLine):
         the case of missing key ``"ID"``
     """
 
-    def __init__(self, key, value, mapping):
-        super().__init__(key, value)
+    def __init__(self, key, value, mapping, warning_helper=WarningHelper()):
+        super().__init__(key, value, warning_helper)
         # check existence of key "ID"
         if 'ID' not in mapping:
             raise exceptions.InvalidHeaderException(
@@ -425,7 +427,7 @@ class AltAlleleHeaderLine(SimpleHeaderLine):
         """Construct from mapping, not requiring the string value"""
         return AltAlleleHeaderLine('ALT', mapping_to_str(mapping), mapping)
 
-    def __init__(self, key, value, mapping):
+    def __init__(self, key, value, mapping, warning_helper=WarningHelper()):
         super().__init__(key, value, mapping)
         #: name of the alternative allele
         self.id = self.mapping['ID']
@@ -446,13 +448,13 @@ class ContigHeaderLine(SimpleHeaderLine):
         """Construct from mapping, not requiring the string value"""
         return ContigHeaderLine('contig', mapping_to_str(mapping), mapping)
 
-    def __init__(self, key, value, mapping):
-        super().__init__(key, value, mapping)
+    def __init__(self, key, value, mapping, warning_helper=WarningHelper()):
+        super().__init__(key, value, mapping, warning_helper)
         # convert 'length' entry to integer if possible
         if 'length' in self.mapping:
             mapping['length'] = int(mapping['length'])
         else:
-            _warn(
+            self.warning_helper.warn_once(
                 'Field "length" not found in header line {}={}'.format(
                     key, value))
         #: name of the contig
@@ -474,11 +476,11 @@ class FilterHeaderLine(SimpleHeaderLine):
         """Construct from mapping, not requiring the string value"""
         return FilterHeaderLine('FILTER', mapping_to_str(mapping), mapping)
 
-    def __init__(self, key, value, mapping):
-        super().__init__(key, value, mapping)
+    def __init__(self, key, value, mapping, warning_helper=WarningHelper()):
+        super().__init__(key, value, mapping, warning_helper)
         # check for "Description" key
         if 'Description' not in self.mapping:
-            _warn(
+            self.warning_helper.warn_once(
                 'Field "Description" not found in header line {}={}'.format(
                     key, value))
         #: token for the filter
@@ -502,7 +504,8 @@ class MetaHeaderLine(SimpleHeaderLine):
         """Construct from mapping, not requiring the string value"""
         return MetaHeaderLine('META', mapping_to_str(mapping), mapping)
 
-    def __init__(self, key, value, mapping):
+    def __init__(self, key, value, mapping,
+                 warning_helper=WarningHelper()):
         super().__init__(key, value, mapping)
         #: name of the alternative allele
         self.id = self.mapping['ID']
@@ -521,7 +524,8 @@ class PedigreeHeaderLine(SimpleHeaderLine):
         """Construct from mapping, not requiring the string value"""
         return PedigreeHeaderLine('PEDIGREE', mapping_to_str(mapping), mapping)
 
-    def __init__(self, key, value, mapping):
+    def __init__(self, key, value, mapping,
+                 warning_helper=WarningHelper()):
         super().__init__(key, value, mapping)
         #: name of the alternative allele
         self.id = self.mapping['ID']
@@ -540,7 +544,8 @@ class SampleHeaderLine(SimpleHeaderLine):
         """Construct from mapping, not requiring the string value"""
         return PedigreeHeaderLine('SAMPLE', mapping_to_str(mapping), mapping)
 
-    def __init__(self, key, value, mapping):
+    def __init__(self, key, value, mapping,
+                 warning_helper=WarningHelper()):
         super().__init__(key, value, mapping)
         #: name of the alternative allele
         self.id = self.mapping['ID']
@@ -556,7 +561,8 @@ class CompoundHeaderLine(HeaderLine):
     Compound header lines describe fields that can have more than one entry.
     """
 
-    def __init__(self, key, value, mapping):
+    def __init__(self, key, value, mapping,
+                 warning_helper=WarningHelper()):
         super().__init__(key, value)
         #: OrderedDict with key/value mapping
         self.mapping = OrderedDict(mapping.items())
@@ -612,7 +618,8 @@ class InfoHeaderLine(CompoundHeaderLine):
         """Construct from mapping, not requiring the string value"""
         return InfoHeaderLine('INFO', mapping_to_str(mapping), mapping)
 
-    def __init__(self, key, value, mapping):
+    def __init__(self, key, value, mapping,
+                 warning_helper=WarningHelper()):
         super().__init__(key, value, mapping)
         #: key in the INFO field
         self.id = self.mapping['ID']
@@ -621,12 +628,12 @@ class InfoHeaderLine(CompoundHeaderLine):
         # check for "Type" field
         type_ = self.mapping.get('Type')
         if 'Type' not in self.mapping:
-            _warn(
+            self.warning_helper.warn_once(
                 ('Field "Type" not found in header line, using String '
                  'instead {}={}').format(key, value))
             type_ = 'String'
         if 'Type' in self.mapping and type_ not in INFO_TYPES:
-            _warn(
+            self.warning_helper.warn_once(
                 ('Invalid INFO value type {} in header line, using String '
                  'instead, {}={}').format(self.mapping['Type'], key, value))
             type_ = 'String'
@@ -634,7 +641,7 @@ class InfoHeaderLine(CompoundHeaderLine):
         self.type = type_
         # check for "Description" key
         if 'Description' not in self.mapping:
-            _warn(
+            self.warning_helper.warn_once(
                 'Field "Description" not found in header line {}={}'.format(
                     key, value))
         #: description, should be given, ``None`` if not given
@@ -658,7 +665,8 @@ class FormatHeaderLine(CompoundHeaderLine):
         """Construct from mapping, not requiring the string value"""
         return FormatHeaderLine('FORMAT', mapping_to_str(mapping), mapping)
 
-    def __init__(self, key, value, mapping):
+    def __init__(self, key, value, mapping,
+                 warning_helper=WarningHelper()):
         super().__init__(key, value, mapping)
         #: key in the INFO field
         self.id = self.mapping['ID']
@@ -667,12 +675,12 @@ class FormatHeaderLine(CompoundHeaderLine):
         # check for "Type" field
         type_ = self.mapping.get('Type')
         if 'Type' not in self.mapping:
-            _warn(
+            self.warning_helper.warn_once(
                 ('Field "Type" not found in header line, using String '
                  'instead {}={}').format(key, value))
             type_ = 'String'
         if 'Type' in self.mapping and type_ not in FORMAT_TYPES:
-            _warn(
+            self.warning_helper.warn_once(
                 ('Invalid INFO value type {} in header line, using String '
                  'instead, {}={}').format(self.mapping['Type'], key, value))
             type_ = 'String'
@@ -680,7 +688,7 @@ class FormatHeaderLine(CompoundHeaderLine):
         self.type = type_
         # check for "Description" key
         if 'Description' not in self.mapping:
-            _warn(
+            self.warning_helper.warn_once(
                 'Field "Description" not found in header line {}={}'.format(
                     key, value))
         #: description, should be given, ``None`` if not given
