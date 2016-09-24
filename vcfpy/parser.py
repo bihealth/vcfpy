@@ -315,13 +315,15 @@ class HeaderParser:
 class RecordParser:
     """Helper class for parsing VCF records"""
 
-    def __init__(self, header, samples, warning_helper):
+    def __init__(self, header, samples, warning_helper, record_checks=[]):
         #: Header with the meta information
         self.header = header
         #: SamplesInfos with sample information
         self.samples = samples
         #: Helper class for printing warnings
         self.warning_helper = warning_helper
+        #: The checks to perform, can contain 'INFO' and 'FORMAT'
+        self.record_checks = tuple(record_checks)
         # Expected number of fields
         if self.samples.names:
             self.expected_fields = 9 + len(self.samples.names)
@@ -332,9 +334,16 @@ class RecordParser:
         # Cache of FILTER entries, also applied to FORMAT/FT
         self._filter_ids = set(self.header.filter_ids())
         # Helper for checking INFO fields
-        self._info_checker = InfoChecker(self.header, self.warning_helper)
+        if 'INFO' in self.record_checks:
+            self._info_checker = InfoChecker(self.header, self.warning_helper)
+        else:
+            self._info_checker = NoopInfoChecker()
         # Helper for checking FORMAT fields
-        self._format_checker = FormatChecker(self.header, self.warning_helper)
+        if 'FORMAT' in self.record_checks:
+            self._format_checker = FormatChecker(
+                self.header, self.warning_helper)
+        else:
+            self._format_checker = NoopFormatChecker()
 
     def parse_line(self, line_str):
         """Parse line from file (including trailing line break) and return
@@ -511,6 +520,16 @@ def binomial(n, k):
     return res
 
 
+class NoopInfoChecker:
+    """Helper class that performs no checks"""
+
+    def __init__(self):
+        pass
+
+    def run(self, key, value, num_alts):
+        pass
+
+
 class InfoChecker:
     """Helper class for checking an INFO field"""
 
@@ -545,10 +564,20 @@ class InfoChecker:
                 key, len(value), field_info.number))
 
 
+class NoopFormatChecker:
+    """Helper class that performs no checks"""
+
+    def __init__(self):
+        pass
+
+    def run(self, call, num_alts):
+        pass
+
+
 class FormatChecker:
     """Helper class for checking a FORMAT field"""
 
-    def __init__(self, header, warning_helper):
+    def __init__(self):
         #: VCFHeader to use for checking
         self.header = header
         #: helper class for printing warnings
@@ -591,9 +620,11 @@ class Parser:
         only, optional
     """
 
-    def __init__(self, stream, path=None):
+    def __init__(self, stream, path=None, record_checks=[]):
         self.stream = stream
         self.path = path
+        #: checks to perform, can contain 'INFO' and 'FORMAT'
+        self.record_checks = tuple(record_checks)
         #: header, once it has been read
         self.header = None
         # the currently read line
@@ -664,7 +695,8 @@ class Parser:
         self._header_checker.run(self.header)
         # construct record parser
         self._record_parser = RecordParser(
-            self.header, self.samples, self.warning_helper)
+            self.header, self.samples, self.warning_helper,
+            self.record_checks)
         # read next line, must not be header
         self._read_next_line()
         if self._line and self._line.startswith('#'):

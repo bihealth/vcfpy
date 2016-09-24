@@ -5,6 +5,7 @@ History
 HEAD
 ----
 
+* Deactivating warnings on record parsing by default because of performance
 * Adding validation for ``INFO`` and ``FORMAT`` fields on reading (#8)
 * Adding predefined ``INFO`` and ``FORMAT`` fields to ``pyvcf.header`` (#32)
 
