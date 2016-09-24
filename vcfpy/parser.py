@@ -11,7 +11,6 @@ from . import header
 from . import record
 from . import exceptions
 
-# TODO: add sphinx documentation for this
 try:
     from cyordereddict import OrderedDict
 except ImportError:
@@ -30,11 +29,6 @@ REQUIRE_NO_SAMPLE_HEADER = (
 #: Supported VCF versions, a warning will be issued otherwise
 SUPPORTED_VCF_VERSIONS = (
     'VCFv4.0', 'VCFv4.1', 'VCFv4.2', 'VCFv4.3')
-
-
-def _warn(msg):
-    """Print warning message"""
-    print('[vcfpy] WARNING: {}'.format(msg), file=sys.stderr)
 
 
 def split_quoted_string(s, delim=',', quote='"', brackets='[]'):
@@ -86,7 +80,7 @@ def split_quoted_string(s, delim=',', quote='"', brackets='[]'):
     return [s[start:end] for start, end in zip(begins, ends)]
 
 
-def parse_mapping(value):
+def parse_mapping(value, warning_helper):
     """Parse the given VCF header line mapping
 
     Such a mapping consists of "key=value" pairs, separated by commas and
@@ -94,6 +88,8 @@ def parse_mapping(value):
     for certain known keys, exceptions are made, depending on the tag key.
     this, however, only gets important when serializing.
 
+    :param WarningHelper warning_helper: object to use for printing warning
+        messages
     :raises: :py:class:`vcfpy.exceptions.InvalidHeaderException` if
         there was a problem parsing the file
     """
@@ -107,8 +103,12 @@ def parse_mapping(value):
     key_values = []
     for pair in pairs:
         if '=' in pair:
-            key, value = pair.split('=', 1)
-            key = key.strip()  # XXX lenient parsing
+            orig_key, value = pair.split('=', 1)
+            key = orig_key.strip()
+            if key != orig_key:
+                warning_helper.warn_once(
+                    'Mapping key {} has leading or trailing space'.format(
+                        repr(orig_key)))
             if value.startswith('"') and value.endswith('"'):
                 value = ast.literal_eval(value)
             elif value.startswith('[') and value.endswith(']'):
@@ -122,6 +122,10 @@ def parse_mapping(value):
 
 class HeaderLineParserBase:
     """Parse into appropriate HeaderLine"""
+
+    def __init__(self, warning_helper):
+        #: :py:class:`WarningHelper` to use for print warnings
+        self.warning_helper = warning_helper
 
     def parse_key_value(self, key, value):
         """Parse the key/value pair
@@ -143,28 +147,42 @@ class StupidHeaderLineParser(HeaderLineParserBase):
 class MappingHeaderLineParser(HeaderLineParserBase):
     """Parse into HeaderLine (no particular structure)"""
 
-    def __init__(self, line_class):
+    def __init__(self, warning_helper, line_class):
         """Initialize the parser"""
-        super().__init__()
+        super().__init__(warning_helper)
         #: the class to use for the VCF header line
         self.line_class = line_class
 
     def parse_key_value(self, key, value):
-        return self.line_class(key, value, parse_mapping(value))
+        return self.line_class(
+            key, value, parse_mapping(value, self.warning_helper))
 
 
-# Parsers to use for each VCF header type (given left of '=')
-HEADER_PARSERS = {
-    'ALT': MappingHeaderLineParser(header.AltAlleleHeaderLine),
-    'contig': MappingHeaderLineParser(header.ContigHeaderLine),
-    'FILTER': MappingHeaderLineParser(header.FilterHeaderLine),
-    'FORMAT': MappingHeaderLineParser(header.FormatHeaderLine),
-    'INFO': MappingHeaderLineParser(header.InfoHeaderLine),
-    'META': MappingHeaderLineParser(header.MetaHeaderLine),
-    'PEDIGREE': MappingHeaderLineParser(header.PedigreeHeaderLine),
-    'SAMPLE': MappingHeaderLineParser(header.SampleHeaderLine),
-    '__default__': StupidHeaderLineParser(),  # fallback
-}
+def build_header_parsers(warning_helper):
+    """Return mapping for parsers to use for each VCF header type
+
+    Inject the WarningHelper into the parsers.
+    """
+    result =  {
+        'ALT': MappingHeaderLineParser(
+            warning_helper, header.AltAlleleHeaderLine),
+        'contig': MappingHeaderLineParser(
+            warning_helper, header.ContigHeaderLine),
+        'FILTER': MappingHeaderLineParser(
+            warning_helper, header.FilterHeaderLine),
+        'FORMAT': MappingHeaderLineParser(
+            warning_helper, header.FormatHeaderLine),
+        'INFO': MappingHeaderLineParser(
+            warning_helper, header.InfoHeaderLine),
+        'META': MappingHeaderLineParser(
+            warning_helper, header.MetaHeaderLine),
+        'PEDIGREE': MappingHeaderLineParser(
+            warning_helper, header.PedigreeHeaderLine),
+        'SAMPLE': MappingHeaderLineParser(
+            warning_helper, header.SampleHeaderLine),
+        '__default__': StupidHeaderLineParser(warning_helper),  # fallback
+    }
+    return result
 
 
 # Field value converters
@@ -252,8 +270,11 @@ class HeaderParser:
     """Helper class for parsing a VCF header
     """
 
-    def __init__(self, sub_parsers):
-        self.sub_parsers = HEADER_PARSERS
+    def __init__(self, warning_helper):
+        #: WarningHelper to use for printing warnings
+        self.warning_helper = warning_helper
+        #: Sub parsers to use for parsing the header lines
+        self.sub_parsers = build_header_parsers(warning_helper)
 
     def parse_line(self, line):
         """Parse VCF header ``line`` (trailing '\r\n' or '\n' is ignored)
@@ -283,11 +304,13 @@ class HeaderParser:
 class RecordParser:
     """Helper class for parsing VCF records"""
 
-    def __init__(self, header, samples):
+    def __init__(self, header, samples, warning_helper):
         #: Header with the meta information
         self.header = header
         #: SamplesInfos with sample information
         self.samples = samples
+        #: Helper class for printing warnings
+        self.warning_helper = warning_helper
         # Expected number of fields
         if self.samples.names:
             self.expected_fields = 9 + len(self.samples.names)
@@ -368,13 +391,14 @@ class RecordParser:
         for f in filt:
             if f not in self._filter_ids:
                 if source == 'FILTER':
-                    _warn(('Filter not found in header: {}; found in '
-                           'FILTER column').format(f))
+                    self.warning_helper.warn_once(
+                        ('Filter not found in header: {}; found in '
+                         'FILTER column').format(f))
                 else:
                     assert source == 'FORMAT/FT' and sample
-                    _warn(('Filter not found in header: {}; found in '
-                           'FORMAT/FT column of sample {}').format(
-                               f, sample))
+                    self.warning_helper.warn_once(
+                        ('Filter not found in header: {}; found in '
+                         'FORMAT/FT column of sample {}').format(f, sample))
 
     def _split_line(self, line_str):
         """Split line and check number of columns"""
@@ -426,6 +450,74 @@ class RecordParser:
         return result
 
 
+class WarningHelper:
+    """Base class for checkers
+
+    This class implements a "warn_once" function that allows to print warnings
+    only once and a "print_summary" function that, in the end, allows to print
+    a summary table with number of warnings.
+    """
+
+    def __init__(self, prefix='[vcfpy] ', stream=sys.stderr):
+        #: string to prepend before all warnings
+        self.prefix = prefix
+        #: the stream to write warnings to
+        self.stream = stream
+        #: mapping from warning string to counter
+        self.warning_counter = OrderedDict()
+
+    def warn_once(self, message):
+        """Warn once with message"""
+        if message in self.warning_counter:
+            self.warning_counter[message] += 1
+        else:
+            print('{}{}'.format(self.prefix, message), file=self.stream)
+            print('(Subsequent identical messages will not be printed)',
+                  file=self.stream)
+            self.warning_counter[message] = 1
+
+    def print_summary(self, title='WARNINGS', format='{: 6}\t{}'):
+        """Print warning messages and count to ``self.stream``"""
+        print('{}\n'.format(title), file=self.stream)
+        for msg, count in self.warning_counter.items():
+            print(format.format(count, msg), file=self.stream)
+
+
+class HeaderChecker:
+    """Helper class for checking a VCF header
+    """
+
+    def __init__(self, warning_helper):
+        #: helper class for printing warnings
+        self.warning_helper = warning_helper
+
+    def run(self, header):
+        """Check the header
+
+        Warnings will be printed using ``self.warning_helper`` while errors
+        will raise an exception.
+
+        :raises: ``vcfpy.exceptions.InvalidHeaderException`` in the case of
+            severe errors reading the header
+        """
+        self._check_header_lines(header.lines)
+
+    def _check_header_lines(self, header_lines):
+        """Check header lines, in particular for starting file "##fileformat"
+        """
+        if not header_lines:
+            raise exceptions.InvalidHeaderException(
+                'The VCF file did not contain any header lines!')
+        first = header_lines[0]
+        if first.key != 'fileformat':
+            raise exceptions.InvalidHeaderException(
+                'The VCF file did not start with ##fileformat')
+        if first.value not in SUPPORTED_VCF_VERSIONS:
+            self.warning_helper.warn_once(
+                ('WARNING: The VCF version {} is not known, '
+                 'going on regardlessly').format(first.value))
+
+
 class Parser:
     """Class for line-wise parsing of VCF files
 
@@ -448,6 +540,9 @@ class Parser:
         self.samples = None
         # helper for parsing the records
         self._record_parser = None
+        # helpers for checking the header
+        self._warning_helper = WarningHelper()
+        self._header_checker = HeaderChecker(self._warning_helper)
 
     def _read_next_line(self):
         """Read next line store in self._line and return old one"""
@@ -464,13 +559,11 @@ class Parser:
             problems reading the header
         """
         # parse header lines
-        sub_parser = HeaderParser(HEADER_PARSERS)
+        sub_parser = HeaderParser(self._warning_helper)
         header_lines = []
         while self._line and self._line.startswith('##'):
             header_lines.append(sub_parser.parse_line(self._line))
             self._read_next_line()
-        # check first header line to be '##fileformat='
-        self._check_header_lines(header_lines)  # raises InvalidHeaderException
         # parse sample info line
         if not self._line or not self._line.startswith('#CHROM'):
             raise exceptions.IncorrectVCFFormat(
@@ -482,8 +575,9 @@ class Parser:
             raise exceptions.IncorrectVCFFormat(
                 'Ill-formatted line starting with "#CHROM"')
         if ' ' in line[:pos]:
-            _warn('Found space in #CHROM line, splitting at whitespace '
-                  'instead of tab; this VCF file is ill-formatted')
+            self._warning_helper.warn_once(
+                'Found space in #CHROM line, splitting at whitespace '
+                'instead of tab; this VCF file is ill-formatted')
             arr = self._line.rstrip().split()
         else:
             arr = self._line.rstrip().split('\t')
@@ -502,32 +596,17 @@ class Parser:
         self.samples = header.SamplesInfos(arr[len(REQUIRE_SAMPLE_HEADER):])
         # construct Header object
         self.header = header.Header(header_lines, self.samples)
+        # check header for consistency
+        self._header_checker.run(self.header)
         # construct record parser
-        self._record_parser = RecordParser(self.header, self.samples)
+        self._record_parser = RecordParser(
+            self.header, self.samples, self._warning_helper)
         # read next line, must not be header
         self._read_next_line()
         if self._line and self._line.startswith('#'):
             raise exceptions.IncorrectVCFFormat(
                 'Expecting non-header line or EOF after "#CHROM" line')
         return self.header
-
-    def _check_header_lines(self, header_lines):
-        """Check header lines, in particular for starting file "##fileformat"
-
-        :raises: ``vcfpy.exceptions.InvalidHeaderException`` in the case of
-            problems reading the header
-        """
-        if not header_lines:
-            raise exceptions.InvalidHeaderException(
-                'The VCF file did not contain any header lines!')
-        first = header_lines[0]
-        if first.key != 'fileformat':
-            raise exceptions.InvalidHeaderException(
-                'The VCF file did not start with ##fileformat')
-        if first.value not in SUPPORTED_VCF_VERSIONS:
-            print(('[vcfpy] WARNING: The VCF version {} is not known, '
-                   'going on regardlessly').format(first.value),
-                  file=sys.stderr)
 
     def parse_line(self, line):
         """Pare the given line without reading another one from the stream"""
@@ -541,3 +620,7 @@ class Parser:
             problems reading the record
         """
         return self.parse_line(self._read_next_line())
+
+    def print_warn_summary(self):
+        """If there were any warnings, print summary with warnings"""
+        self._warning_helper.print_summary('Parser Warnings')

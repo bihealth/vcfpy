@@ -1,9 +1,17 @@
 # -*- coding: utf-8 -*-
 """Test for the helper routines in the vcfpy.parser module"""
 
+import pytest
+
 from vcfpy import parser
 
 __author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
+
+
+@pytest.fixture
+def warning_helper():
+    return parser.WarningHelper()
+
 
 # parser.split_quoted_string() ------------------------------------------------
 
@@ -60,33 +68,37 @@ def test_split_quoted_string_array_syntax_recursion():
 # parser.VCFheaderLineParser.parse_mapping() ----------------------------------
 
 
-def test_vcf_header_line_parser_parse_mapping_simple():
+def test_vcf_header_line_parser_parse_mapping_simple(warning_helper):
     INPUT = r'<key=value,key2=value2>'
     EXPECTED = (('key', 'value'),
                 ('key2', 'value2'))
-    assert EXPECTED == tuple(parser.parse_mapping(INPUT).items())
+    assert EXPECTED == tuple(parser.parse_mapping(
+        INPUT, warning_helper).items())
 
 
-def test_vcf_header_line_parser_parse_mapping_flag():
+def test_vcf_header_line_parser_parse_mapping_flag(warning_helper):
     INPUT = r'<key=value,key2=value,yay>'
     EXPECTED = (('key', 'value'),
                 ('key2', 'value'),
                 ('yay', True))
-    p = parser.MappingHeaderLineParser(None)
-    assert EXPECTED == tuple(parser.parse_mapping(INPUT).items())
+    p = parser.MappingHeaderLineParser(warning_helper, None)
+    assert EXPECTED == tuple(parser.parse_mapping(
+        INPUT, warning_helper).items())
 
 
-def test_vcf_header_line_parser_parse_mapping_quoted():
+def test_vcf_header_line_parser_parse_mapping_quoted(warning_helper):
     INPUT = r'<key=value,key2="value,value">'
     EXPECTED = (('key', 'value'),
                 ('key2', 'value,value'))
-    p = parser.MappingHeaderLineParser(None)
-    assert EXPECTED == tuple(parser.parse_mapping(INPUT).items())
+    p = parser.MappingHeaderLineParser(warning_helper, None)
+    assert EXPECTED == tuple(parser.parse_mapping(
+        INPUT, warning_helper).items())
 
 
-def test_vcf_header_line_parser_parse_mapping_escaped():
+def test_vcf_header_line_parser_parse_mapping_escaped(warning_helper):
     INPUT = r'<key=value,key2="value,value=\"asdf">'
     EXPECTED = (('key', 'value'),
                 ('key2', 'value,value="asdf'))
-    p = parser.MappingHeaderLineParser(None)
-    assert EXPECTED == tuple(parser.parse_mapping(INPUT).items())
+    p = parser.MappingHeaderLineParser(warning_helper, None)
+    assert EXPECTED == tuple(parser.parse_mapping(
+        INPUT, warning_helper).items())
