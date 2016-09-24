@@ -32,10 +32,10 @@ vcfpy.header_without_lines
 
 .. autofunction:: vcfpy.header_without_lines
 
-vcfpy.SimpleHeaderFile
+vcfpy.SimpleHeaderLine
 ----------------------
 
-.. autoclass:: vcfpy.SimpleHeaderFile
+.. autoclass:: vcfpy.SimpleHeaderLine
     :members:
 
 vcfpy.AltAlleleHeaderLine

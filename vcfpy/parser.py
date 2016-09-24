@@ -176,7 +176,7 @@ def build_header_parsers(warning_helper):
 
     Inject the WarningHelper into the parsers.
     """
-    result =  {
+    result = {
         'ALT': MappingHeaderLineParser(
             warning_helper, header.AltAlleleHeaderLine),
         'contig': MappingHeaderLineParser(
@@ -225,7 +225,6 @@ def parse_field_value(key, field_info, value):
     """Parse ``value`` according to ``field_info``
     """
     if field_info.type == 'Flag':
-        assert value is True
         return True
     elif field_info.number == 1:
         return convert_field_value(key, field_info.type, value)
@@ -386,26 +385,35 @@ class RecordParser:
         # INFO
         info = self._parse_info(arr[7], len(alts))
         # FORMAT
-        if not self.samples.names:
-            format, calls = [], []
-        else:
-            format_str = arr[8]
-            format = format_str.split(':')
-            if format_str not in self._format_cache:
-                self._format_cache[format_str] = list(map(
-                    self.header.get_format_field_info,
-                    format))
-            # per-sample calls
-            calls = [record.Call(sample, data) for sample, data in
-                     zip(self.samples.names,
-                         self._parse_calls_data(
-                             format, self._format_cache[format_str], arr[9:]))]
-            for call in calls:
-                self._format_checker.run(call, len(alts))
-                self._check_filters(  # TODO: move into checker
-                    call.data.get('FT'), 'FORMAT/FT', call.sample)
+        format = self._handle_format(arr)
+        # sample/call columns
+        calls = self._handle_calls(alts, format, arr[8], arr)
         return record.Record(
             chrom, pos, ids, ref, alts, qual, filt, info, format, calls)
+
+    def _handle_format(self, arr):
+        """Handle FORMAT column"""
+        format = arr[8].split(':')
+        return format
+
+    def _handle_calls(self, alts, format, format_str, arr):
+        """Handle FORMAT and calls columns, factored out of parse_line"""
+        if format_str not in self._format_cache:
+            self._format_cache[format_str] = list(map(
+                self.header.get_format_field_info,
+                format))
+        # per-sample calls
+        calls = []
+        pairs = zip(self.samples.names, self._parse_calls_data(
+            format, self._format_cache[format_str], arr[9:]))
+        pairs = list(pairs)
+        for sample, data in pairs:
+            call = record.Call(sample, data)
+            self._format_checker.run(call, len(alts))
+            self._check_filters(
+                call.data.get('FT'), 'FORMAT/FT', call.sample)
+            calls.append(call)
+        return calls
 
     def _check_filters(self, filt, source, sample=None):
         if not filt:

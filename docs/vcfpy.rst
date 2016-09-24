@@ -4,6 +4,14 @@ vcfpy package
 Submodules
 ----------
 
+vcfpy.bgzf module
+-----------------
+
+.. automodule:: vcfpy.bgzf
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 vcfpy.exceptions module
 -----------------------
 
@@ -40,6 +48,14 @@ vcfpy.record module
 -------------------
 
 .. automodule:: vcfpy.record
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+vcfpy.warn_utils module
+-----------------------
+
+.. automodule:: vcfpy.warn_utils
     :members:
     :undoc-members:
     :show-inheritance:

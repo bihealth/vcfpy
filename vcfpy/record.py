@@ -97,7 +97,7 @@ class Record:
         For SNVs, MNVs, and deletions, the behaviour is the start position.
         In the case of insertions, the position behind the insert position is
         returned, yielding a 0-length interval together with
-        :py:method:`affected_end`
+        :py:meth:`~Record.affected_end`
         """
         types = {alt.type for alt in self.ALT}  # set!
         BAD_MIX = {INS, SV, BND, SYMBOLIC}  # don't mix well with others
@@ -114,7 +114,7 @@ class Record:
         For SNVs, MNVs, and deletions, the behaviour is based on the start
         position and the length of the REF.  In the case of insertions, the
         position behind the insert position is returned, yielding a 0-length
-        interval together with :py:method:`affected_start`
+        interval together with :py:meth:`~Record.affected_start`
         """
         types = {alt.type for alt in self.ALT}  # set!
         BAD_MIX = {INS, SV, BND, SYMBOLIC}  # don't mix well with others

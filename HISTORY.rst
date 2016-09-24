@@ -2,6 +2,12 @@
 History
 =======
 
+HEAD
+----
+
+* Refactoring parser module a bit to make the code cleaner
+* Fixing small typos and problems in documentation
+
 0.5.0 (2016-09-24)
 ------------------
 
