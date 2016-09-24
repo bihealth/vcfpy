@@ -34,53 +34,95 @@ SUPPORTED_VCF_VERSIONS = (
     'VCFv4.0', 'VCFv4.1', 'VCFv4.2', 'VCFv4.3')
 
 
-def split_quoted_string(s, delim=',', quote='"', brackets='[]'):
-    """Split string ``s`` at delimiter, correctly interpreting quotes
+class QuotedStringSplitter:
+    """Helper class for splitting quoted strings
 
-    Further, interprets arrays wrapped in one level of ``[]``.  No recursive
-    brackets are interpreted (as this would make the grammar non-regular and
-    currently this complexity is not needed).  Currently, quoting inside of
-    braces is not supported either.  This is just to support the example
-    from VCF v4.3.
+    Has support for interpreting quoting strings but also brackets.  Meant
+    for splitting the VCF header line dicts
     """
-    assert len(brackets) == 2
-    # collect positions
-    begins, ends = [0], []
-    # run state automaton
-    NORMAL, QUOTED, ESCAPED, ARRAY, DELIM = 0, 1, 2, 3, 4
-    state = NORMAL
-    for pos, c in enumerate(s):
-        if state == NORMAL:
-            if c == delim:
-                ends.append(pos)
-                state = DELIM
-            elif c == quote:
-                state = QUOTED
-            elif c == brackets[0]:
-                state = ARRAY
-            else:
-                pass  # noop
-        elif state == QUOTED:
-            if c == '\\':
-                state = ESCAPED
-            elif c == quote:
-                state = NORMAL
-            else:
-                pass  # noop
-        elif state == ARRAY:
-            if c == brackets[1]:
-                state = NORMAL
-            else:
-                pass  # noop
-        elif state == DELIM:
-            begins.append(pos)
-            state = NORMAL
-        else:  # state == ESCAPED
-            state = QUOTED
-    ends.append(len(s))
-    assert len(begins) == len(ends)
-    # Build resulting list
-    return [s[start:end] for start, end in zip(begins, ends)]
+
+    #: state constant for normal
+    NORMAL = 0
+    #: state constant for quoted
+    QUOTED = 1
+    #: state constant for delimiter
+    ESCAPED = 2
+    #: state constant for array
+    ARRAY = 3
+    #: state constant for delimiter
+    DELIM = 4
+
+    def __init__(self, delim=',', quote='"', brackets='[]'):
+        #: string delimiter
+        self.delim = delim
+        #: quote character
+        self.quote = quote
+        #: two-character string with opening and closing brackets
+        assert len(brackets) == 2
+        self.brackets = brackets
+
+    def run(self, s):
+        """Split string ``s`` at delimiter, correctly interpreting quotes
+
+        Further, interprets arrays wrapped in one level of ``[]``.  No
+        recursive brackets are interpreted (as this would make the grammar
+        non-regular and currently this complexity is not needed).  Currently,
+        quoting inside of braces is not supported either.  This is just to
+        support the example from VCF v4.3.
+        """
+        begins, ends = [0], []
+        # transition table
+        DISPATCH = {
+            self.NORMAL: self._handle_normal,
+            self.QUOTED: self._handle_quoted,
+            self.ARRAY: self._handle_array,
+            self.DELIM: self._handle_delim,
+            self.ESCAPED: self._handle_escaped,
+        }
+        # run state automaton
+        state = self.NORMAL
+        for pos, c in enumerate(s):
+            state = DISPATCH[state](c, pos, begins, ends)
+        ends.append(len(s))
+        assert len(begins) == len(ends)
+        # Build resulting list
+        return [s[start:end] for start, end in zip(begins, ends)]
+
+    def _handle_normal(self, c, pos, begins, ends):
+        if c == self.delim:
+            ends.append(pos)
+            return self.DELIM
+        elif c == self.quote:
+            return self.QUOTED
+        elif c == self.brackets[0]:
+            return self.ARRAY
+        else:
+            return self.NORMAL
+
+    def _handle_quoted(self, c, pos, begins, ends):
+        if c == '\\':
+            return self.ESCAPED
+        elif c == self.quote:
+            return self.NORMAL
+        else:
+            return self.QUOTED
+
+    def _handle_array(self, c, pos, begins, ends):
+        if c == self.brackets[1]:
+            return self.NORMAL
+        else:
+            return self.ARRAY
+
+    def _handle_delim(self, c, pos, begins, ends):
+        begins.append(pos)
+        return self.NORMAL
+
+    def _handle_escaped(self, c, pos, begins, ends):
+        return self.QUOTED
+
+
+def split_quoted_string(s, delim=',', quote='"', brackets='[]'):
+    return QuotedStringSplitter(delim, quote, brackets).run(s)
 
 
 def split_mapping(pair_str, warning_helper):
