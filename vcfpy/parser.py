@@ -80,6 +80,20 @@ def split_quoted_string(s, delim=',', quote='"', brackets='[]'):
     return [s[start:end] for start, end in zip(begins, ends)]
 
 
+def split_mapping(pair_str, warning_helper):
+    """Split the ``str`` in ``pair_str`` at ``'='``
+
+    Warn if key needs to be stripped
+    """
+    orig_key, value = pair_str.split('=', 1)
+    key = orig_key.strip()
+    if key != orig_key:
+        warning_helper.warn_once(
+            'Mapping key {} has leading or trailing space'.format(
+                repr(orig_key)))
+    return key, value
+
+
 def parse_mapping(value, warning_helper):
     """Parse the given VCF header line mapping
 
@@ -103,12 +117,7 @@ def parse_mapping(value, warning_helper):
     key_values = []
     for pair in pairs:
         if '=' in pair:
-            orig_key, value = pair.split('=', 1)
-            key = orig_key.strip()
-            if key != orig_key:
-                warning_helper.warn_once(
-                    'Mapping key {} has leading or trailing space'.format(
-                        repr(orig_key)))
+            key, value = split_mapping(pair, warning_helper)
             if value.startswith('"') and value.endswith('"'):
                 value = ast.literal_eval(value)
             elif value.startswith('[') and value.endswith(']'):
@@ -211,7 +220,6 @@ def convert_field_value(key, type_, value):
 def parse_field_value(key, field_info, value):
     """Parse ``value`` according to ``field_info``
     """
-    # XXX lenient parsing, ignoring if counts differ from field_info
     if field_info.type == 'Flag':
         assert value is True
         return True
@@ -295,8 +303,7 @@ class HeaderParser:
                 'Invalid VCF header line (must contain "=") {}'.format(line))
         line = line[len('##'):].rstrip()  # trim '^##' and trailing whitespace
         # split key/value pair at "="
-        key, value = line.split('=', 1)
-        key = key.strip()  # XXX lenient parsing
+        key, value = split_mapping(line, self.warning_helper)
         sub_parser = self.sub_parsers.get(key, self.sub_parsers['__default__'])
         return sub_parser.parse_key_value(key, value)
 
@@ -320,6 +327,8 @@ class RecordParser:
         self._format_cache = {}
         # Cache of FILTER entries, also applied to FORMAT/FT
         self._filter_ids = set(self.header.filter_ids())
+        # Helper for checking INFO fields
+        self._info_checker = InfoChecker(self.header, self.warning_helper)
 
     def parse_line(self, line_str):
         """Parse line from file (including trailing line break) and return
@@ -360,11 +369,11 @@ class RecordParser:
             filt = arr[6].split(';')
         self._check_filters(filt, 'FILTER')
         # INFO
-        info = self._parse_info(arr[7])
+        info = self._parse_info(arr[7], len(alts))
+        # FORMAT
         if not self.samples.names:
             format, calls = [], []
         else:
-            # FORMAT
             format_str = arr[8]
             format = format_str.split(':')
             if format_str not in self._format_cache:
@@ -411,7 +420,7 @@ class RecordParser:
                      line_str)))
         return arr
 
-    def _parse_info(self, info_str):
+    def _parse_info(self, info_str, num_alts):
         """Parse INFO column from string"""
         result = OrderedDict()
         if info_str == '.':
@@ -421,13 +430,14 @@ class RecordParser:
         # programs follow this
         for entry in info_str.split(';'):
             if '=' not in entry:  # flag
-                result[entry] = parse_field_value(
-                    entry, self.header.get_info_field_info(entry), True)
+                key = entry
+                result[key] = parse_field_value(
+                    key, self.header.get_info_field_info(key), True)
             else:
-                key, value = entry.split('=', 1)
-                key = key.strip()  # XXX lenient parsing
+                key, value = split_mapping(entry, self.warning_helper)
                 result[key] = parse_field_value(
                     key, self.header.get_info_field_info(key), value)
+            self._info_checker.run(entry, result[key], num_alts)
         return result
 
     def _parse_calls_data(self, format, infos, arr):
@@ -451,7 +461,7 @@ class RecordParser:
 
 
 class WarningHelper:
-    """Base class for checkers
+    """Helper class for checkers
 
     This class implements a "warn_once" function that allows to print warnings
     only once and a "print_summary" function that, in the end, allows to print
@@ -516,6 +526,24 @@ class HeaderChecker:
             self.warning_helper.warn_once(
                 ('WARNING: The VCF version {} is not known, '
                  'going on regardlessly').format(first.value))
+
+
+class InfoChecker:
+    """Helper class for checking an INFO field"""
+
+    def __init__(self, header, warning_helper):
+        #: VCFHeader to use for checking
+        self.header = header
+        #: helper class for printing warnings
+        self.warning_helper = warning_helper
+
+    def run(self, key, value, num_alts):
+        """Check value in INFO[key] of record
+
+        :param str key: key of INFO entry to check
+        :param value: value to check
+        :param list alts: list of alternative alleles, for length
+        """
 
 
 class Parser:
