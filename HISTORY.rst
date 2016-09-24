@@ -2,8 +2,8 @@
 History
 =======
 
-HEAD
-----
+0.5.0 (2016-09-24)
+------------------
 
 * Deactivating warnings on record parsing by default because of performance
 * Adding validation for ``INFO`` and ``FORMAT`` fields on reading (#8)
