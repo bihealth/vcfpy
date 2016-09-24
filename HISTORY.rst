@@ -5,6 +5,8 @@ History
 HEAD
 ----
 
+* Adding predefined ``INFO`` and ``FORMAT`` fields to ``pyvcf.header`` (#32)
+
 0.4.1 (2016-09-22)
 ------------------
 
