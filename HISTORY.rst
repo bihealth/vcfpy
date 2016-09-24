@@ -5,6 +5,7 @@ History
 HEAD
 ----
 
+* Adding validation for ``INFO`` and ``FORMAT`` fields on reading (#8)
 * Adding predefined ``INFO`` and ``FORMAT`` fields to ``pyvcf.header`` (#32)
 
 0.4.1 (2016-09-22)

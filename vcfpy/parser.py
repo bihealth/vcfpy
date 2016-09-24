@@ -12,7 +12,7 @@ import sys
 from . import header
 from . import record
 from . import exceptions
-from .warnings import WarningHelper
+from .warn_utils import WarningHelper
 
 try:
     from cyordereddict import OrderedDict
