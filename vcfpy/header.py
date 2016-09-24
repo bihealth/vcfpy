@@ -151,6 +151,46 @@ RESERVED_INFO = {
 
 # Reserved FORMAT keys --------------------------------------------------------
 
+RESERVED_FORMAT = {
+    # VCF v 4.3, Section 1.6.2
+    'AD': FieldInfo('Integer', 'R', 'Total, per-sample read depth'),
+    'ADF': FieldInfo('Integer', 'R', 'Forward-strand, per-sample read depth'),
+    'ADR': FieldInfo('Integer', 'R', 'Reverse-strand, per-sample read depth'),
+    'DP': FieldInfo('Integer', 1,
+                    'Read depth at this position for this sample'),
+    'EC': FieldInfo('Integer', 'A',
+                    'Expected alternate allele counts for each alternate '
+                    'allele'),
+    'FT': FieldInfo('String', '.', 'Filters applied for this sample'),
+    'GQ': FieldInfo('Integer', 'G',
+                    'Phred-scale, conditional genotype quality'),
+    'GP': FieldInfo('Float', 'G', 'Genotype posterior probabilities'),
+    'GT': FieldInfo('String', 1, 'Genotype call'),
+    'GL': FieldInfo('Float', 'G', 'Log10-scaled likelihoods for genotypes'),
+    'HQ': FieldInfo('Integer', 2, 'Haplotype qualities'),
+    'MQ': FieldInfo('Integer', 1, 'RMS mapping quality'),
+    'PL': FieldInfo('Integer', 'G',
+                    'Phred-scaled genotype likelihoods, rounded to integers'),
+    'PQ': FieldInfo('Integer', 1, 'Phasing quality'),
+    'PS': FieldInfo('Integer', 1,
+                    'Non-negative 32 bit integer giving phasing set '
+                    'for this sample and this chromosome'),
+
+    # VCF v4.3, Section 4
+    'CN': FieldInfo('Integer', 1, 'Copy number genotype for imprecise events'),
+    'CNQ': FieldInfo('Float', 1,
+                     'Copy number genotype quality for imprecise events'),
+    'CNL': FieldInfo('Float', 'G',
+                     'Copy number genotype likelihood for imprecise events'),
+    'CNP': FieldInfo('Float', 'G',
+                     'Copy number posterior probabilities'),
+    'NQ': FieldInfo('Integer', 1,
+                    'Phred style probability score that the variant is novel'),
+    'HAP': FieldInfo('Integer', 1, 'Unique haplotype identifier'),
+    'AHAP': FieldInfo('Integer', 1,
+                      'Unique identifier of ancestral haplotype'),
+}
+
 
 def _warn(msg):
     """Print warning message in case of missing attributes"""

@@ -323,3 +323,163 @@ def test_info_cicnadj():
     assert header.RESERVED_INFO['CICNADJ'].type == 'Integer'
     assert header.RESERVED_INFO['CICNADJ'].number == '.'
     assert header.RESERVED_INFO['CICNADJ'].description
+
+
+# FORMAT for (small) variants -------------------------------------------------
+
+
+def test_format_ad():
+    assert header.RESERVED_FORMAT['AD']
+    assert header.RESERVED_FORMAT['AD'].type == 'Integer'
+    assert header.RESERVED_FORMAT['AD'].number == 'R'
+    assert header.RESERVED_FORMAT['AD'].description
+
+
+def test_format_adf():
+    assert header.RESERVED_FORMAT['ADF']
+    assert header.RESERVED_FORMAT['ADF'].type == 'Integer'
+    assert header.RESERVED_FORMAT['ADF'].number == 'R'
+    assert header.RESERVED_FORMAT['ADF'].description
+
+
+def test_format_adr():
+    assert header.RESERVED_FORMAT['ADR']
+    assert header.RESERVED_FORMAT['ADR'].type == 'Integer'
+    assert header.RESERVED_FORMAT['ADR'].number == 'R'
+    assert header.RESERVED_FORMAT['ADR'].description
+
+
+def test_format_dp():
+    assert header.RESERVED_FORMAT['DP']
+    assert header.RESERVED_FORMAT['DP'].type == 'Integer'
+    assert header.RESERVED_FORMAT['DP'].number == 1
+    assert header.RESERVED_FORMAT['DP'].description
+
+
+def test_format_ec():
+    assert header.RESERVED_FORMAT['EC']
+    assert header.RESERVED_FORMAT['EC'].type == 'Integer'
+    assert header.RESERVED_FORMAT['EC'].number == 'A'
+    assert header.RESERVED_FORMAT['EC'].description
+
+
+def test_format_ft():
+    assert header.RESERVED_FORMAT['FT']
+    assert header.RESERVED_FORMAT['FT'].type == 'String'
+    assert header.RESERVED_FORMAT['FT'].number == '.'
+    assert header.RESERVED_FORMAT['FT'].description
+
+
+def test_format_gq():
+    assert header.RESERVED_FORMAT['GQ']
+    assert header.RESERVED_FORMAT['GQ'].type == 'Integer'
+    assert header.RESERVED_FORMAT['GQ'].number == 'G'
+    assert header.RESERVED_FORMAT['GQ'].description
+
+
+def test_format_gp():
+    assert header.RESERVED_FORMAT['GP']
+    assert header.RESERVED_FORMAT['GP'].type == 'Float'
+    assert header.RESERVED_FORMAT['GP'].number == 'G'
+    assert header.RESERVED_FORMAT['GP'].description
+
+
+def test_format_gt():
+    assert header.RESERVED_FORMAT['GT']
+    assert header.RESERVED_FORMAT['GT'].type == 'String'
+    assert header.RESERVED_FORMAT['GT'].number == 1
+    assert header.RESERVED_FORMAT['GT'].description
+
+
+def test_format_gl():
+    assert header.RESERVED_FORMAT['GL']
+    assert header.RESERVED_FORMAT['GL'].type == 'Float'
+    assert header.RESERVED_FORMAT['GL'].number == 'G'
+    assert header.RESERVED_FORMAT['GL'].description
+
+
+def test_format_hq():
+    assert header.RESERVED_FORMAT['HQ']
+    assert header.RESERVED_FORMAT['HQ'].type == 'Integer'
+    assert header.RESERVED_FORMAT['HQ'].number == 2
+    assert header.RESERVED_FORMAT['HQ'].description
+
+
+def test_format_mq():
+    assert header.RESERVED_FORMAT['MQ']
+    assert header.RESERVED_FORMAT['MQ'].type == 'Integer'
+    assert header.RESERVED_FORMAT['MQ'].number == 1
+    assert header.RESERVED_FORMAT['MQ'].description
+
+
+def test_format_pl():
+    assert header.RESERVED_FORMAT['PL']
+    assert header.RESERVED_FORMAT['PL'].type == 'Integer'
+    assert header.RESERVED_FORMAT['PL'].number == 'G'
+    assert header.RESERVED_FORMAT['PL'].description
+
+
+def test_format_pq():
+    assert header.RESERVED_FORMAT['PQ']
+    assert header.RESERVED_FORMAT['PQ'].type == 'Integer'
+    assert header.RESERVED_FORMAT['PQ'].number == 1
+    assert header.RESERVED_FORMAT['PQ'].description
+
+
+def test_format_ps():
+    assert header.RESERVED_FORMAT['PS']
+    assert header.RESERVED_FORMAT['PS'].type == 'Integer'
+    assert header.RESERVED_FORMAT['PS'].number == 1
+    assert header.RESERVED_FORMAT['PS'].description
+
+
+# FORMAT for SVs --------------------------------------------------------------
+
+
+def test_format_cn():
+    assert header.RESERVED_FORMAT['CN']
+    assert header.RESERVED_FORMAT['CN'].type == 'Integer'
+    assert header.RESERVED_FORMAT['CN'].number == 1
+    assert header.RESERVED_FORMAT['CN'].description
+
+
+def test_format_cnq():
+    assert header.RESERVED_FORMAT['CNQ']
+    assert header.RESERVED_FORMAT['CNQ'].type == 'Float'
+    assert header.RESERVED_FORMAT['CNQ'].number == 1
+    assert header.RESERVED_FORMAT['CNQ'].description
+
+
+def test_format_cnl():
+    assert header.RESERVED_FORMAT['CNL']
+    assert header.RESERVED_FORMAT['CNL'].type == 'Float'
+    assert header.RESERVED_FORMAT['CNL'].number == 'G'
+    assert header.RESERVED_FORMAT['CNL'].description
+
+
+def test_format_cnp():
+    assert header.RESERVED_FORMAT['CNP']
+    assert header.RESERVED_FORMAT['CNP'].type == 'Float'
+    assert header.RESERVED_FORMAT['CNP'].number == 'G'
+    assert header.RESERVED_FORMAT['CNP'].description
+
+
+def test_format_nq():
+    assert header.RESERVED_FORMAT['NQ']
+    assert header.RESERVED_FORMAT['NQ'].type == 'Integer'
+    assert header.RESERVED_FORMAT['NQ'].number == 1
+    assert header.RESERVED_FORMAT['NQ'].description
+
+
+def test_format_hap():
+    assert header.RESERVED_FORMAT['HAP']
+    assert header.RESERVED_FORMAT['HAP'].type == 'Integer'
+    assert header.RESERVED_FORMAT['HAP'].number == 1
+    assert header.RESERVED_FORMAT['HAP'].description
+
+
+def test_format_ahap():
+    assert header.RESERVED_FORMAT['AHAP']
+    assert header.RESERVED_FORMAT['AHAP'].type == 'Integer'
+    assert header.RESERVED_FORMAT['AHAP'].number == 1
+    assert header.RESERVED_FORMAT['AHAP'].description
