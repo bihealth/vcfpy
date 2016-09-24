@@ -40,6 +40,118 @@ HEADER_NUMBER_GENOTYPES = 'G'
 HEADER_NUMBER_UNBOUNDED = '.'
 
 
+class FieldInfo:
+    """Core information for describing field type and number"""
+
+    def __init__(self, type_, number, description=None):
+        #: The type, one of INFO_TYPES or FORMAT_TYPES
+        self.type = type_
+        #: Number description, either an int or constant
+        self.number = number
+        #: Description for the header field, optional
+        self.description = description
+
+    def __str__(self):
+        return 'FieldInfo({}, {}, {})'.format(
+            *map(repr, [self.type, self.number, self.description]))
+
+    def __repr__(self):
+        return str(self)
+
+
+# Reserved INFO keys ----------------------------------------------------------
+
+#: Reserved fields for INFO from VCF v4.3
+RESERVED_INFO = {
+    # VCF v4.3, Section 1.6.1
+    'AA': FieldInfo('String', 1, 'Ancestral Allele'),
+    'AC': FieldInfo('Integer', 'A',
+                    'Allele count in genotypes, for each ALT allele, in the '
+                    'same order as listed'),
+    'AD': FieldInfo('Integer', 'R', 'Total read depth for each allele'),
+    'ADF': FieldInfo('Integer', 'R', 'Forward read depth for each allele'),
+    'ADR': FieldInfo('Integer', 'R', 'Reverse read depth for each allele'),
+    'AF': FieldInfo('Float', 'A',
+                    'Allele frequency for each ALT allele in the same order '
+                    'as listed: used for estimating from primary data not '
+                    'called genotypes'),
+    'AN': FieldInfo('Integer', 1,
+                    'Total number of alleles in called genotypes'),
+    'BQ': FieldInfo('Float', 1, 'RMS base quality at this position'),
+    'CIGAR': FieldInfo('String', 'A',
+                       'CIGAR string describing how to align each ALT allele '
+                       'to the reference allele'),
+    'DB': FieldInfo('Flag', 0, 'dbSNP membership'),
+    'DP': FieldInfo('Integer', 1, 'Combined depth across samples'),
+    'H2': FieldInfo('Flag', 0, 'Membership in HapMap 2'),
+    'H3': FieldInfo('Flag', 0, 'Membership in HapMap 3'),
+    'MQ': FieldInfo('Integer', 1, 'RMS mapping quality'),
+    'MQ0': FieldInfo('Integer', 1,
+                     'Number of MAPQ == 0 reads covering this record'),
+    'NS': FieldInfo('Integer', 1, 'Number of samples with data'),
+    'SB': FieldInfo('Integer', 4, 'Strand bias at this position'),
+    'SOMATIC': FieldInfo('Flag', 0,
+                         'Indicates that the record is a somatic mutation, '
+                         'for cancer genomics'),
+    'VALIDATED': FieldInfo('Flag', 0, 'Validated by follow-up experiment'),
+    '1000G': FieldInfo('Flag', 0, 'Membership in 1000 Genomes'),
+
+    # VCF v4.3, Section 3
+    'IMPRECISE': FieldInfo('Flag', 0, 'Imprecise structural variation'),
+    'NOVEL': FieldInfo('Flag', 0, 'Indicates a novel structural variation'),
+    'END': FieldInfo('Integer', 1,
+                     'End position of the variant described in this record '
+                     '(for symbolic alleles)'),
+    'SVTYPE': FieldInfo('String', 1, 'Type of structural variant'),
+    'SVLEN': FieldInfo('Integer', 1,
+                       'Difference in length between REF and ALT alleles'),
+    'CIPOS': FieldInfo('Integer', 2,
+                       'Confidence interval around POS for imprecise '
+                       'variants'),
+    'CIEND': FieldInfo('Integer', 2,
+                       'Confidence interval around END for imprecise '
+                       'variants'),
+    'HOMLEN': FieldInfo('Integer', '.',
+                        'Length of base pair identical micro-homology at '
+                        'event breakpoints'),
+    'HOMSEQ': FieldInfo('String', '.',
+                        'Sequence of base pair identical micro-homology at '
+                        'event breakpoints'),
+    'BKPTID': FieldInfo('String', '.',
+                        'ID of the assembled alternate allele in the '
+                        'assembly file'),
+    'MEINFO': FieldInfo('String', 4,
+                        'Mobile element info of the form '
+                        'NAME,START,END,POLARITY'),
+    'METRANS': FieldInfo('String', 4,
+                         'Mobile element transduction info of the form '
+                         'CHR,START,END,POLARITY'),
+    'DGVID': FieldInfo('String', 1,
+                       'ID of this element in Database of Genomic Variation'),
+    'DBVARID': FieldInfo('String', 1, 'ID of this element in DBVAR'),
+    'DBRIPID': FieldInfo('String', 1, 'ID of this element in DBRIP'),
+    'MATEID': FieldInfo('String', '.', 'ID of mate breakends'),
+    'PARID': FieldInfo('String', 1, 'ID of partner breakend'),
+    'EVENT': FieldInfo('String', 1, 'ID of event associated to breakend'),
+    'CILEN': FieldInfo('Integer', 2,
+                       'Confidence interval around the inserted material '
+                       'between breakends'),
+    'DP': FieldInfo('Integer', 1, 'Read Depth of segment containing breakend'),
+    'DPADJ': FieldInfo('Integer', '.', 'Read Depth of adjacency'),
+    'CN': FieldInfo('Integer', 1,
+                    'Copy number of segment containing breakend'),
+    'CNADJ': FieldInfo('Integer', '.', 'Copy number of adjacency'),
+    'CICN': FieldInfo('Integer', 2,
+                      'Confidence interval around copy number for the '
+                      'segment'),
+    'CICNADJ': FieldInfo('Integer', '.',
+                         'Confidence interval around copy number for the '
+                         'adjacency'),
+}
+
+# Reserved FORMAT keys --------------------------------------------------------
+
+
 def _warn(msg):
     """Print warning message in case of missing attributes"""
     print('[vcfpy] WARNING: {}'.format(msg), file=sys.stderr)
@@ -62,22 +174,6 @@ def serialize_for_header(key, value):
         return '[{}]'.format(', '.join(value))
     else:
         return str(value)
-
-
-class FieldInfo:
-    """Core information for describing field type and number"""
-
-    def __init__(self, type_, number):
-        #: The type, one of INFO_TYPES or FORMAT_TYPES
-        self.type = type_
-        #: Number description, either an int or constant
-        self.number = number
-
-    def __str__(self):
-        return 'FieldInfo({}, {})'.format(*map(repr, [self.type, self.number]))
-
-    def __repr__(self):
-        return str(self)
 
 
 def header_without_lines(header, remove):
