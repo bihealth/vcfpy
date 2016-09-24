@@ -14,8 +14,12 @@ VCFPy
         :alt: Documentation Status
 
 .. image:: https://pyup.io/repos/github/bihealth/vcfpy/shield.svg
-     :target: https://pyup.io/repos/github/bihealth/vcfpy/
-     :alt: Updates
+        :target: https://pyup.io/repos/github/bihealth/vcfpy/
+        :alt: Updates
+
+.. image:: https://codeclimate.com/github/bihealth/vcfpy/badges/coverage.svg
+        :target: https://codeclimate.com/github/bihealth/vcfpy/coverage
+        :alt: Test Coverage
 
 
 Python 3 VCF library with good support for both reading and writing

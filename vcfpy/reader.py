@@ -28,18 +28,22 @@ class Reader:
     """
 
     @classmethod
-    def from_stream(klass, stream, path=None, tabix_path=None):
+    def from_stream(klass, stream, path=None, tabix_path=None,
+                    record_checks=[]):
         """Create new :py:class:`Reader` from file
 
         :param stream: ``file``-like object to read from
         :param path: optional string with path to store (for display only)
+        :param list record_checks: record checks to perform, can contain
+            'INFO' and 'FORMAT'
         """
         if tabix_path and not path:
             raise ValueError('Must give path if tabix_path is given')
-        return Reader(stream=stream, path=path, tabix_path=tabix_path)
+        return Reader(stream=stream, path=path, tabix_path=tabix_path,
+                      record_checks=record_checks)
 
     @classmethod
-    def from_path(klass, path, tabix_path=None):
+    def from_path(klass, path, tabix_path=None, record_checks=[]):
         """Create new :py:class:`Reader` from path
 
         :param path: the path to load from (converted to ``str`` for
@@ -47,6 +51,8 @@ class Reader:
         :param tabix_path: optional string with path to TBI index,
             automatic inferral from ``path`` will be tried on the fly
             if not given
+        :param list record_checks: record checks to perform, can contain
+            'INFO' and 'FORMAT'
         """
         path = str(path)
         if path.endswith('.gz'):
@@ -57,22 +63,26 @@ class Reader:
                     tabix_path = None  # guessing path failed
         else:
             f = open(path, 'rt')
-        return klass.from_stream(stream=f, path=path, tabix_path=tabix_path)
+        return klass.from_stream(stream=f, path=path, tabix_path=tabix_path,
+                                 record_checks=record_checks)
 
-    def __init__(self, stream, path=None, tabix_path=None):
+    def __init__(self, stream, path=None, tabix_path=None,
+                 record_checks=[]):
         #: stream (``file``-like object) to read from
         self.stream = stream
         #: optional ``str`` with the path to the stream
         self.path = path
         #: optional ``str`` with path to tabix file
         self.tabix_path = tabix_path
+        #: checks to perform on records, can contain 'FORMAT' and 'INFO'
+        self.record_checks = tuple(record_checks)
         #: the ``pysam.TabixFile`` used for reading from index bgzip-ed VCF;
         #: constructed on the fly
         self.tabix_file = None
         # the iterator through the Tabix file to use
         self.tabix_iter = None
         #: the parser to use
-        self.parser = parser.Parser(stream)
+        self.parser = parser.Parser(stream, self.path, self.record_checks)
         #: the Header
         self.header = self.parser.parse_header()
         #: the :py:class:`vcfpy.header.SamplesInfos` object with the sample

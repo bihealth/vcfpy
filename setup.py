@@ -25,7 +25,7 @@ test_requirements = [
 
 setup(
     name='vcfpy',
-    version='0.4.1',
+    version='0.5.0',
     description=(
         'Python 3 VCF library with good support for both reading and writing'),
     long_description=readme + '\n\n' + history,

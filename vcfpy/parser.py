@@ -5,13 +5,15 @@
 import ast
 import collections
 import itertools
+import functools
+import math
 import sys
 
 from . import header
 from . import record
 from . import exceptions
+from .warn_utils import WarningHelper
 
-# TODO: add sphinx documentation for this
 try:
     from cyordereddict import OrderedDict
 except ImportError:
@@ -30,11 +32,6 @@ REQUIRE_NO_SAMPLE_HEADER = (
 #: Supported VCF versions, a warning will be issued otherwise
 SUPPORTED_VCF_VERSIONS = (
     'VCFv4.0', 'VCFv4.1', 'VCFv4.2', 'VCFv4.3')
-
-
-def _warn(msg):
-    """Print warning message"""
-    print('[vcfpy] WARNING: {}'.format(msg), file=sys.stderr)
 
 
 def split_quoted_string(s, delim=',', quote='"', brackets='[]'):
@@ -86,7 +83,21 @@ def split_quoted_string(s, delim=',', quote='"', brackets='[]'):
     return [s[start:end] for start, end in zip(begins, ends)]
 
 
-def parse_mapping(value):
+def split_mapping(pair_str, warning_helper):
+    """Split the ``str`` in ``pair_str`` at ``'='``
+
+    Warn if key needs to be stripped
+    """
+    orig_key, value = pair_str.split('=', 1)
+    key = orig_key.strip()
+    if key != orig_key:
+        warning_helper.warn_once(
+            'Mapping key {} has leading or trailing space'.format(
+                repr(orig_key)))
+    return key, value
+
+
+def parse_mapping(value, warning_helper):
     """Parse the given VCF header line mapping
 
     Such a mapping consists of "key=value" pairs, separated by commas and
@@ -94,6 +105,8 @@ def parse_mapping(value):
     for certain known keys, exceptions are made, depending on the tag key.
     this, however, only gets important when serializing.
 
+    :param WarningHelper warning_helper: object to use for printing warning
+        messages
     :raises: :py:class:`vcfpy.exceptions.InvalidHeaderException` if
         there was a problem parsing the file
     """
@@ -107,8 +120,7 @@ def parse_mapping(value):
     key_values = []
     for pair in pairs:
         if '=' in pair:
-            key, value = pair.split('=', 1)
-            key = key.strip()  # XXX lenient parsing
+            key, value = split_mapping(pair, warning_helper)
             if value.startswith('"') and value.endswith('"'):
                 value = ast.literal_eval(value)
             elif value.startswith('[') and value.endswith(']'):
@@ -122,6 +134,10 @@ def parse_mapping(value):
 
 class HeaderLineParserBase:
     """Parse into appropriate HeaderLine"""
+
+    def __init__(self, warning_helper):
+        #: :py:class:`WarningHelper` to use for print warnings
+        self.warning_helper = warning_helper
 
     def parse_key_value(self, key, value):
         """Parse the key/value pair
@@ -143,28 +159,43 @@ class StupidHeaderLineParser(HeaderLineParserBase):
 class MappingHeaderLineParser(HeaderLineParserBase):
     """Parse into HeaderLine (no particular structure)"""
 
-    def __init__(self, line_class):
+    def __init__(self, warning_helper, line_class):
         """Initialize the parser"""
-        super().__init__()
+        super().__init__(warning_helper)
         #: the class to use for the VCF header line
         self.line_class = line_class
 
     def parse_key_value(self, key, value):
-        return self.line_class(key, value, parse_mapping(value))
+        return self.line_class(
+            key, value, parse_mapping(value, self.warning_helper),
+            self.warning_helper)
 
 
-# Parsers to use for each VCF header type (given left of '=')
-HEADER_PARSERS = {
-    'ALT': MappingHeaderLineParser(header.AltAlleleHeaderLine),
-    'contig': MappingHeaderLineParser(header.ContigHeaderLine),
-    'FILTER': MappingHeaderLineParser(header.FilterHeaderLine),
-    'FORMAT': MappingHeaderLineParser(header.FormatHeaderLine),
-    'INFO': MappingHeaderLineParser(header.InfoHeaderLine),
-    'META': MappingHeaderLineParser(header.MetaHeaderLine),
-    'PEDIGREE': MappingHeaderLineParser(header.PedigreeHeaderLine),
-    'SAMPLE': MappingHeaderLineParser(header.SampleHeaderLine),
-    '__default__': StupidHeaderLineParser(),  # fallback
-}
+def build_header_parsers(warning_helper):
+    """Return mapping for parsers to use for each VCF header type
+
+    Inject the WarningHelper into the parsers.
+    """
+    result =  {
+        'ALT': MappingHeaderLineParser(
+            warning_helper, header.AltAlleleHeaderLine),
+        'contig': MappingHeaderLineParser(
+            warning_helper, header.ContigHeaderLine),
+        'FILTER': MappingHeaderLineParser(
+            warning_helper, header.FilterHeaderLine),
+        'FORMAT': MappingHeaderLineParser(
+            warning_helper, header.FormatHeaderLine),
+        'INFO': MappingHeaderLineParser(
+            warning_helper, header.InfoHeaderLine),
+        'META': MappingHeaderLineParser(
+            warning_helper, header.MetaHeaderLine),
+        'PEDIGREE': MappingHeaderLineParser(
+            warning_helper, header.PedigreeHeaderLine),
+        'SAMPLE': MappingHeaderLineParser(
+            warning_helper, header.SampleHeaderLine),
+        '__default__': StupidHeaderLineParser(warning_helper),  # fallback
+    }
+    return result
 
 
 # Field value converters
@@ -193,7 +224,6 @@ def convert_field_value(key, type_, value):
 def parse_field_value(key, field_info, value):
     """Parse ``value`` according to ``field_info``
     """
-    # XXX lenient parsing, ignoring if counts differ from field_info
     if field_info.type == 'Flag':
         assert value is True
         return True
@@ -252,8 +282,11 @@ class HeaderParser:
     """Helper class for parsing a VCF header
     """
 
-    def __init__(self, sub_parsers):
-        self.sub_parsers = HEADER_PARSERS
+    def __init__(self, warning_helper):
+        #: WarningHelper to use for printing warnings
+        self.warning_helper = warning_helper
+        #: Sub parsers to use for parsing the header lines
+        self.sub_parsers = build_header_parsers(warning_helper)
 
     def parse_line(self, line):
         """Parse VCF header ``line`` (trailing '\r\n' or '\n' is ignored)
@@ -274,8 +307,7 @@ class HeaderParser:
                 'Invalid VCF header line (must contain "=") {}'.format(line))
         line = line[len('##'):].rstrip()  # trim '^##' and trailing whitespace
         # split key/value pair at "="
-        key, value = line.split('=', 1)
-        key = key.strip()  # XXX lenient parsing
+        key, value = split_mapping(line, self.warning_helper)
         sub_parser = self.sub_parsers.get(key, self.sub_parsers['__default__'])
         return sub_parser.parse_key_value(key, value)
 
@@ -283,11 +315,15 @@ class HeaderParser:
 class RecordParser:
     """Helper class for parsing VCF records"""
 
-    def __init__(self, header, samples):
+    def __init__(self, header, samples, warning_helper, record_checks=[]):
         #: Header with the meta information
         self.header = header
         #: SamplesInfos with sample information
         self.samples = samples
+        #: Helper class for printing warnings
+        self.warning_helper = warning_helper
+        #: The checks to perform, can contain 'INFO' and 'FORMAT'
+        self.record_checks = tuple(record_checks)
         # Expected number of fields
         if self.samples.names:
             self.expected_fields = 9 + len(self.samples.names)
@@ -297,6 +333,17 @@ class RecordParser:
         self._format_cache = {}
         # Cache of FILTER entries, also applied to FORMAT/FT
         self._filter_ids = set(self.header.filter_ids())
+        # Helper for checking INFO fields
+        if 'INFO' in self.record_checks:
+            self._info_checker = InfoChecker(self.header, self.warning_helper)
+        else:
+            self._info_checker = NoopInfoChecker()
+        # Helper for checking FORMAT fields
+        if 'FORMAT' in self.record_checks:
+            self._format_checker = FormatChecker(
+                self.header, self.warning_helper)
+        else:
+            self._format_checker = NoopFormatChecker()
 
     def parse_line(self, line_str):
         """Parse line from file (including trailing line break) and return
@@ -337,11 +384,11 @@ class RecordParser:
             filt = arr[6].split(';')
         self._check_filters(filt, 'FILTER')
         # INFO
-        info = self._parse_info(arr[7])
+        info = self._parse_info(arr[7], len(alts))
+        # FORMAT
         if not self.samples.names:
             format, calls = [], []
         else:
-            # FORMAT
             format_str = arr[8]
             format = format_str.split(':')
             if format_str not in self._format_cache:
@@ -354,7 +401,8 @@ class RecordParser:
                          self._parse_calls_data(
                              format, self._format_cache[format_str], arr[9:]))]
             for call in calls:
-                self._check_filters(
+                self._format_checker.run(call, len(alts))
+                self._check_filters(  # TODO: move into checker
                     call.data.get('FT'), 'FORMAT/FT', call.sample)
         return record.Record(
             chrom, pos, ids, ref, alts, qual, filt, info, format, calls)
@@ -368,13 +416,14 @@ class RecordParser:
         for f in filt:
             if f not in self._filter_ids:
                 if source == 'FILTER':
-                    _warn(('Filter not found in header: {}; found in '
-                           'FILTER column').format(f))
+                    self.warning_helper.warn_once(
+                        ('Filter not found in header: {}; problem in '
+                         'FILTER column').format(f))
                 else:
                     assert source == 'FORMAT/FT' and sample
-                    _warn(('Filter not found in header: {}; found in '
-                           'FORMAT/FT column of sample {}').format(
-                               f, sample))
+                    self.warning_helper.warn_once(
+                        ('Filter not found in header: {}; problem in '
+                         'FORMAT/FT column of sample {}').format(f, sample))
 
     def _split_line(self, line_str):
         """Split line and check number of columns"""
@@ -387,7 +436,7 @@ class RecordParser:
                      line_str)))
         return arr
 
-    def _parse_info(self, info_str):
+    def _parse_info(self, info_str, num_alts):
         """Parse INFO column from string"""
         result = OrderedDict()
         if info_str == '.':
@@ -397,13 +446,14 @@ class RecordParser:
         # programs follow this
         for entry in info_str.split(';'):
             if '=' not in entry:  # flag
-                result[entry] = parse_field_value(
-                    entry, self.header.get_info_field_info(entry), True)
+                key = entry
+                result[key] = parse_field_value(
+                    key, self.header.get_info_field_info(key), True)
             else:
-                key, value = entry.split('=', 1)
-                key = key.strip()  # XXX lenient parsing
+                key, value = split_mapping(entry, self.warning_helper)
                 result[key] = parse_field_value(
                     key, self.header.get_info_field_info(key), value)
+            self._info_checker.run(key, result[key], num_alts)
         return result
 
     def _parse_calls_data(self, format, infos, arr):
@@ -426,6 +476,140 @@ class RecordParser:
         return result
 
 
+class HeaderChecker:
+    """Helper class for checking a VCF header
+    """
+
+    def __init__(self, warning_helper):
+        #: helper class for printing warnings
+        self.warning_helper = warning_helper
+
+    def run(self, header):
+        """Check the header
+
+        Warnings will be printed using ``self.warning_helper`` while errors
+        will raise an exception.
+
+        :raises: ``vcfpy.exceptions.InvalidHeaderException`` in the case of
+            severe errors reading the header
+        """
+        self._check_header_lines(header.lines)
+
+    def _check_header_lines(self, header_lines):
+        """Check header lines, in particular for starting file "##fileformat"
+        """
+        if not header_lines:
+            raise exceptions.InvalidHeaderException(
+                'The VCF file did not contain any header lines!')
+        first = header_lines[0]
+        if first.key != 'fileformat':
+            raise exceptions.InvalidHeaderException(
+                'The VCF file did not start with ##fileformat')
+        if first.value not in SUPPORTED_VCF_VERSIONS:
+            self.warning_helper.warn_once(
+                ('WARNING: The VCF version {} is not known, '
+                 'going on regardlessly').format(first.value))
+
+
+@functools.lru_cache(maxsize=32)
+def binomial(n, k):
+    try:
+        res = math.factorial(n) // math.factorial(k) // math.factorial(n - k)
+    except ValueError:
+        res = 0
+    return res
+
+
+class NoopInfoChecker:
+    """Helper class that performs no checks"""
+
+    def __init__(self):
+        pass
+
+    def run(self, key, value, num_alts):
+        pass
+
+
+class InfoChecker:
+    """Helper class for checking an INFO field"""
+
+    def __init__(self, header, warning_helper):
+        #: VCFHeader to use for checking
+        self.header = header
+        #: helper class for printing warnings
+        self.warning_helper = warning_helper
+
+    def run(self, key, value, num_alts):
+        """Check value in INFO[key] of record
+
+        Currently, only checks for consistent counts are implemented
+
+        :param str key: key of INFO entry to check
+        :param value: value to check
+        :param int alts: list of alternative alleles, for length
+        """
+        field_info = self.header.get_info_field_info(key)
+        if type(value) is not list:
+            return
+        TABLE = {
+            '.': len(value),
+            'A': num_alts,
+            'R': num_alts + 1,
+            'G': binomial(num_alts + 1, 2),  # diploid only at the moment
+        }
+        expected = TABLE.get(field_info.number, field_info.number)
+        if len(value) != expected:
+            tpl = 'Number of elements for INFO field {} is {} instead of {}'
+            self.warning_helper.warn_once(tpl.format(
+                key, len(value), field_info.number))
+
+
+class NoopFormatChecker:
+    """Helper class that performs no checks"""
+
+    def __init__(self):
+        pass
+
+    def run(self, call, num_alts):
+        pass
+
+
+class FormatChecker:
+    """Helper class for checking a FORMAT field"""
+
+    def __init__(self):
+        #: VCFHeader to use for checking
+        self.header = header
+        #: helper class for printing warnings
+        self.warning_helper = warning_helper
+
+    def run(self, call, num_alts):
+        """Check ``FORMAT`` of a record.Call
+
+        Currently, only checks for consistent counts are implemented
+        """
+        for key, value in call.data.items():
+            self._check_count(call, key, value, num_alts)
+
+    def _check_count(self, call, key, value, num_alts):
+        field_info = self.header.get_format_field_info(key)
+        if type(value) is not list:
+            return
+        num_alleles = len(call.gt_alleles or [])
+        TABLE = {
+            '.': len(value),
+            'A': num_alts,
+            'R': num_alts + 1,
+            'G': binomial(num_alts + num_alleles, num_alleles),
+        }
+        expected = TABLE.get(field_info.number, field_info.number)
+        if len(value) != expected:
+            tpl = ('Number of elements for FORMAT field {} is {} instead '
+                   'of {} (number specifier {})')
+            self.warning_helper.warn_once(tpl.format(
+                key, len(value), expected, field_info.number))
+
+
 class Parser:
     """Class for line-wise parsing of VCF files
 
@@ -436,9 +620,11 @@ class Parser:
         only, optional
     """
 
-    def __init__(self, stream, path=None):
+    def __init__(self, stream, path=None, record_checks=[]):
         self.stream = stream
         self.path = path
+        #: checks to perform, can contain 'INFO' and 'FORMAT'
+        self.record_checks = tuple(record_checks)
         #: header, once it has been read
         self.header = None
         # the currently read line
@@ -448,6 +634,10 @@ class Parser:
         self.samples = None
         # helper for parsing the records
         self._record_parser = None
+        #: helper for printing warnings
+        self.warning_helper = WarningHelper()
+        # helper for checking the header
+        self._header_checker = HeaderChecker(self.warning_helper)
 
     def _read_next_line(self):
         """Read next line store in self._line and return old one"""
@@ -464,13 +654,11 @@ class Parser:
             problems reading the header
         """
         # parse header lines
-        sub_parser = HeaderParser(HEADER_PARSERS)
+        sub_parser = HeaderParser(self.warning_helper)
         header_lines = []
         while self._line and self._line.startswith('##'):
             header_lines.append(sub_parser.parse_line(self._line))
             self._read_next_line()
-        # check first header line to be '##fileformat='
-        self._check_header_lines(header_lines)  # raises InvalidHeaderException
         # parse sample info line
         if not self._line or not self._line.startswith('#CHROM'):
             raise exceptions.IncorrectVCFFormat(
@@ -482,8 +670,9 @@ class Parser:
             raise exceptions.IncorrectVCFFormat(
                 'Ill-formatted line starting with "#CHROM"')
         if ' ' in line[:pos]:
-            _warn('Found space in #CHROM line, splitting at whitespace '
-                  'instead of tab; this VCF file is ill-formatted')
+            self.warning_helper.warn_once(
+                'Found space in #CHROM line, splitting at whitespace '
+                'instead of tab; this VCF file is ill-formatted')
             arr = self._line.rstrip().split()
         else:
             arr = self._line.rstrip().split('\t')
@@ -502,32 +691,18 @@ class Parser:
         self.samples = header.SamplesInfos(arr[len(REQUIRE_SAMPLE_HEADER):])
         # construct Header object
         self.header = header.Header(header_lines, self.samples)
+        # check header for consistency
+        self._header_checker.run(self.header)
         # construct record parser
-        self._record_parser = RecordParser(self.header, self.samples)
+        self._record_parser = RecordParser(
+            self.header, self.samples, self.warning_helper,
+            self.record_checks)
         # read next line, must not be header
         self._read_next_line()
         if self._line and self._line.startswith('#'):
             raise exceptions.IncorrectVCFFormat(
                 'Expecting non-header line or EOF after "#CHROM" line')
         return self.header
-
-    def _check_header_lines(self, header_lines):
-        """Check header lines, in particular for starting file "##fileformat"
-
-        :raises: ``vcfpy.exceptions.InvalidHeaderException`` in the case of
-            problems reading the header
-        """
-        if not header_lines:
-            raise exceptions.InvalidHeaderException(
-                'The VCF file did not contain any header lines!')
-        first = header_lines[0]
-        if first.key != 'fileformat':
-            raise exceptions.InvalidHeaderException(
-                'The VCF file did not start with ##fileformat')
-        if first.value not in SUPPORTED_VCF_VERSIONS:
-            print(('[vcfpy] WARNING: The VCF version {} is not known, '
-                   'going on regardlessly').format(first.value),
-                  file=sys.stderr)
 
     def parse_line(self, line):
         """Pare the given line without reading another one from the stream"""
@@ -541,3 +716,7 @@ class Parser:
             problems reading the record
         """
         return self.parse_line(self._read_next_line())
+
+    def print_warn_summary(self):
+        """If there were any warnings, print summary with warnings"""
+        self.warning_helper.print_summary('Parser Warnings')
