@@ -408,12 +408,12 @@ class RecordParser:
             if f not in self._filter_ids:
                 if source == 'FILTER':
                     self.warning_helper.warn_once(
-                        ('Filter not found in header: {}; found in '
+                        ('Filter not found in header: {}; problem in '
                          'FILTER column').format(f))
                 else:
                     assert source == 'FORMAT/FT' and sample
                     self.warning_helper.warn_once(
-                        ('Filter not found in header: {}; found in '
+                        ('Filter not found in header: {}; problem in '
                          'FORMAT/FT column of sample {}').format(f, sample))
 
     def _split_line(self, line_str):
@@ -444,7 +444,7 @@ class RecordParser:
                 key, value = split_mapping(entry, self.warning_helper)
                 result[key] = parse_field_value(
                     key, self.header.get_info_field_info(key), value)
-            self._info_checker.run(entry, result[key], num_alts)
+            self._info_checker.run(key, result[key], num_alts)
         return result
 
     def _parse_calls_data(self, format, infos, arr):
@@ -538,7 +538,7 @@ class InfoChecker:
             'R': num_alts + 1,
             'G': binomial(num_alts + 1, 2),  # diploid only at the moment
         }
-        expected = TABLE[field_info.number]
+        expected = TABLE.get(field_info.number, field_info.number)
         if len(value) != expected:
             tpl = 'Number of elements for INFO field {} is {} instead of {}'
             self.warning_helper.warn_once(tpl.format(
@@ -563,20 +563,22 @@ class FormatChecker:
             self._check_count(call, key, value, num_alts)
 
     def _check_count(self, call, key, value, num_alts):
-        field_info = self.header.get_info_field_info(key)
+        field_info = self.header.get_format_field_info(key)
         if type(value) is not list:
             return
+        num_alleles = len(call.gt_alleles or [])
         TABLE = {
             '.': len(value),
             'A': num_alts,
             'R': num_alts + 1,
-            'G': binomial(num_alts + 1, len(call.gt_alleles or [])),
+            'G': binomial(num_alts + num_alleles, num_alleles),
         }
-        expected = TABLE[field_info.number]
+        expected = TABLE.get(field_info.number, field_info.number)
         if len(value) != expected:
-            tpl = 'Number of elements for INFO field {} is {} instead of {}'
+            tpl = ('Number of elements for FORMAT field {} is {} instead '
+                   'of {} (number specifier {})')
             self.warning_helper.warn_once(tpl.format(
-                key, len(value), field_info.number))
+                key, len(value), expected, field_info.number))
 
 
 class Parser:

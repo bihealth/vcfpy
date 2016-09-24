@@ -58,6 +58,23 @@ def test_parse_minimal_record():
     assert not p.warning_helper.warning_counter
 
 
+def test_parse_record_with_info():
+    # Setup parser with stock header and lines to parse
+    LINES = '20\t1\t.\tC\tG\t.\t.\tAA=G\tGT\t0/1\t0/1\t.\n'
+    p = vcf_parser(LINES)
+    hdr = p.parse_header()
+    # Perform the actual test
+    EXPECTED = (
+        "Record('20', 1, [], 'C', [Substitution(type_='SNV', value='G')], "
+        "None, [], OrderedDict([('AA', 'G')]), ['GT'], "
+        "[Call('NA00001', OrderedDict([('GT', '0/1')])),"
+        " Call('NA00002', OrderedDict([('GT', '0/1')])),"
+        " Call('NA00003', OrderedDict([('GT', None)]))])")
+    RESULT = p.parse_next_record()
+    assert str(RESULT) == EXPECTED
+    assert not p.warning_helper.warning_counter
+
+
 def test_parse_record_with_escaping():
     # Setup parser with stock header and lines to parse
     LINES = ('20\t100\t.\tC\tG\t.\t.\tANNO=Here%2Care%25some chars,'
@@ -93,8 +110,8 @@ def test_parse_record_with_filter_warning():
     RESULT = p.parse_next_record()
     assert str(RESULT) == EXPECTED
     assert len(p.warning_helper.warning_counter) == 2
-    msg1 = 'Filter not found in header: REX; found in FILTER column'
-    msg2 = 'Filter not found in header: BAR; found in FORMAT/FT column of sample NA00002'
+    msg1 = 'Filter not found in header: REX; problem in FILTER column'
+    msg2 = 'Filter not found in header: BAR; problem in FORMAT/FT column of sample NA00002'
     assert list(p.warning_helper.warning_counter.keys()) == [msg1, msg2]
     assert p.warning_helper.warning_counter[msg1] == 1
     assert p.warning_helper.warning_counter[msg2] == 1

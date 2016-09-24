@@ -334,9 +334,15 @@ class Header:
         result = self._indices[type_].get(key)
         if result:
             return result
+        if key in RESERVED_INFO:
+            res = FieldInfo(RESERVED_INFO[key].type,
+                            RESERVED_INFO[key].number)
+        else:
+            res = FieldInfo('String', HEADER_NUMBER_UNBOUNDED)
         self.warning_helper.warn_once(
-            '{} {} not found using String/"." instead'.format(type_, key))
-        return FieldInfo('String', HEADER_NUMBER_UNBOUNDED)
+            '{} {} not found using {}/{} instead'.format(
+                type_, key, res.type, repr(res.number)))
+        return res
 
     def __str__(self):
         tpl = 'Header(lines={}, samples={})'
