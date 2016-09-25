@@ -306,6 +306,34 @@ def parse_breakend(alt_str):
             sequence, within_main_assembly)
 
 
+def process_sub_grow(ref, alt_str):
+    """Process substution where the string grows"""
+    if len(alt_str) == 0:
+        raise exceptions.InvalidRecordException(
+            'Invalid VCF, empty ALT')
+    elif len(alt_str) == 1:
+        if ref[0] == alt_str[0]:
+            return record.Substitution(record.DEL, alt_str)
+        else:
+            return record.Substitution(record.INDEL, alt_str)
+    else:
+        return record.Substitution(record.INDEL, alt_str)
+
+
+def process_sub_shrink(ref, alt_str):
+    """Process substution where the string shrink"""
+    if len(ref) == 0:
+        raise exceptions.InvalidRecordException(
+            'Invalid VCF, empty REF')
+    elif len(ref) == 1:
+        if ref[0] == alt_str[0]:
+            return record.Substitution(record.INS, alt_str)
+        else:
+            return record.Substitution(record.INDEL, alt_str)
+    else:
+        return record.Substitution(record.INDEL, alt_str)
+
+
 def process_sub(ref, alt_str):
     """Process substitution"""
     if len(ref) == len(alt_str):
@@ -314,27 +342,9 @@ def process_sub(ref, alt_str):
         else:
             return record.Substitution(record.MNV, alt_str)
     elif len(ref) > len(alt_str):
-        if len(alt_str) == 0:
-            raise exceptions.InvalidRecordException(
-                'Invalid VCF, empty ALT')
-        elif len(alt_str) == 1:
-            if ref[0] == alt_str[0]:
-                return record.Substitution(record.DEL, alt_str)
-            else:
-                return record.Substitution(record.INDEL, alt_str)
-        else:
-            return record.Substitution(record.INDEL, alt_str)
+        return process_sub_grow(ref, alt_str)
     else:  # len(ref) < len(alt_str):
-        if len(ref) == 0:
-            raise exceptions.InvalidRecordException(
-                'Invalid VCF, empty REF')
-        elif len(ref) == 1:
-            if ref[0] == alt_str[0]:
-                return record.Substitution(record.INS, alt_str)
-            else:
-                return record.Substitution(record.INDEL, alt_str)
-        else:
-            return record.Substitution(record.INDEL, alt_str)
+        return process_sub_shrink(ref, alt_str)
 
 
 def process_alt(header, ref, alt_str):
@@ -497,16 +507,19 @@ class RecordParser:
         if type(filt) is str:
             filt = filt.split(',')
         for f in filt:
-            if f not in self._filter_ids:
-                if source == 'FILTER':
-                    self.warning_helper.warn_once(
-                        ('Filter not found in header: {}; problem in '
-                         'FILTER column').format(f))
-                else:
-                    assert source == 'FORMAT/FT' and sample
-                    self.warning_helper.warn_once(
-                        ('Filter not found in header: {}; problem in '
-                         'FORMAT/FT column of sample {}').format(f, sample))
+            self._check_filter(f, source, sample)
+
+    def _check_filter(self, f, source, sample):
+        if f not in self._filter_ids:
+            if source == 'FILTER':
+                self.warning_helper.warn_once(
+                    ('Filter not found in header: {}; problem in '
+                        'FILTER column').format(f))
+            else:
+                assert source == 'FORMAT/FT' and sample
+                self.warning_helper.warn_once(
+                    ('Filter not found in header: {}; problem in '
+                        'FORMAT/FT column of sample {}').format(f, sample))
 
     def _split_line(self, line_str):
         """Split line and check number of columns"""
