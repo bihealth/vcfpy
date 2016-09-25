@@ -60,7 +60,7 @@ def test_parse_record_with_info():
     # Setup parser with stock header and lines to parse
     LINES = '20\t1\t.\tC\tG\t.\t.\tAA=G\tGT\t0/1\t0/1\t.\n'
     p = vcf_parser(LINES)
-    hdr = p.parse_header()
+    p.parse_header()
     # Perform the actual test
     EXPECTED = (
         "Record('20', 1, [], 'C', [Substitution(type_='SNV', value='G')], "
