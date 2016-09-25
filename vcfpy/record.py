@@ -34,9 +34,6 @@ HET = 1
 #: Code for homozygous alternative
 HOM_ALT = 2
 
-#: Codes for structural variants
-SV_CODES = ('DEL', 'INS', 'DUP', 'INV', 'CNV')
-
 #: Characters reserved in VCF, have to be escaped
 RESERVED_CHARS = ':;=%,\r\n\t'
 #: Mapping for escaping reserved characters
@@ -313,6 +310,7 @@ class Substitution(AltRecord):
     def __repr__(self):
         return str(self)
 
+
 #: code for five prime orientation :py:class:`BreakEnd`s
 FIVE_PRIME = '5'
 #: code for three prime orientation :py:class:`BreakEnd`s
@@ -385,7 +383,12 @@ class SingleBreakEnd(BreakEnd):
 
 
 class SymbolicAllele(AltRecord):
-    """A placeholder for a symbolic allele"""
+    """A placeholder for a symbolic allele
+
+    The allele symbol must be defined in the header using an ``ALT`` header
+    before being parsed.  Usually, this is used for succinct descriptions of
+    structural variants or IUPAC parameters.
+    """
 
     def __init__(self, value):
         super().__init__(SYMBOLIC)

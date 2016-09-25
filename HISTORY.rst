@@ -5,6 +5,8 @@ History
 HEAD
 ----
 
+* Refining implementation for breakend and symbolic allele class
+* Removing ``record.SV_CODES``
 * Refactoring parser module a bit to make the code cleaner
 * Fixing small typos and problems in documentation
 

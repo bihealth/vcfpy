@@ -285,10 +285,7 @@ def process_alt(header, ref, alt_str):
         return record.BreakEnd(record.BND, alt_str)
     elif alt_str.startswith('<') and alt_str.endswith('>'):
         inner = alt_str[1:-1]
-        if any([inner.startswith(code) for code in record.SV_CODES]):
-            return record.SV(record.SV, alt_str)
-        else:
-            return record.SymbolicAllele(record.SYMBOLIC, alt_str)
+        return record.SymbolicAllele(inner)
     else:  # substitution
         if len(ref) == len(alt_str):
             if len(ref) == 1:
