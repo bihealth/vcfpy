@@ -105,7 +105,6 @@ class BgzfWriter(object):
 
     def _write_block(self, block):
         # print("Saving %i bytes" % len(block))
-        start_offset = self._handle.tell()
         assert len(block) <= 65536
         # Giving a negative window bits means no gzip/zlib headers,
         # -15 used in samtools
@@ -184,7 +183,8 @@ class BgzfWriter(object):
         # Not seekable, but we do support tell...
         return False
 
-    def isatty(self):
+    @classmethod
+    def isatty(klass):
         return False
 
     def fileno(self):

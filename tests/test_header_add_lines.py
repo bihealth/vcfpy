@@ -2,7 +2,6 @@
 """Test adding header lines to headers
 """
 
-import collections
 import io
 
 import pytest

@@ -43,7 +43,7 @@ def test_parse_minimal_record():
     # Setup parser with stock header and lines to parse
     LINES = '20\t1\t.\tC\tG\t.\t.\t.\tGT\t0/1\t0/2\t.\n'
     p = vcf_parser(LINES)
-    hdr = p.parse_header()
+    p.parse_header()
     # Perform the actual test
     EXPECTED = (
         "Record('20', 1, [], 'C', [Substitution(type_='SNV', value='G')], "
@@ -78,7 +78,7 @@ def test_parse_record_with_escaping():
     LINES = ('20\t100\t.\tC\tG\t.\t.\tANNO=Here%2Care%25some chars,'
              '%2525\tGT:FT\t0/1:FOO\t0/0:.\t1/1:.\n')
     p = vcf_parser(LINES)
-    hdr = p.parse_header()
+    p.parse_header()
     # Perform the actual test
     EXPECTED = (
         "Record('20', 100, [], 'C', [Substitution(type_='SNV', value='G')], "
@@ -97,7 +97,7 @@ def test_parse_record_with_filter_warning():
     # Setup parser with stock header and lines to parse
     LINES = '20\t1\t.\tC\tG\t.\tREX\t.\tGT:FT\t0/1:.\t0/2:BAR\t.:.\n'
     p = vcf_parser(LINES)
-    hdr = p.parse_header()
+    p.parse_header()
     # Perform the actual test
     EXPECTED = (
         "Record('20', 1, [], 'C', [Substitution(type_='SNV', value='G')], "

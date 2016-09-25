@@ -233,6 +233,14 @@ def header_without_lines(header, remove):
     ``remove`` is an iterable of pairs ``key``/``ID`` with the VCF header key
     and ``ID`` of entry to remove.  In the case that a line does not have
     a ``mapping`` entry, you can give the full value to remove.
+
+    .. code-block:: python
+
+        # header is a vcfpy.Header, e.g., as read earlier from file
+        new_header = vcfpy.without_header_lines(
+            header, [('assembly', None), ('FILTER', 'PASS')])
+        # now, the header lines starting with "##assembly=" and the "PASS"
+        # filter line will be missing from new_header
     """
     remove = set(remove)
     # Copy over lines that are not removed
@@ -288,19 +296,39 @@ class Header:
         return result
 
     def add_filter_line(self, mapping):
-        """Add FILTER header line constructed from the given mapping"""
+        """Add FILTER header line constructed from the given mapping
+
+        :param mapping: ``OrderedDict`` with mapping to add.  It is
+            recommended to use ``OrderedDict`` over ``dict`` as this makes
+            the result reproducible
+        """
         self.add_line(FilterHeaderLine.from_mapping(mapping))
 
     def add_contig_line(self, mapping):
-        """Add "contig" header line constructed from the given mapping"""
+        """Add "contig" header line constructed from the given mapping
+
+        :param mapping: ``OrderedDict`` with mapping to add.  It is
+            recommended to use ``OrderedDict`` over ``dict`` as this makes
+            the result reproducible
+        """
         self.add_line(ContigHeaderLine.from_mapping(mapping))
 
     def add_info_line(self, mapping):
-        """Add INFO header line constructed from the given mapping"""
+        """Add INFO header line constructed from the given mapping
+
+        :param mapping: ``OrderedDict`` with mapping to add.  It is
+            recommended to use ``OrderedDict`` over ``dict`` as this makes
+            the result reproducible
+        """
         self.add_line(InfoHeaderLine.from_mapping(mapping))
 
     def add_format_line(self, mapping):
-        """Add FORMAT header line constructed from the given mapping"""
+        """Add FORMAT header line constructed from the given mapping
+
+        :param mapping: ``OrderedDict`` with mapping to add.  It is
+            recommended to use ``OrderedDict`` over ``dict`` as this makes
+            the result reproducible
+        """
         self.add_line(FormatHeaderLine.from_mapping(mapping))
 
     def format_ids(self):
@@ -709,7 +737,8 @@ class CompoundHeaderLine(HeaderLine):
                   file=sys.stderr)
             self.mapping['Number'] = '.'
 
-    def _parse_number(self, number):
+    @classmethod
+    def _parse_number(klass, number):
         """Parse ``number`` into an ``int`` or return ``number`` if a valid
         expression for a INFO/FORMAT "Number".
 

@@ -3,12 +3,9 @@
 """
 
 import ast
-import collections
-import itertools
 import functools
 import math
 import re
-import sys
 
 from . import header
 from . import record
@@ -549,7 +546,7 @@ class RecordParser:
         return result
 
     @classmethod
-    def _parse_calls_data(klass, format, infos, arr):
+    def _parse_calls_data(klass, format_, infos, arr):
         """Parse genotype call information from arrays using format array
 
         :param list format: List of strings with format names
@@ -562,7 +559,7 @@ class RecordParser:
             # The standard is very nice to parsers, we can simply split at
             # colon characters, although I (Manuel) don't know how strict
             # programs follow this
-            for key, info, value in zip(format, infos, entry.split(':')):
+            for key, info, value in zip(format_, infos, entry.split(':')):
                 data[key] = parse_field_value(
                     key, info, value)
             result.append(data)
@@ -686,7 +683,7 @@ class FormatChecker:
 
     def _check_count(self, call, key, value, num_alts):
         field_info = self.header.get_format_field_info(key)
-        if type(value) is not list:
+        if isinstance(value, list):
             return
         num_alleles = len(call.gt_alleles or [])
         TABLE = {
