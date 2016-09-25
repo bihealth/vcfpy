@@ -18,7 +18,7 @@ def format_atomic(value):
     reserved characters occurs in the value.
     """
     # Perform escaping
-    if type(value) is str:
+    if isinstance(value, str):
         if any(r in value for r in record.RESERVED_CHARS):
             for k, v in record.ESCAPE_MAPPING:
                 value = value.replace(k, v)
@@ -156,13 +156,14 @@ class Writer:
                 result.append('{}={}'.format(key, format_value(info, value)))
         return ';'.join(result)
 
-    def _serialize_call(self, format, call):
+    def _serialize_call(self, format_, call):
         """Return serialized version of the Call using the record's FORMAT'"""
         result = [format_value(self.header.get_format_field_info(key),
-                               call.data[key]) for key in format]
+                               call.data[key]) for key in format_]
         return ':'.join(result)
 
-    def _empty_to_dot(self, val):
+    @classmethod
+    def _empty_to_dot(klass, val):
         """Return val or '.' if empty value"""
         if val == '' or val is None or val == []:
             return '.'
@@ -172,5 +173,5 @@ class Writer:
     def __enter__(self):
         return self
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, type_, value, traceback):
         self.close()

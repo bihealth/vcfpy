@@ -64,7 +64,6 @@ def check_file(path, line):
 
 def test_write_minimal_record_writer_from_path(header_samples, tmpdir_factory):
     O = vcfpy.OrderedDict
-    S = record.Substitution
     # open temporary file and setup the Writer with header
     path = tmpdir_factory.mktemp('write_header').join('out.vcf.gz')
     header, samples = header_samples
@@ -89,7 +88,6 @@ def test_write_minimal_record_writer_from_path(header_samples, tmpdir_factory):
 def test_write_minimal_record_writer_from_stream_path(
         header_samples, tmpdir_factory):
     O = vcfpy.OrderedDict
-    S = record.Substitution
     # open temporary file and setup the Writer with header
     path = tmpdir_factory.mktemp('write_header').join('out.vcf.gz')
     header, samples = header_samples
@@ -115,7 +113,6 @@ def test_write_minimal_record_writer_from_stream_path(
 def test_write_minimal_record_writer_from_stream_use_bgzf(
         header_samples, tmpdir_factory):
     O = vcfpy.OrderedDict
-    S = record.Substitution
     # open temporary file and setup the Writer with header
     path = tmpdir_factory.mktemp('write_header').join('out.vcf.gz')
     header, samples = header_samples

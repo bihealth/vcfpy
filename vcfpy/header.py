@@ -5,6 +5,7 @@ The VCF header class structure is modeled after HTSJDK
 """
 
 import json
+import pprint
 import sys
 
 from . import exceptions
@@ -52,6 +53,19 @@ class FieldInfo:
         #: Description for the header field, optional
         self.description = description
 
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        return NotImplemented
+
+    def __ne__(self, other):
+        if isinstance(other, self.__class__):
+            return not self.__eq__(other)
+        return NotImplemented
+
+    def __hash__(self):
+        return hash(tuple(sorted(self.__dict__.items())))
+
     def __str__(self):
         return 'FieldInfo({}, {}, {})'.format(
             *map(repr, [self.type, self.number, self.description]))
@@ -83,7 +97,9 @@ RESERVED_INFO = {
                        'CIGAR string describing how to align each ALT allele '
                        'to the reference allele'),
     'DB': FieldInfo('Flag', 0, 'dbSNP membership'),
-    'DP': FieldInfo('Integer', 1, 'Combined depth across samples'),
+    'DP': FieldInfo('Integer', 1,
+                    'Combined depth across samples for small variants and '
+                    'Read Depth of segment containing breakend for SVs'),
     'H2': FieldInfo('Flag', 0, 'Membership in HapMap 2'),
     'H3': FieldInfo('Flag', 0, 'Membership in HapMap 3'),
     'MQ': FieldInfo('Integer', 1, 'RMS mapping quality'),
@@ -137,7 +153,6 @@ RESERVED_INFO = {
     'CILEN': FieldInfo('Integer', 2,
                        'Confidence interval around the inserted material '
                        'between breakends'),
-    'DP': FieldInfo('Integer', 1, 'Read Depth of segment containing breakend'),
     'DPADJ': FieldInfo('Integer', '.', 'Read Depth of adjacency'),
     'CN': FieldInfo('Integer', 1,
                     'Copy number of segment containing breakend'),
@@ -201,12 +216,12 @@ def serialize_for_header(key, value):
     """Serialize value for the given mapping key for a VCF header line"""
     if key in QUOTE_FIELDS:
         return json.dumps(value)
-    elif type(value) is str:
+    elif isinstance(value, str):
         if ' ' in value or '\t' in value:
             return json.dumps(value)
         else:
             return value
-    elif type(value) is list:
+    elif isinstance(value, list):
         return '[{}]'.format(', '.join(value))
     else:
         return str(value)
@@ -218,6 +233,14 @@ def header_without_lines(header, remove):
     ``remove`` is an iterable of pairs ``key``/``ID`` with the VCF header key
     and ``ID`` of entry to remove.  In the case that a line does not have
     a ``mapping`` entry, you can give the full value to remove.
+
+    .. code-block:: python
+
+        # header is a vcfpy.Header, e.g., as read earlier from file
+        new_header = vcfpy.without_header_lines(
+            header, [('assembly', None), ('FILTER', 'PASS')])
+        # now, the header lines starting with "##assembly=" and the "PASS"
+        # filter line will be missing from new_header
     """
     remove = set(remove)
     # Copy over lines that are not removed
@@ -245,9 +268,9 @@ class Header:
     a filtered list of header lines.
     """
 
-    def __init__(self, lines=[], samples=None, warning_helper=WarningHelper()):
+    def __init__(self, lines=None, samples=None, warning_helper=WarningHelper()):
         #: ``list`` of :py:HeaderLine objects
-        self.lines = list(lines)
+        self.lines = lines or []
         #: :py:class:`SamplesInfo` object
         self.samples = samples
         # helper for printing warnings
@@ -273,19 +296,39 @@ class Header:
         return result
 
     def add_filter_line(self, mapping):
-        """Add FILTER header line constructed from the given mapping"""
+        """Add FILTER header line constructed from the given mapping
+
+        :param mapping: ``OrderedDict`` with mapping to add.  It is
+            recommended to use ``OrderedDict`` over ``dict`` as this makes
+            the result reproducible
+        """
         self.add_line(FilterHeaderLine.from_mapping(mapping))
 
     def add_contig_line(self, mapping):
-        """Add "contig" header line constructed from the given mapping"""
+        """Add "contig" header line constructed from the given mapping
+
+        :param mapping: ``OrderedDict`` with mapping to add.  It is
+            recommended to use ``OrderedDict`` over ``dict`` as this makes
+            the result reproducible
+        """
         self.add_line(ContigHeaderLine.from_mapping(mapping))
 
     def add_info_line(self, mapping):
-        """Add INFO header line constructed from the given mapping"""
+        """Add INFO header line constructed from the given mapping
+
+        :param mapping: ``OrderedDict`` with mapping to add.  It is
+            recommended to use ``OrderedDict`` over ``dict`` as this makes
+            the result reproducible
+        """
         self.add_line(InfoHeaderLine.from_mapping(mapping))
 
     def add_format_line(self, mapping):
-        """Add FORMAT header line constructed from the given mapping"""
+        """Add FORMAT header line constructed from the given mapping
+
+        :param mapping: ``OrderedDict`` with mapping to add.  It is
+            recommended to use ``OrderedDict`` over ``dict`` as this makes
+            the result reproducible
+        """
         self.add_line(FormatHeaderLine.from_mapping(mapping))
 
     def format_ids(self):
@@ -344,6 +387,19 @@ class Header:
                 type_, key, res.type, repr(res.number)))
         return res
 
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        return NotImplemented
+
+    def __ne__(self, other):
+        if isinstance(other, self.__class__):
+            return not self.__eq__(other)
+        return NotImplemented
+
+    def __hash__(self):
+        raise TypeError('Unhashable type: Header')
+
     def __str__(self):
         tpl = 'Header(lines={}, samples={})'
         return tpl.format(*map(repr, (self.lines, self.samples)))
@@ -372,6 +428,19 @@ class HeaderLine:
         """Return VCF-serialized version of this header line"""
         return ''.join(('##', self.key, '=', self.value))
 
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        return NotImplemented
+
+    def __ne__(self, other):
+        if isinstance(other, self.__class__):
+            return not self.__eq__(other)
+        return NotImplemented
+
+    def __hash__(self):
+        raise TypeError('Unhashable type: HeaderLine')
+
     def __str__(self):
         return 'HeaderLine({}, {})'.format(
             *map(repr, (self.key, self.value)))
@@ -394,6 +463,8 @@ def mapping_to_str(mapping):
 class SimpleHeaderLine(HeaderLine):
     """Base class for simple header lines, currently contig and filter
     header lines
+
+    Don't use this class directly but rather the sub classes.
 
     :raises: :py:class:`vcfpy.exceptions.InvalidHeaderException` in
         the case of missing key ``"ID"``
@@ -438,6 +509,19 @@ class AltAlleleHeaderLine(SimpleHeaderLine):
         #: name of the alternative allele
         self.id = self.mapping['ID']
 
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        return NotImplemented
+
+    def __ne__(self, other):
+        if isinstance(other, self.__class__):
+            return not self.__eq__(other)
+        return NotImplemented
+
+    def __hash__(self):
+        raise TypeError('Unhashable type: AltAlleleHeaderLine')
+
     def __str__(self):
         return 'AltAlleleHeaderLine({}, {}, {})'.format(
             *map(repr, (self.key, self.value, self.mapping)))
@@ -468,6 +552,19 @@ class ContigHeaderLine(SimpleHeaderLine):
         #: length of the contig, ``None`` if missing
         self.length = self.mapping.get('length')
 
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        return NotImplemented
+
+    def __ne__(self, other):
+        if isinstance(other, self.__class__):
+            return not self.__eq__(other)
+        return NotImplemented
+
+    def __hash__(self):
+        raise TypeError('Unhashable type: ContigHeaderLine')
+
     def __str__(self):
         return 'ContigHeaderLine({}, {}, {})'.format(
             *map(repr, (self.key, self.value, self.mapping)))
@@ -494,6 +591,19 @@ class FilterHeaderLine(SimpleHeaderLine):
         #: description for the filter, ``None`` if missing
         self.description = self.mapping.get('Description')
 
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        return NotImplemented
+
+    def __ne__(self, other):
+        if isinstance(other, self.__class__):
+            return not self.__eq__(other)
+        return NotImplemented
+
+    def __hash__(self):
+        raise TypeError('Unhashable type: FilterHeaderLine')
+
     def __str__(self):
         return 'FilterHeaderLine({}, {}, {})'.format(
             *map(repr, (self.key, self.value, self.mapping)))
@@ -516,6 +626,19 @@ class MetaHeaderLine(SimpleHeaderLine):
         #: name of the alternative allele
         self.id = self.mapping['ID']
 
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        return NotImplemented
+
+    def __ne__(self, other):
+        if isinstance(other, self.__class__):
+            return not self.__eq__(other)
+        return NotImplemented
+
+    def __hash__(self):
+        raise TypeError('Unhashable type: MetaHeaderLine')
+
     def __str__(self):
         return 'MetaHeaderLine({}, {}, {})'.format(
             *map(repr, (self.key, self.value, self.mapping)))
@@ -536,6 +659,19 @@ class PedigreeHeaderLine(SimpleHeaderLine):
         #: name of the alternative allele
         self.id = self.mapping['ID']
 
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        return NotImplemented
+
+    def __ne__(self, other):
+        if isinstance(other, self.__class__):
+            return not self.__eq__(other)
+        return NotImplemented
+
+    def __hash__(self):
+        raise TypeError('Unhashable type: PedigreeHeaderLine')
+
     def __str__(self):
         return 'PedigreeHeaderLine({}, {}, {})'.format(
             *map(repr, (self.key, self.value, self.mapping)))
@@ -548,13 +684,26 @@ class SampleHeaderLine(SimpleHeaderLine):
     @classmethod
     def from_mapping(klass, mapping):
         """Construct from mapping, not requiring the string value"""
-        return PedigreeHeaderLine('SAMPLE', mapping_to_str(mapping), mapping)
+        return SampleHeaderLine('SAMPLE', mapping_to_str(mapping), mapping)
 
     def __init__(self, key, value, mapping,
                  warning_helper=WarningHelper()):
         super().__init__(key, value, mapping)
         #: name of the alternative allele
         self.id = self.mapping['ID']
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        return NotImplemented
+
+    def __ne__(self, other):
+        if isinstance(other, self.__class__):
+            return not self.__eq__(other)
+        return NotImplemented
+
+    def __hash__(self):
+        raise TypeError('Unhashable type: SampleHeaderLine')
 
     def __str__(self):
         return 'SampleHeaderLine({}, {}, {})'.format(
@@ -565,6 +714,8 @@ class CompoundHeaderLine(HeaderLine):
     """Base class for compound header lines, currently format and header lines
 
     Compound header lines describe fields that can have more than one entry.
+
+    Don't use this class directly but rather the sub classes.
     """
 
     def __init__(self, key, value, mapping,
@@ -586,7 +737,8 @@ class CompoundHeaderLine(HeaderLine):
                   file=sys.stderr)
             self.mapping['Number'] = '.'
 
-    def _parse_number(self, number):
+    @classmethod
+    def _parse_number(klass, number):
         """Parse ``number`` into an ``int`` or return ``number`` if a valid
         expression for a INFO/FORMAT "Number".
 
@@ -657,6 +809,19 @@ class InfoHeaderLine(CompoundHeaderLine):
         #: version of INFO field, ``None`` if not given
         self.version = self.mapping.get('Version')
 
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        return NotImplemented
+
+    def __ne__(self, other):
+        if isinstance(other, self.__class__):
+            return not self.__eq__(other)
+        return NotImplemented
+
+    def __hash__(self):
+        raise TypeError('Unhashable type: InfoHeaderLine')
+
     def __str__(self):
         return 'InfoHeaderLine({}, {}, {})'.format(
             *map(repr, (self.key, self.value, self.mapping)))
@@ -704,6 +869,19 @@ class FormatHeaderLine(CompoundHeaderLine):
         #: version of INFO field, ``None`` if not given
         self.version = self.mapping.get('Version')
 
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        return NotImplemented
+
+    def __ne__(self, other):
+        if isinstance(other, self.__class__):
+            return not self.__eq__(other)
+        return NotImplemented
+
+    def __hash__(self):
+        raise TypeError('Unhashable type: FormatHeaderLine')
+
     def __str__(self):
         return 'FormatHeaderLine({}, {}, {})'.format(
             *map(repr, (self.key, self.value, self.mapping)))
@@ -720,9 +898,23 @@ class SamplesInfos:
         self.name_to_idx = dict([
             (name, idx) for idx, name in enumerate(self.names)])
 
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        return NotImplemented
+
+    def __ne__(self, other):
+        if isinstance(other, self.__class__):
+            return not self.__eq__(other)
+        return NotImplemented
+
+    def __hash__(self):
+        raise TypeError('Unhashable type: SamplesInfos')
+
     def __str__(self):
-        tpl = 'SampleInfo(names={}, name_to_idx={})'
-        return tpl.format(self.names, self.name_to_idx)
+        tpl = 'SamplesInfos(names={}, name_to_idx={})'
+        return tpl.format(self.names, pprint.pformat(
+            self.name_to_idx, width=10**10))
 
     def __repr__(self):
         return str(self)

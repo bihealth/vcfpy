@@ -2,15 +2,12 @@
 """Test adding header lines to headers
 """
 
-import collections
 import io
-import textwrap
 
 import pytest
 
 import vcfpy
 from vcfpy import parser
-from vcfpy import writer
 from vcfpy import header
 
 __author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'

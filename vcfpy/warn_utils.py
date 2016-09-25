@@ -37,8 +37,8 @@ class WarningHelper:
                   file=self.stream)
             self.warning_counter[message] = 1
 
-    def print_summary(self, title='WARNINGS', format='{: 6}\t{}'):
+    def print_summary(self, title='WARNINGS', format_='{: 6}\t{}'):
         """Print warning messages and count to ``self.stream``"""
         print('{}\n'.format(title), file=self.stream)
         for msg, count in self.warning_counter.items():
-            print(format.format(count, msg), file=self.stream)
+            print(format_.format(count, msg), file=self.stream)

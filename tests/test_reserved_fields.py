@@ -77,13 +77,6 @@ def test_info_dp():
     assert header.RESERVED_INFO['DP'].description
 
 
-def test_info_end():
-    assert header.RESERVED_INFO['END']
-    assert header.RESERVED_INFO['END'].type == 'Integer'
-    assert header.RESERVED_INFO['END'].number == 1
-    assert header.RESERVED_INFO['END'].description
-
-
 def test_info_h2():
     assert header.RESERVED_INFO['H2']
     assert header.RESERVED_INFO['H2'].type == 'Flag'
@@ -281,13 +274,6 @@ def test_info_cilen():
     assert header.RESERVED_INFO['CILEN'].type == 'Integer'
     assert header.RESERVED_INFO['CILEN'].number == 2
     assert header.RESERVED_INFO['CILEN'].description
-
-
-def test_info_dp():
-    assert header.RESERVED_INFO['DP']
-    assert header.RESERVED_INFO['DP'].type == 'Integer'
-    assert header.RESERVED_INFO['DP'].number == 1
-    assert header.RESERVED_INFO['DP'].description
 
 
 def test_info_dpadj():

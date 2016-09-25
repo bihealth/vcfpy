@@ -3,12 +3,9 @@
 """
 
 import ast
-import collections
-import itertools
 import functools
 import math
 import re
-import sys
 
 from . import header
 from . import record
@@ -400,7 +397,7 @@ class HeaderParser:
 class RecordParser:
     """Helper class for parsing VCF records"""
 
-    def __init__(self, header, samples, warning_helper, record_checks=[]):
+    def __init__(self, header, samples, warning_helper, record_checks=None):
         #: Header with the meta information
         self.header = header
         #: SamplesInfos with sample information
@@ -408,7 +405,7 @@ class RecordParser:
         #: Helper class for printing warnings
         self.warning_helper = warning_helper
         #: The checks to perform, can contain 'INFO' and 'FORMAT'
-        self.record_checks = tuple(record_checks)
+        self.record_checks = tuple(record_checks or [])
         # Expected number of fields
         if self.samples.names:
             self.expected_fields = 9 + len(self.samples.names)
@@ -471,27 +468,22 @@ class RecordParser:
         # INFO
         info = self._parse_info(arr[7], len(alts))
         # FORMAT
-        format = self._handle_format(arr)
+        format_ = arr[8].split(':')
         # sample/call columns
-        calls = self._handle_calls(alts, format, arr[8], arr)
+        calls = self._handle_calls(alts, format_, arr[8], arr)
         return record.Record(
-            chrom, pos, ids, ref, alts, qual, filt, info, format, calls)
+            chrom, pos, ids, ref, alts, qual, filt, info, format_, calls)
 
-    def _handle_format(self, arr):
-        """Handle FORMAT column"""
-        format = arr[8].split(':')
-        return format
-
-    def _handle_calls(self, alts, format, format_str, arr):
+    def _handle_calls(self, alts, format_, format_str, arr):
         """Handle FORMAT and calls columns, factored out of parse_line"""
         if format_str not in self._format_cache:
             self._format_cache[format_str] = list(map(
                 self.header.get_format_field_info,
-                format))
+                format_))
         # per-sample calls
         calls = []
         pairs = zip(self.samples.names, self._parse_calls_data(
-            format, self._format_cache[format_str], arr[9:]))
+            format_, self._format_cache[format_str], arr[9:]))
         pairs = list(pairs)
         for sample, data in pairs:
             call = record.Call(sample, data)
@@ -505,7 +497,7 @@ class RecordParser:
         if not filt:
             return
         # Workaround against 'FT' being a string in the header
-        if type(filt) is str:
+        if isinstance(filt, str):
             filt = filt.split(',')
         for f in filt:
             self._check_filter(f, source, sample)
@@ -553,7 +545,8 @@ class RecordParser:
             self._info_checker.run(key, result[key], num_alts)
         return result
 
-    def _parse_calls_data(self, format, infos, arr):
+    @classmethod
+    def _parse_calls_data(klass, format_, infos, arr):
         """Parse genotype call information from arrays using format array
 
         :param list format: List of strings with format names
@@ -566,7 +559,7 @@ class RecordParser:
             # The standard is very nice to parsers, we can simply split at
             # colon characters, although I (Manuel) don't know how strict
             # programs follow this
-            for key, info, value in zip(format, infos, entry.split(':')):
+            for key, info, value in zip(format_, infos, entry.split(':')):
                 data[key] = parse_field_value(
                     key, info, value)
             result.append(data)
@@ -646,7 +639,7 @@ class InfoChecker:
         :param int alts: list of alternative alleles, for length
         """
         field_info = self.header.get_info_field_info(key)
-        if type(value) is not list:
+        if not isinstance(value, list):
             return
         TABLE = {
             '.': len(value),
@@ -674,7 +667,7 @@ class NoopFormatChecker:
 class FormatChecker:
     """Helper class for checking a FORMAT field"""
 
-    def __init__(self):
+    def __init__(self, header, warning_helper):
         #: VCFHeader to use for checking
         self.header = header
         #: helper class for printing warnings
@@ -690,7 +683,7 @@ class FormatChecker:
 
     def _check_count(self, call, key, value, num_alts):
         field_info = self.header.get_format_field_info(key)
-        if type(value) is not list:
+        if isinstance(value, list):
             return
         num_alleles = len(call.gt_alleles or [])
         TABLE = {
@@ -717,11 +710,11 @@ class Parser:
         only, optional
     """
 
-    def __init__(self, stream, path=None, record_checks=[]):
+    def __init__(self, stream, path=None, record_checks=None):
         self.stream = stream
         self.path = path
         #: checks to perform, can contain 'INFO' and 'FORMAT'
-        self.record_checks = tuple(record_checks)
+        self.record_checks = tuple(record_checks or [])
         #: header, once it has been read
         self.header = None
         # the currently read line
@@ -795,7 +788,8 @@ class Parser:
         self._check_samples_line(arr)
         return header.SamplesInfos(arr[len(REQUIRE_SAMPLE_HEADER):])
 
-    def _check_samples_line(self, arr):
+    @classmethod
+    def _check_samples_line(klass, arr):
         """Peform additional check on samples line"""
         if len(arr) <= len(REQUIRE_NO_SAMPLE_HEADER):
             if tuple(arr) != REQUIRE_NO_SAMPLE_HEADER:

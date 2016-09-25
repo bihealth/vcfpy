@@ -87,7 +87,6 @@ def test_reader_fetch():
 
 def test_writer(header_samples, tmpdir_factory):
     O = vcfpy.OrderedDict
-    S = record.Substitution
     # open temporary file and setup the Writer with header
     path = tmpdir_factory.mktemp('write_header').join('out.vcf')
     header, samples = header_samples

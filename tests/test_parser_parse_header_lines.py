@@ -141,7 +141,6 @@ def test_mapping_vcf_header_parser_parse_line_contig(warning_helper):
                 "('assembly', 'B36'), "
                 "('md5', 'f126cdf8a6e0c7f379d618ff66beb2da'), "
                 "('species', 'Homo sapiens'), ('taxonomy', 'x')]))")
-    record = p.parse_line(INPUT)
     assert str(p.parse_line(INPUT)) == EXPECTED
 
 
@@ -153,7 +152,6 @@ def test_mapping_vcf_header_parser_parse_line_alt_allele(warning_helper):
                 "'<ID=R,Description=\"IUPAC code R = A/G\">', "
                 "OrderedDict([('ID', 'R'), "
                 "('Description', 'IUPAC code R = A/G')]))")
-    record = p.parse_line(INPUT)
     assert str(p.parse_line(INPUT)) == EXPECTED
 
 
@@ -166,7 +164,6 @@ def test_mapping_vcf_header_parser_parse_line_meta(warning_helper):
         "Values=[WholeGenome, Exome]>', OrderedDict([('ID', 'Assay'), "
         "('Type', 'String'), ('Number', '.'), ('Values', ['WholeGenome', "
         "'Exome'])]))")
-    record = p.parse_line(INPUT)
     assert str(p.parse_line(INPUT)) == EXPECTED
 
 
@@ -178,7 +175,6 @@ def test_mapping_vcf_header_parser_parse_line_pedigree(warning_helper):
                 "'<ID=TumourSample,Original=GermlineID>',"
                 " OrderedDict([('ID', 'TumourSample'), "
                 "('Original', 'GermlineID')]))")
-    record = p.parse_line(INPUT)
     assert str(p.parse_line(INPUT)) == EXPECTED
 
 
@@ -195,5 +191,4 @@ def test_mapping_vcf_header_parser_parse_line_sample(warning_helper):
         "'WholeGenome'), ('Ethnicity', 'AFR'), ('Disease', 'None'), "
         "('Description', 'Patient germline genome from unaffected'), "
         "('DOI', 'url')]))")
-    record = p.parse_line(INPUT)
     assert str(p.parse_line(INPUT)) == EXPECTED

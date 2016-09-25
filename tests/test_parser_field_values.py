@@ -107,7 +107,7 @@ def test_parse_field_value_string_more(number):
 
 
 @pytest.mark.parametrize('number', [2, 'A', 'R', 'G', '.'])
-def test_parse_field_value_integer_more_empty(number):
+def test_parse_field_value_string_more_empty(number):
     EXPECTED = []
     RESULT = parser.parse_field_value(
         'KEY', header.FieldInfo('String', number), '.')

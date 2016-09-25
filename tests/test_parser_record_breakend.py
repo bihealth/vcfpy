@@ -4,8 +4,6 @@
 
 import io
 
-import pytest
-
 from vcfpy import parser
 
 __author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
@@ -46,7 +44,7 @@ def test_parse_simple_breakend():
     # Setup parser with stock header and lines to parse
     LINES = '2\t321681\tbnd_W\tG\tG]17:198982]\t6\tPASS\tSVTYPE=BND\tGT\t0/1\t0/0\t0/0\n'
     p = vcf_parser(LINES)
-    hdr = p.parse_header()
+    p.parse_header()
     # Perform the actual test
     EXPECTED = (
         """Record('2', 321681, ['bnd_W'], 'G', """
@@ -65,7 +63,7 @@ def test_parse_breakend_with_seq():
     # Setup parser with stock header and lines to parse
     LINES = '2\t321681\tbnd_V\tT\t]13:123456]AGTNNNNNCAT\t6\tPASS\tSVTYPE=BND\tGT\t0/1\t0/0\t0/0\n'
     p = vcf_parser(LINES)
-    hdr = p.parse_header()
+    p.parse_header()
     # Perform the actual test
     EXPECTED = (
         """Record('2', 321681, ['bnd_V'], 'T', """
@@ -84,7 +82,7 @@ def test_parse_breakend_telomere():
     # Setup parser with stock header and lines to parse
     LINES = '2\t321681\tbnd_V\tN\t.[13:123457[\t6\tPASS\tSVTYPE=BND\tGT\t0/1\t0/0\t0/0\n'
     p = vcf_parser(LINES)
-    hdr = p.parse_header()
+    p.parse_header()
     # Perform the actual test
     EXPECTED = (
         """Record('2', 321681, ['bnd_V'], 'N', """
@@ -103,7 +101,7 @@ def test_parse_breakend_multi_mate():
     # Setup parser with stock header and lines to parse
     LINES = '2\t321681\tbnd_U\tT\tC[2:321682[,C[17:198983\t6\tPASS\tSVTYPE=BND\tGT\t0/1\t0/0\t0/0\n'
     p = vcf_parser(LINES)
-    hdr = p.parse_header()
+    p.parse_header()
     # Perform the actual test
     EXPECTED = (
         """Record('2', 321681, ['bnd_U'], 'T', """
@@ -124,7 +122,7 @@ def test_parse_breakend_single_breakend_fwd():
     # Setup parser with stock header and lines to parse
     LINES = '13\t123457\tbnd_X\tA\t.A\t6\tPASS\tSVTYPE=BND\tGT\t0/1\t0/0\t0/0\n'
     p = vcf_parser(LINES)
-    hdr = p.parse_header()
+    p.parse_header()
     # Perform the actual test
     EXPECTED = (
         """Record('13', 123457, ['bnd_X'], 'A', [SingleBreakEnd('+', 'A')], """
@@ -142,7 +140,7 @@ def test_parse_breakend_single_breakend_rev():
     # Setup parser with stock header and lines to parse
     LINES = '13\t123457\tbnd_X\tA\tA.\t6\tPASS\tSVTYPE=BND\tGT\t0/1\t0/0\t0/0\n'
     p = vcf_parser(LINES)
-    hdr = p.parse_header()
+    p.parse_header()
     # Perform the actual test
     EXPECTED = (
         """Record('13', 123457, ['bnd_X'], 'A', [SingleBreakEnd('-', 'A')], """

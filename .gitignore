@@ -1,6 +1,6 @@
 # Editor cruft
 *~
-.*.swp
+.*.sw?
 .vscode
 
 # Profile stuff

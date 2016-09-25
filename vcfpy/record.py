@@ -148,6 +148,19 @@ class Record:
         """Return generator yielding from ``self.calls``"""
         yield from self.calls
 
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        return NotImplemented
+
+    def __ne__(self, other):
+        if isinstance(other, self.__class__):
+            return not self.__eq__(other)
+        return NotImplemented
+
+    def __hash__(self):
+        return hash(tuple(sorted(self.__dict__.items())))
+
     def __str__(self):
         tpl = 'Record({})'
         lst = [self.CHROM, self.POS, self.ID, self.REF, self.ALT, self.QUAL,
@@ -232,14 +245,15 @@ class Call:
         else:
             return HET
 
-    def is_filtered(self, require=None, ignore=['PASS']):
+    def is_filtered(self, require=None, ignore=None):
         """Return ``True`` for filtered calls
 
         :param iterable ignore: if set, the filters to ignore, make sure to
-            include 'PASS', when setting
+            include 'PASS', when setting, default is ``['PASS']``
         :param iterable require: if set, the filters to require for returning
             ``True``
         """
+        ignore = ignore or ['PASS']
         if 'FT' not in self.data or not self.data['FT']:
             return False
         for ft in self.data['FT']:
@@ -260,6 +274,19 @@ class Call:
     def is_variant(self):
         """Return ``True`` for non-hom-ref calls"""
         return self.gt_type != HOM_REF
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        return NotImplemented
+
+    def __ne__(self, other):
+        if isinstance(other, self.__class__):
+            return not self.__eq__(other)
+        return NotImplemented
+
+    def __hash__(self):
+        return hash(tuple(sorted(self.__dict__.items())))
 
     def __str__(self):
         tpl = 'Call({})'
@@ -282,6 +309,19 @@ class AltRecord:
         #: header lines, such as DUP, DEL, INS, ...
         self.type = type_
 
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        return NotImplemented
+
+    def __ne__(self, other):
+        if isinstance(other, self.__class__):
+            return not self.__eq__(other)
+        return NotImplemented
+
+    def __hash__(self):
+        return hash(tuple(sorted(self.__dict__.items())))
+
     def serialize(self):
         """Return ``str`` with representation for VCF file"""
         raise NotImplementedError(
@@ -303,6 +343,19 @@ class Substitution(AltRecord):
     def serialize(self):
         return self.value
 
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        return NotImplemented
+
+    def __ne__(self, other):
+        if isinstance(other, self.__class__):
+            return not self.__eq__(other)
+        return NotImplemented
+
+    def __hash__(self):
+        return hash(tuple(sorted(self.__dict__.items())))
+
     def __str__(self):
         tpl = 'Substitution(type_={}, value={})'
         return tpl.format(*map(repr, [self.type, self.value]))
@@ -311,9 +364,9 @@ class Substitution(AltRecord):
         return str(self)
 
 
-#: code for five prime orientation :py:class:`BreakEnd`s
+#: code for five prime orientation :py:class:`BreakEnd`
 FIVE_PRIME = '5'
-#: code for three prime orientation :py:class:`BreakEnd`s
+#: code for three prime orientation :py:class:`BreakEnd`
 THREE_PRIME = '3'
 
 #: code for forward orientation
@@ -359,6 +412,19 @@ class BreakEnd(AltRecord):
         else:
             return self.sequence + remote_tag
 
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        return NotImplemented
+
+    def __ne__(self, other):
+        if isinstance(other, self.__class__):
+            return not self.__eq__(other)
+        return NotImplemented
+
+    def __hash__(self):
+        return hash(tuple(sorted(self.__dict__.items())))
+
     def __str__(self):
         tpl = 'BreakEnd({})'
         vals = [
@@ -375,6 +441,19 @@ class SingleBreakEnd(BreakEnd):
 
     def __init__(self, orientation, sequence):
         super().__init__(None, None, orientation, None, sequence, None)
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        return NotImplemented
+
+    def __ne__(self, other):
+        if isinstance(other, self.__class__):
+            return not self.__eq__(other)
+        return NotImplemented
+
+    def __hash__(self):
+        return hash(tuple(sorted(self.__dict__.items())))
 
     def __str__(self):
         tpl = 'SingleBreakEnd({})'
@@ -397,6 +476,19 @@ class SymbolicAllele(AltRecord):
 
     def serialize(self):
         return '<{}>'.format(self.value)
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        return NotImplemented
+
+    def __ne__(self, other):
+        if isinstance(other, self.__class__):
+            return not self.__eq__(other)
+        return NotImplemented
+
+    def __hash__(self):
+        return hash(tuple(sorted(self.__dict__.items())))
 
     def __str__(self):
         return 'SymbolicAllele({})'.format(repr(self.value))
