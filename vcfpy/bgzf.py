@@ -140,7 +140,7 @@ class BgzfWriter(object):
 
     def write(self, data):
         # TODO - Check bytes vs unicode
-        if type(data) is str:
+        if isinstance(data, str):
             data = codecs.latin_1_encode(data)[0]
         # block_size = 2**16 = 65536
         data_len = len(data)
@@ -193,5 +193,5 @@ class BgzfWriter(object):
     def __enter__(self):
         return self
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, type_, value, traceback):
         self.close()

@@ -471,27 +471,22 @@ class RecordParser:
         # INFO
         info = self._parse_info(arr[7], len(alts))
         # FORMAT
-        format = self._handle_format(arr)
+        format_ = arr[8].split(':')
         # sample/call columns
-        calls = self._handle_calls(alts, format, arr[8], arr)
+        calls = self._handle_calls(alts, format_, arr[8], arr)
         return record.Record(
-            chrom, pos, ids, ref, alts, qual, filt, info, format, calls)
+            chrom, pos, ids, ref, alts, qual, filt, info, format_, calls)
 
-    def _handle_format(self, arr):
-        """Handle FORMAT column"""
-        format = arr[8].split(':')
-        return format
-
-    def _handle_calls(self, alts, format, format_str, arr):
+    def _handle_calls(self, alts, format_, format_str, arr):
         """Handle FORMAT and calls columns, factored out of parse_line"""
         if format_str not in self._format_cache:
             self._format_cache[format_str] = list(map(
                 self.header.get_format_field_info,
-                format))
+                format_))
         # per-sample calls
         calls = []
         pairs = zip(self.samples.names, self._parse_calls_data(
-            format, self._format_cache[format_str], arr[9:]))
+            format_, self._format_cache[format_str], arr[9:]))
         pairs = list(pairs)
         for sample, data in pairs:
             call = record.Call(sample, data)
@@ -505,7 +500,7 @@ class RecordParser:
         if not filt:
             return
         # Workaround against 'FT' being a string in the header
-        if type(filt) is str:
+        if isinstance(filt, str):
             filt = filt.split(',')
         for f in filt:
             self._check_filter(f, source, sample)
@@ -553,7 +548,8 @@ class RecordParser:
             self._info_checker.run(key, result[key], num_alts)
         return result
 
-    def _parse_calls_data(self, format, infos, arr):
+    @classmethod
+    def _parse_calls_data(klass, format, infos, arr):
         """Parse genotype call information from arrays using format array
 
         :param list format: List of strings with format names
@@ -646,7 +642,7 @@ class InfoChecker:
         :param int alts: list of alternative alleles, for length
         """
         field_info = self.header.get_info_field_info(key)
-        if type(value) is not list:
+        if not isinstance(value, list):
             return
         TABLE = {
             '.': len(value),
@@ -795,7 +791,8 @@ class Parser:
         self._check_samples_line(arr)
         return header.SamplesInfos(arr[len(REQUIRE_SAMPLE_HEADER):])
 
-    def _check_samples_line(self, arr):
+    @classmethod
+    def _check_samples_line(klass, arr):
         """Peform additional check on samples line"""
         if len(arr) <= len(REQUIRE_NO_SAMPLE_HEADER):
             if tuple(arr) != REQUIRE_NO_SAMPLE_HEADER:

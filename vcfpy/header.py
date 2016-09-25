@@ -216,12 +216,12 @@ def serialize_for_header(key, value):
     """Serialize value for the given mapping key for a VCF header line"""
     if key in QUOTE_FIELDS:
         return json.dumps(value)
-    elif type(value) is str:
+    elif isinstance(value, str):
         if ' ' in value or '\t' in value:
             return json.dumps(value)
         else:
             return value
-    elif type(value) is list:
+    elif isinstance(value, list):
         return '[{}]'.format(', '.join(value))
     else:
         return str(value)
