@@ -7,6 +7,7 @@ import collections
 import itertools
 import functools
 import math
+import re
 import sys
 
 from . import header
@@ -278,43 +279,78 @@ def parse_field_value(key, field_info, value):
                     for x in value.split(',')]
 
 
+# Regular expression for break-end
+BREAKEND_PATTERN = re.compile('[\[\]]')
+
+
+def parse_breakend(alt_str):
+    """Parse breakend and return tuple with results, parameters for BreakEnd
+    constructor
+    """
+    arr = BREAKEND_PATTERN.split(alt_str)
+    mate_chrom, mate_pos = arr[1].split(':', 1)
+    mate_pos = int(mate_pos)
+    if mate_chrom[0] == '<':
+        mate_chrom = mate_chrom[1:-1]
+        within_main_assembly = False
+    else:
+        within_main_assembly = True
+    FWD_REV = {True: record.FORWARD, False: record.REVERSE}
+    orientation = FWD_REV[alt_str[0] == '[' or alt_str[0] == ']']
+    mate_orientation = FWD_REV['[' in alt_str]
+    if orientation == record.FORWARD:
+        sequence = arr[2]
+    else:
+        sequence = arr[0]
+    return (mate_chrom, mate_pos, orientation, mate_orientation,
+            sequence, within_main_assembly)
+
+
+def process_sub(ref, alt_str):
+    """Process substitution"""
+    if len(ref) == len(alt_str):
+        if len(ref) == 1:
+            return record.Substitution(record.SNV, alt_str)
+        else:
+            return record.Substitution(record.MNV, alt_str)
+    elif len(ref) > len(alt_str):
+        if len(alt_str) == 0:
+            raise exceptions.InvalidRecordException(
+                'Invalid VCF, empty ALT')
+        elif len(alt_str) == 1:
+            if ref[0] == alt_str[0]:
+                return record.Substitution(record.DEL, alt_str)
+            else:
+                return record.Substitution(record.INDEL, alt_str)
+        else:
+            return record.Substitution(record.INDEL, alt_str)
+    else:  # len(ref) < len(alt_str):
+        if len(ref) == 0:
+            raise exceptions.InvalidRecordException(
+                'Invalid VCF, empty REF')
+        elif len(ref) == 1:
+            if ref[0] == alt_str[0]:
+                return record.Substitution(record.INS, alt_str)
+            else:
+                return record.Substitution(record.INDEL, alt_str)
+        else:
+            return record.Substitution(record.INDEL, alt_str)
+
+
 def process_alt(header, ref, alt_str):
     """Process alternative value using Header in ``header``"""
     # By its nature, this function contains a large number of case distinctions
     if ']' in alt_str or '[' in alt_str:
-        return record.BreakEnd(record.BND, alt_str)
-    elif alt_str.startswith('<') and alt_str.endswith('>'):
+        return record.BreakEnd(*parse_breakend(alt_str))
+    elif alt_str[0] == '.' and len(alt_str) > 0:
+        return record.SingleBreakEnd(record.FORWARD, alt_str[1:])
+    elif alt_str[-1] == '.' and len(alt_str) > 0:
+        return record.SingleBreakEnd(record.REVERSE, alt_str[:-1])
+    elif alt_str[0] == '<' and alt_str[-1] == '>':
         inner = alt_str[1:-1]
         return record.SymbolicAllele(inner)
     else:  # substitution
-        if len(ref) == len(alt_str):
-            if len(ref) == 1:
-                return record.Substitution(record.SNV, alt_str)
-            else:
-                return record.Substitution(record.MNV, alt_str)
-        elif len(ref) > len(alt_str):
-            if len(alt_str) == 0:
-                raise exceptions.InvalidRecordException(
-                    'Invalid VCF, empty ALT')
-            elif len(alt_str) == 1:
-                if ref[0] == alt_str[0]:
-                    return record.Substitution(record.DEL, alt_str)
-                else:
-                    return record.Substitution(record.INDEL, alt_str)
-            else:
-                return record.Substitution(record.INDEL, alt_str)
-        else:  # len(ref) < len(alt_str):
-            if len(ref) == 0:
-                raise exceptions.InvalidRecordException(
-                    'Invalid VCF, empty REF')
-            elif len(ref) == 1:
-                if ref[0] == alt_str[0]:
-                    return record.Substitution(record.INS, alt_str)
-                else:
-                    return record.Substitution(record.INDEL, alt_str)
-            else:
-                return record.Substitution(record.INDEL, alt_str)
-
+        return process_sub(ref, alt_str)
 
 class HeaderParser:
     """Helper class for parsing a VCF header
