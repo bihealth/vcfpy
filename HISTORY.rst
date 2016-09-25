@@ -2,8 +2,8 @@
 History
 =======
 
-HEAD
-----
+0.6.0 (2016-09-25
+-----------------
 
 * Refining implementation for breakend and symbolic allele class
 * Removing ``record.SV_CODES``
