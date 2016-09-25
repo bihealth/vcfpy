@@ -2,9 +2,12 @@
 History
 =======
 
-HEAD
-----
+0.7.0 (2016-09-25)
+------------------
 
+* Smaller improvements and fixes to documentation
+* Adding Codacy coverage and static code analysis results to README
+* Various smaller code cleanup triggered by Codacy results
 * Adding ``__eq__``, ``__neq__`` and ``__hash__`` to data types (where applicable)
 
 0.6.0 (2016-09-25
