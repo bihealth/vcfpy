@@ -4,8 +4,6 @@
 
 import os
 
-import pytest
-
 from vcfpy import reader
 
 __author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'

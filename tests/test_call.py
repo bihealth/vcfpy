@@ -2,15 +2,15 @@
 """Test Call class
 """
 
-import pytest
-
 import vcfpy
 from vcfpy import record
 
 __author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
 
 
-def build_rec(calls=[], format_extras=[]):
+def build_rec(calls=None, format_extras=None):
+    calls = calls or []
+    format_extras = format_extras or []
     alt1 = record.Substitution(vcfpy.SNV, 'T')
     alt2 = record.Substitution(vcfpy.SNV, 'A')
     return record.Record('2', 100, [], 'C', [alt1, alt2], None, [],
@@ -22,19 +22,16 @@ def build_rec(calls=[], format_extras=[]):
 
 def test_is_phased_true():
     call = record.Call('sample', vcfpy.OrderedDict([('GT', '0|1')]))
-    rec = build_rec([call])
     assert call.is_phased is True
 
 
 def test_is_phased_mixed():
     call = record.Call('sample', vcfpy.OrderedDict([('GT', '0/1|2')]))
-    rec = build_rec([call])
     assert call.is_phased is True
 
 
 def test_is_phased_false():
     call = record.Call('sample', vcfpy.OrderedDict([('GT', '0/1')]))
-    rec = build_rec([call])
     assert call.is_phased is False
 
 

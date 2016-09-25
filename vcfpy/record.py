@@ -245,14 +245,15 @@ class Call:
         else:
             return HET
 
-    def is_filtered(self, require=None, ignore=['PASS']):
+    def is_filtered(self, require=None, ignore=None):
         """Return ``True`` for filtered calls
 
         :param iterable ignore: if set, the filters to ignore, make sure to
-            include 'PASS', when setting
+            include 'PASS', when setting, default is ``['PASS']``
         :param iterable require: if set, the filters to require for returning
             ``True``
         """
+        ignore = ignore or ['PASS']
         if 'FT' not in self.data or not self.data['FT']:
             return False
         for ft in self.data['FT']:

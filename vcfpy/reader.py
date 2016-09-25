@@ -29,7 +29,7 @@ class Reader:
 
     @classmethod
     def from_stream(klass, stream, path=None, tabix_path=None,
-                    record_checks=[]):
+                    record_checks=None):
         """Create new :py:class:`Reader` from file
 
         :param stream: ``file``-like object to read from
@@ -37,6 +37,7 @@ class Reader:
         :param list record_checks: record checks to perform, can contain
             'INFO' and 'FORMAT'
         """
+        record_checks = record_checks or []
         if tabix_path and not path:
             raise ValueError('Must give path if tabix_path is given')
         return Reader(stream=stream, path=path, tabix_path=tabix_path,

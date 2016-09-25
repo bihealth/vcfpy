@@ -400,7 +400,7 @@ class HeaderParser:
 class RecordParser:
     """Helper class for parsing VCF records"""
 
-    def __init__(self, header, samples, warning_helper, record_checks=[]):
+    def __init__(self, header, samples, warning_helper, record_checks=None):
         #: Header with the meta information
         self.header = header
         #: SamplesInfos with sample information
@@ -408,7 +408,7 @@ class RecordParser:
         #: Helper class for printing warnings
         self.warning_helper = warning_helper
         #: The checks to perform, can contain 'INFO' and 'FORMAT'
-        self.record_checks = tuple(record_checks)
+        self.record_checks = tuple(record_checks or [])
         # Expected number of fields
         if self.samples.names:
             self.expected_fields = 9 + len(self.samples.names)
@@ -674,7 +674,7 @@ class NoopFormatChecker:
 class FormatChecker:
     """Helper class for checking a FORMAT field"""
 
-    def __init__(self):
+    def __init__(self, header, warning_helper):
         #: VCFHeader to use for checking
         self.header = header
         #: helper class for printing warnings
@@ -717,11 +717,11 @@ class Parser:
         only, optional
     """
 
-    def __init__(self, stream, path=None, record_checks=[]):
+    def __init__(self, stream, path=None, record_checks=None):
         self.stream = stream
         self.path = path
         #: checks to perform, can contain 'INFO' and 'FORMAT'
-        self.record_checks = tuple(record_checks)
+        self.record_checks = tuple(record_checks or [])
         #: header, once it has been read
         self.header = None
         # the currently read line

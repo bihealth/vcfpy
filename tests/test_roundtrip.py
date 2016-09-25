@@ -4,8 +4,6 @@
 
 import os
 
-import pytest
-
 from vcfpy import reader
 from vcfpy import writer
 

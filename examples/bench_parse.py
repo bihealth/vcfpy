@@ -45,12 +45,12 @@ def run(args):
     # Setup parser
     p = parser.VCFParser(io.StringIO(HEADER), '<builtin>')
     # Parse header
-    hdr = p.parse_header()
+    p.parse_header()
     # Parse line several times
     times = []
     for r in range(args.repetitions):
         begin = time.clock()
-        for i in range(args.line_count):
+        for _ in range(args.line_count):
             r = p._record_parser.parse_line(LINE)
             if args.debug:
                 print(r, file=sys.stderr)

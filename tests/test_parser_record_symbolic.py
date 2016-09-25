@@ -50,7 +50,7 @@ def test_parse_dup():
     # Setup parser with stock header and lines to parse
     LINES = '2\t321681\t.\tN\t<DUP>\t.\tPASS\tSVTYPE=DUP;END=324681;SVLEN=3000\tGT\t0/1\t0/0\t0/0\n'
     p = vcf_parser(LINES)
-    hdr = p.parse_header()
+    p.parse_header()
     # Perform the actual test
     EXPECTED = (
         """Record('2', 321681, [], 'N', [SymbolicAllele('DUP')], None, """

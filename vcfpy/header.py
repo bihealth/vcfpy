@@ -97,7 +97,9 @@ RESERVED_INFO = {
                        'CIGAR string describing how to align each ALT allele '
                        'to the reference allele'),
     'DB': FieldInfo('Flag', 0, 'dbSNP membership'),
-    'DP': FieldInfo('Integer', 1, 'Combined depth across samples'),
+    'DP': FieldInfo('Integer', 1,
+                    'Combined depth across samples for small variants and '
+                    'Read Depth of segment containing breakend for SVs'),
     'H2': FieldInfo('Flag', 0, 'Membership in HapMap 2'),
     'H3': FieldInfo('Flag', 0, 'Membership in HapMap 3'),
     'MQ': FieldInfo('Integer', 1, 'RMS mapping quality'),
@@ -151,7 +153,6 @@ RESERVED_INFO = {
     'CILEN': FieldInfo('Integer', 2,
                        'Confidence interval around the inserted material '
                        'between breakends'),
-    'DP': FieldInfo('Integer', 1, 'Read Depth of segment containing breakend'),
     'DPADJ': FieldInfo('Integer', '.', 'Read Depth of adjacency'),
     'CN': FieldInfo('Integer', 1,
                     'Copy number of segment containing breakend'),
@@ -259,9 +260,9 @@ class Header:
     a filtered list of header lines.
     """
 
-    def __init__(self, lines=[], samples=None, warning_helper=WarningHelper()):
+    def __init__(self, lines=None, samples=None, warning_helper=WarningHelper()):
         #: ``list`` of :py:HeaderLine objects
-        self.lines = list(lines)
+        self.lines = lines or []
         #: :py:class:`SamplesInfo` object
         self.samples = samples
         # helper for printing warnings
