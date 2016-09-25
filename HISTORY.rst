@@ -5,6 +5,8 @@ History
 HEAD
 ----
 
+* Adding ``__eq__``, ``__neq__`` and ``__hash__`` to data types (where applicable)
+
 0.6.0 (2016-09-25
 -----------------
 

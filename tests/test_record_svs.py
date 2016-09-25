@@ -7,6 +7,21 @@ from vcfpy import record
 # BreakEnd ------------------------------------------------------------------
 
 
+def test_breakend_builtins():
+    """Test the builtin functions of the BreakEnd class"""
+    rec1 = record.BreakEnd(
+        'chr2', 1234, record.FORWARD, record.FORWARD, 'A', True)
+    rec2 = record.BreakEnd(
+        'chr2', 1234, record.FORWARD, record.FORWARD, 'A', True)
+    rec3 = record.BreakEnd(
+        'chr1', 1234, record.FORWARD, record.FORWARD, 'A', True)
+    assert rec1 == rec2
+    assert hash(rec1) == hash(rec2)
+    assert rec1 != rec3
+    assert str(rec1) == "BreakEnd('chr2', 1234, '+', '+', 'A', True)"
+    assert repr(rec1) == "BreakEnd('chr2', 1234, '+', '+', 'A', True)"
+
+
 def test_breakend_fwd_fwd_true():
     rec = record.BreakEnd(
         'chr2', 1234, record.FORWARD, record.FORWARD, 'A', True)
