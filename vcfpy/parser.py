@@ -362,6 +362,7 @@ def process_alt(header, ref, alt_str):
     else:  # substitution
         return process_sub(ref, alt_str)
 
+
 class HeaderParser:
     """Helper class for parsing a VCF header
     """
