@@ -9,11 +9,11 @@ Input/Output
 vcfpy.Reader
 ------------
 
-.. autoclass:: vcf.Reader
+.. autoclass:: vcfpy.Reader
     :members:
 
 vcfpy.Writer
 ------------
 
-.. autoclass:: vcf.Writer
+.. autoclass:: vcfpy.Writer
     :members:

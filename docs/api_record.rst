@@ -6,6 +6,30 @@ Records
 
 .. contents::
 
+Record-Related Constants
+------------------------
+
+The following constants are also available as ``vcfpy.CONSTANT``.
+
+.. autodata:: vcfpy.record.HOM_REF
+    :noindex:
+
+.. autodata:: vcfpy.record.HOM_ALT
+    :noindex:
+
+.. autodata:: vcfpy.record.FIVE_PRIME
+    :noindex:
+
+.. autodata:: vcfpy.record.THREE_PRIME
+    :noindex:
+
+.. autodata:: vcfpy.record.FORWARD
+    :noindex:
+
+.. autodata:: vcfpy.record.REVERSE
+    :noindex:
+
+
 vcfpy.Record
 ------------
 

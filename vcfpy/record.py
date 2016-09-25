@@ -364,9 +364,9 @@ class Substitution(AltRecord):
         return str(self)
 
 
-#: code for five prime orientation :py:class:`BreakEnd`s
+#: code for five prime orientation :py:class:`BreakEnd`
 FIVE_PRIME = '5'
-#: code for three prime orientation :py:class:`BreakEnd`s
+#: code for three prime orientation :py:class:`BreakEnd`
 THREE_PRIME = '3'
 
 #: code for forward orientation
