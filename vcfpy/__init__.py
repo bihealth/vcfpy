@@ -13,12 +13,12 @@ from .header import Header, HeaderLine, SimpleHeaderLine, \
     PedigreeHeaderLine, SampleHeaderLine, CompoundHeaderLine, InfoHeaderLine, \
     FormatHeaderLine, SamplesInfos, FieldInfo, header_without_lines
 
-from .record import Record, Call, AltRecord, Substitution, SV, BreakEnd, \
+from .record import Record, Call, AltRecord, Substitution, BreakEnd, \
     SingleBreakEnd, SymbolicAllele
 
 from .record import SNV, MNV, DEL, INS, INDEL, SV, BND, SYMBOLIC, MIXED
-
 from .record import HOM_REF, HET, HOM_ALT
+from .record import FIVE_PRIME, THREE_PRIME, FORWARD, REVERSE
 
 from .reader import Reader
 

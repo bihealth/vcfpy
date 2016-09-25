@@ -285,6 +285,11 @@ class AltRecord:
         #: header lines, such as DUP, DEL, INS, ...
         self.type = type_
 
+    def serialize(self):
+        """Return ``str`` with representation for VCF file"""
+        raise NotImplementedError(
+            'Abstract class, implemented in sub class')
+
 
 class Substitution(AltRecord):
     """A basic alternative allele record describing a REF->AltRecord
@@ -298,24 +303,8 @@ class Substitution(AltRecord):
         #: The alternative base sequence to use in the substitution
         self.value = value
 
-    def __str__(self):
-        tpl = 'Substitution(type_={}, value={})'
-        return tpl.format(*map(repr, [self.type, self.value]))
-
-    def __repr__(self):
-        return str(self)
-
-
-class SV(AltRecord):
-    """A placeholder for an SV
-
-    For SVs, simply the ``type`` is written out as ``"<type>"`` as alternative
-    """
-
-    def __init__(self, type_, value):
-        super().__init__(type_)
-        #: The alternative base sequence to use in the substitution
-        self.value = value
+    def serialize(self):
+        return self.value
 
     def __str__(self):
         tpl = 'Substitution(type_={}, value={})'
@@ -323,51 +312,91 @@ class SV(AltRecord):
 
     def __repr__(self):
         return str(self)
+
+#: code for five prime orientation :py:class:`BreakEnd`s
+FIVE_PRIME = '5'
+#: code for three prime orientation :py:class:`BreakEnd`s
+THREE_PRIME = '3'
+
+#: code for forward orientation
+FORWARD = '+'
+#: code for reverse orientation
+REVERSE = '-'
 
 
 class BreakEnd(AltRecord):
     """A placeholder for a breakend"""
 
-    def __init__(self, type_, value):
-        super().__init__(type_)
-        #: The alternative base sequence to use in the substitution
-        self.value = value
+    def __init__(self, mate_chrom, mate_pos, orientation, mate_orientation,
+                 sequence, within_main_assembly):
+        super().__init__('BND')
+        #: chromosome of the mate breakend
+        self.mate_chrom = mate_chrom
+        #: position of the mate breakend
+        self.mate_pos = mate_pos
+        #: orientation of this breakend
+        self.orientation = orientation
+        #: orientation breakend's mate
+        self.mate_orientation = mate_orientation
+        #: breakpoint's connecting sequence
+        self.sequence = sequence
+        #: ``bool`` specifying if the breakend mate is within the assembly
+        #: (``True``) or in an ancillary assembly (``False``)
+        self.within_main_assembly = within_main_assembly
+
+    def serialize(self):
+        """Return string representation for VCF"""
+        if self.mate_chrom is None:
+            remote_tag = '.'
+        else:
+            if self.within_main_assembly:
+                mate_chrom = self.mate_chrom
+            else:
+                mate_chrom = '<{}>'.format(self.mate_chrom)
+            tpl = {FORWARD: '[{}:{}[', REVERSE: ']{}:{}]'}[
+                self.mate_orientation]
+            remote_tag = tpl.format(mate_chrom, self.mate_pos)
+        if self.orientation == FORWARD:
+            return remote_tag + self.sequence
+        else:
+            return self.sequence + remote_tag
 
     def __str__(self):
-        tpl = 'Substitution(type_={}, value={})'
-        return tpl.format(*map(repr, [self.type, self.value]))
+        tpl = 'BreakEnd({})'
+        vals = [
+            self.mate_chrom, self.mate_pos, self.orientation,
+            self.mate_orientation, self.sequence, self.within_main_assembly]
+        return tpl.format(', '.join(map(repr, vals)))
 
     def __repr__(self):
         return str(self)
 
 
-class SingleBreakEnd(AltRecord):
+class SingleBreakEnd(BreakEnd):
     """A placeholder for a single breakend"""
 
-    def __init__(self, type_, value):
-        super().__init__(type_)
-        #: The alternative base sequence to use in the substitution
-        self.value = value
+    def __init__(self, orientation, sequence):
+        super().__init__(None, None, orientation, None, sequence, None)
 
     def __str__(self):
-        tpl = 'Substitution(type_={}, value={})'
-        return tpl.format(*map(repr, [self.type, self.value]))
-
-    def __repr__(self):
-        return str(self)
+        tpl = 'SingleBreakEnd({})'
+        vals = [self.orientation, self.sequence]
+        return tpl.format(', '.join(map(repr, vals)))
 
 
 class SymbolicAllele(AltRecord):
     """A placeholder for a symbolic allele"""
 
-    def __init__(self, type_, value):
-        super().__init__(type_)
-        #: The alternative base sequence to use in the substitution
+    def __init__(self, value):
+        super().__init__(SYMBOLIC)
+        #: The symbolic value, e.g. 'DUP'
         self.value = value
 
+    def serialize(self):
+        return '<{}>'.format(self.value)
+
     def __str__(self):
-        tpl = 'Substitution(type_={}, value={})'
-        return tpl.format(*map(repr, [self.type, self.value]))
+        return 'SymbolicAllele({})'.format(repr(self.value))
 
     def __repr__(self):
         return str(self)
