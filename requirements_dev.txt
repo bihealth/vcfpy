@@ -20,7 +20,7 @@ MarkupSafe==0.23
 mccabe==0.5.2
 pathtools==0.1.2
 pep8==1.7.0
-pluggy==0.3.1
+pluggy==0.4.0
 py==1.4.31
 pyasn1==0.1.9
 pycodestyle==2.0.0
