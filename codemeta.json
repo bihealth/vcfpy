@@ -1,0 +1,30 @@
+{
+  "@context": "https://raw.githubusercontent.com/mbjones/codemeta/master/codemeta.jsonld",
+  "@type": "Code",
+  "author": [
+    {
+      "@id": "https://orcid.org/0000-0002-3051-1763",
+      "@type": "Person",
+      "email": "manuel.holtgrewe@bihealth.de",
+      "name": "Manuel Holtgrewe",
+      "affiliation": "Berlin Institute of Health, Kapelle-Ufer 2, 10117 Berlin"
+    },
+    {
+      "@id": "https://orcid.org/0000-0002-3284-0632",
+      "@type": "Person",
+      "email": "dieter.beule@bihealth.de",
+      "name": "Dieter Beule",
+      "affiliation": "Berlin Institute of Health, Kapelle-Ufer 2, 10117 Berlin"
+    }
+  ],
+  "identifier": "https://figshare.com/articles/vcfpy-0_7_0/3863583",
+  "codeRepository": "https://github.com/bihealth/vcfpy",
+  "datePublished": "2016-09-28",
+  "dateModified": "2016-09-28",
+  "dateCreated": "2016-09-28",
+  "description": "Python 3 library with good support for both reading and writing VCF",
+  "keywords": "VCF, Python, software library",
+  "license": "MIT",
+  "title": "VCFPy",
+  "version": "v0.7.0"
+}
