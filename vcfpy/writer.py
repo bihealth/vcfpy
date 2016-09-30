@@ -137,7 +137,7 @@ class Writer:
         if not record.ALT:
             row.append('.')
         else:
-            row.append(','.join([f(a.value) for a in record.ALT]))
+            row.append(','.join([f(a.serialize()) for a in record.ALT]))
         row.append(f(record.QUAL))
         row.append(f(';'.join(record.FILTER)))
         row.append(f(self._serialize_info(record)))
