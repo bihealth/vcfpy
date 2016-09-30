@@ -51,7 +51,7 @@ def run(args):
     for r in range(args.repetitions):
         begin = time.clock()
         for _ in range(args.line_count):
-            r = p._record_parser.parse_line(LINE)
+            r = p._record_parser.parse_line(LINE)  # noqa
             if args.debug:
                 print(r, file=sys.stderr)
         times.append(time.clock() - begin)

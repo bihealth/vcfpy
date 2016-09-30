@@ -44,7 +44,7 @@ class Reader:
                       record_checks=record_checks)
 
     @classmethod
-    def from_path(klass, path, tabix_path=None, record_checks=[]):
+    def from_path(klass, path, tabix_path=None, record_checks=None):
         """Create new :py:class:`Reader` from path
 
         :param path: the path to load from (converted to ``str`` for
@@ -55,6 +55,7 @@ class Reader:
         :param list record_checks: record checks to perform, can contain
             'INFO' and 'FORMAT'
         """
+        record_checks = record_checks or []
         path = str(path)
         if path.endswith('.gz'):
             f = gzip.open(path, 'rt')
@@ -68,7 +69,7 @@ class Reader:
                                  record_checks=record_checks)
 
     def __init__(self, stream, path=None, tabix_path=None,
-                 record_checks=[]):
+                 record_checks=None):
         #: stream (``file``-like object) to read from
         self.stream = stream
         #: optional ``str`` with the path to the stream
@@ -76,7 +77,7 @@ class Reader:
         #: optional ``str`` with path to tabix file
         self.tabix_path = tabix_path
         #: checks to perform on records, can contain 'FORMAT' and 'INFO'
-        self.record_checks = tuple(record_checks)
+        self.record_checks = tuple(record_checks or [])
         #: the ``pysam.TabixFile`` used for reading from index bgzip-ed VCF;
         #: constructed on the fly
         self.tabix_file = None
