@@ -39,7 +39,7 @@ requests==2.11.1
 six==1.10.0
 snakeviz==0.4.1
 snowballstemmer==1.2.1
-Sphinx==1.4.6
+Sphinx==1.4.7
 sphinx-rtd-theme==0.1.9
 tornado==4.4.1
 tox==2.3.1
