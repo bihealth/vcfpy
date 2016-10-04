@@ -7,11 +7,13 @@ tags:
 authors:
  - name: Manuel Holtgrewe
    orcid: 0000-0002-3051-1763
-   affiliation: Berlin Institute of Health, Kapelle-Ufer 2, 10117 Berlin
+   affiliation: 1
  - name: Dieter Beule
    orcid: 0000-0002-3284-0632
-   affiliation: Berlin Institute of Health, Kapelle-Ufer 2, 10117 Berlin
-
+   affiliation: 1
+affiliations:
+ - name: Berlin Institute of Health, Kapelle-Ufer 2, 10117 Berlin
+   index: 1
 date: 28 September 2016
 bibliography: paper.bib
 ---
@@ -30,4 +32,3 @@ It supports VCF v4.3, reading and writing of both plain-text and bgzip-compresse
 Further, the project is well-documented and uses automatic testing as well as static code analysis for enforcing software quality standards.
 
 # References
-
