@@ -14,55 +14,55 @@ __author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
 
 def test_convert_field_values_integer_value():
     EXPECTED = 42
-    RESULT = parser.convert_field_value('KEY', 'Integer', '42')
+    RESULT = parser.convert_field_value('Integer', '42')
     assert EXPECTED == RESULT
 
 
 def test_convert_field_values_integer_none():
     EXPECTED = None
-    RESULT = parser.convert_field_value('KEY', 'Integer', '.')
+    RESULT = parser.convert_field_value('Integer', '.')
     assert EXPECTED == RESULT
 
 
 def test_convert_field_values_float_value():
     EXPECTED = 42.0
-    RESULT = parser.convert_field_value('KEY', 'Float', '42')
+    RESULT = parser.convert_field_value('Float', '42')
     assert EXPECTED == RESULT
 
 
 def test_convert_field_values_float_none():
     EXPECTED = None
-    RESULT = parser.convert_field_value('KEY', 'Float', '.')
+    RESULT = parser.convert_field_value('Float', '.')
     assert EXPECTED == RESULT
 
 
 def test_convert_field_values_flag():
     EXPECTED = True
-    RESULT = parser.convert_field_value('KEY', 'Flag', True)
+    RESULT = parser.convert_field_value('Flag', True)
     assert EXPECTED == RESULT
 
 
 def test_convert_field_values_character_value():
     EXPECTED = 'X'
-    RESULT = parser.convert_field_value('KEY', 'Character', 'X')
+    RESULT = parser.convert_field_value('Character', 'X')
     assert EXPECTED == RESULT
 
 
 def test_convert_field_values_character_none():
     EXPECTED = None
-    RESULT = parser.convert_field_value('KEY', 'Character', '.')
+    RESULT = parser.convert_field_value('Character', '.')
     assert EXPECTED == RESULT
 
 
 def test_convert_field_values_string_value():
     EXPECTED = 'Value'
-    RESULT = parser.convert_field_value('KEY', 'String', 'Value')
+    RESULT = parser.convert_field_value('String', 'Value')
     assert EXPECTED == RESULT
 
 
 def test_convert_field_values_string_none():
     EXPECTED = None
-    RESULT = parser.convert_field_value('KEY', 'String', '.')
+    RESULT = parser.convert_field_value('String', '.')
     assert EXPECTED == RESULT
 
 # parser.parse_field_value() --------------------------------------------------
@@ -71,7 +71,7 @@ def test_convert_field_values_string_none():
 def test_parse_field_value_integer_one():
     EXPECTED = 42
     RESULT = parser.parse_field_value(
-        'KEY', header.FieldInfo('Integer', 1), '42')
+        header.FieldInfo('Integer', 1), '42')
     assert EXPECTED == RESULT
 
 
@@ -79,7 +79,7 @@ def test_parse_field_value_integer_one():
 def test_parse_field_value_integer_more(number):
     EXPECTED = [42, 43]
     RESULT = parser.parse_field_value(
-        'KEY', header.FieldInfo('Integer', number), '42,43')
+        header.FieldInfo('Integer', number), '42,43')
     assert EXPECTED == RESULT
 
 
@@ -87,14 +87,14 @@ def test_parse_field_value_integer_more(number):
 def test_parse_field_value_integer_more_empty(number):
     EXPECTED = []
     RESULT = parser.parse_field_value(
-        'KEY', header.FieldInfo('Integer', number), '.')
+        header.FieldInfo('Integer', number), '.')
     assert EXPECTED == RESULT
 
 
 def test_parse_field_value_string_one():
     EXPECTED = '42'
     RESULT = parser.parse_field_value(
-        'KEY', header.FieldInfo('String', 1), '42')
+        header.FieldInfo('String', 1), '42')
     assert EXPECTED == RESULT
 
 
@@ -102,7 +102,7 @@ def test_parse_field_value_string_one():
 def test_parse_field_value_string_more(number):
     EXPECTED = ['42', '43']
     RESULT = parser.parse_field_value(
-        'KEY', header.FieldInfo('String', number), '42,43')
+        header.FieldInfo('String', number), '42,43')
     assert EXPECTED == RESULT
 
 
@@ -110,5 +110,5 @@ def test_parse_field_value_string_more(number):
 def test_parse_field_value_string_more_empty(number):
     EXPECTED = []
     RESULT = parser.parse_field_value(
-        'KEY', header.FieldInfo('String', number), '.')
+        header.FieldInfo('String', number), '.')
     assert EXPECTED == RESULT

@@ -47,8 +47,8 @@ def header_samples():
 
 def test_write_header(header_samples, tmpdir_factory):
     path = tmpdir_factory.mktemp('write_header').join('out.vcf')
-    header, samples = header_samples
-    w = writer.Writer.from_path(path, header, samples)
+    header, _ = header_samples
+    w = writer.Writer.from_path(path, header)
     w.close()
     RESULT = path.read()
     EXPECTED = MEDIUM_HEADER

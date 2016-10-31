@@ -51,14 +51,13 @@ class Writer:
     :py:meth:`~Writer.from_path`.
 
     The writer has to be constructed with a :py:class:`~vcfpy.header.Header`
-    and a :py:class:`~vcfpy.header.SamplesInfos` object and the full VCF
-    header will be written immediately on construction.  This, of course,
-    implies that modifying the header after construction is illegal.
+    object and the full VCF header will be written immediately on construction.
+    This, of course, implies that modifying the header after construction is
+    illegal.
     """
 
     @classmethod
-    def from_stream(klass, stream, header, samples, path=None,
-                    use_bgzf=None):
+    def from_stream(klass, stream, header, path=None, use_bgzf=None):
         """Create new :py:class:`Writer` from file
 
         Note that for getting bgzf support, you have to pass in a stream
@@ -69,17 +68,16 @@ class Writer:
 
         :param stream: ``file``-like object to write to
         :param header: VCF header to use
-        :param samples: SamplesInfos to use
         :param path: optional string with path to store (for display only)
         :param use_bgzf: indicator whether to write bgzf to ``stream``
             if ``True``, prevent if ``False``, interpret ``path`` if ``None``
         """
         if use_bgzf or (use_bgzf is None and path and path.endswith('.gz')):
             stream = bgzf.BgzfWriter(fileobj=stream)
-        return Writer(stream, header, samples, path)
+        return Writer(stream, header, path)
 
     @classmethod
-    def from_path(klass, path, header, samples):
+    def from_path(klass, path, header):
         """Create new :py:class:`Writer` from path
 
         :param path: the path to load from (converted to ``str`` for
@@ -93,15 +91,13 @@ class Writer:
             f = bgzf.BgzfWriter(filename=path)
         else:
             f = open(path, 'wt')
-        return klass.from_stream(f, header, samples, path, use_bgzf=use_bgzf)
+        return klass.from_stream(f, header, path, use_bgzf=use_bgzf)
 
     def __init__(self, stream, header, samples, path=None):
         #: stream (``file``-like object) to read from
         self.stream = stream
         #: the :py:class:~vcfpy.header.Header` written out
         self.header = header
-        #: the :py:class:~vcfpy.header.SamplesInfos` written out
-        self.samples = samples
         #: optional ``str`` with the path to the stream
         self.path = path
         # write out headers
@@ -111,9 +107,10 @@ class Writer:
         """Write out the header"""
         for line in self.header.lines:
             print(line.serialize(), file=self.stream)
-        if self.samples.names:
+        if self.header.samples.names:
             print('\t'.join(
-                list(parser.REQUIRE_SAMPLE_HEADER) + self.samples.names),
+                list(parser.REQUIRE_SAMPLE_HEADER) +
+                self.header.samples.names),
                 file=self.stream)
         else:
             print('\t'.join(
@@ -137,7 +134,7 @@ class Writer:
         if not record.ALT:
             row.append('.')
         else:
-            row.append(','.join([f(a.value) for a in record.ALT]))
+            row.append(','.join([f(a.serialize()) for a in record.ALT]))
         row.append(f(record.QUAL))
         row.append(f(';'.join(record.FILTER)))
         row.append(f(self._serialize_info(record)))

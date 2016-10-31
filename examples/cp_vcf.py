@@ -36,6 +36,7 @@ class BaseRunner:
               file=sys.stderr)
 
     def work(self, it):
+        num = 0
         for num, r in enumerate(it):
             if num % 10000 == 0:
                 print(num, ''.join(map(str, [r.CHROM, ':', r.POS])), sep='\t',
@@ -52,7 +53,7 @@ class VCFPyRunner(BaseRunner):
         self.writer = FakeWriter()
         if args.output_vcf:
             self.writer = vcfpy.VCFWriter.from_path(
-                reader.header, reader.samples, args.output_vcf)
+                self.reader.header, self.reader.samples, args.output_vcf)
 
 
 class PyVCFRunner(BaseRunner):
@@ -71,6 +72,7 @@ def run_pyvcf(args):
     writer = None
     # read through input VCF file, optionally also writing out
     start = time.clock()
+    num = 0
     for num, r in enumerate(reader):
         if num % 10000 == 0:
             print(num, ''.join(map(str, [r.CHROM, ':', r.POS])), sep='\t',

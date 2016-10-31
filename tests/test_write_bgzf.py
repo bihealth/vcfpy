@@ -66,8 +66,8 @@ def test_write_minimal_record_writer_from_path(header_samples, tmpdir_factory):
     O = vcfpy.OrderedDict
     # open temporary file and setup the Writer with header
     path = tmpdir_factory.mktemp('write_header').join('out.vcf.gz')
-    header, samples = header_samples
-    w = writer.Writer.from_path(path, header, samples)
+    header, _ = header_samples
+    w = writer.Writer.from_path(path, header)
     # construct record to write out from scratch
     r = record.Record(
         '20', 100, [], 'C', [record.Substitution(record.SNV, 'T')],
@@ -90,9 +90,9 @@ def test_write_minimal_record_writer_from_stream_path(
     O = vcfpy.OrderedDict
     # open temporary file and setup the Writer with header
     path = tmpdir_factory.mktemp('write_header').join('out.vcf.gz')
-    header, samples = header_samples
+    header, _ = header_samples
     with open(str(path), 'wb') as f:
-        w = writer.Writer.from_stream(f, header, samples, path=str(path))
+        w = writer.Writer.from_stream(f, header, path=str(path))
         # construct record to write out from scratch
         r = record.Record(
             '20', 100, [], 'C', [record.Substitution(record.SNV, 'T')],

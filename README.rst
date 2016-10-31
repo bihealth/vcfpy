@@ -25,6 +25,14 @@ VCFPy
         :alt: Codacy Coverage
         :target: https://www.codacy.com/app/manuel-holtgrewe/vcfpy?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=bihealth/vcfpy&amp;utm_campaign=Badge_Coverage
 
+.. image:: https://landscape.io/github/bihealth/vcfpy/master/landscape.svg?style=flat
+        :alt: Landscape Health
+        :target: https://landscape.io/github/bihealth/vcfpy
+
+.. image:: http://joss.theoj.org/papers/edae85d90ea8a49843dbaaa109e47cba/status.svg
+        :alt: Publication in The Journal of Open Source Software
+        :target: http://joss.theoj.org/papers/10.21105/joss.00085
+
 Python 3 VCF library with good support for both reading and writing
 
 * Free software: MIT license

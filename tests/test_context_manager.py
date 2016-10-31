@@ -89,7 +89,7 @@ def test_writer(header_samples, tmpdir_factory):
     O = vcfpy.OrderedDict
     # open temporary file and setup the Writer with header
     path = tmpdir_factory.mktemp('write_header').join('out.vcf')
-    header, samples = header_samples
+    header, _ = header_samples
     # construct record to write out from scratch
     r = record.Record(
         '20', 100, [], 'C', [record.Substitution(record.SNV, 'T')],
@@ -100,7 +100,7 @@ def test_writer(header_samples, tmpdir_factory):
             record.Call('NA00003', O(GT='1/1')),
         ])
     # open writer
-    with writer.Writer.from_path(path, header, samples) as w:
+    with writer.Writer.from_path(path, header) as w:
         # write out the record
         w.write_record(r)
     # should be closed

@@ -233,3 +233,34 @@ def test_header_format_header_line():
     assert line1.serialize() == '##FORMAT=<ID=AD,Number=R,Type=Integer>'
     with pytest.raises(TypeError):
         hash(line1)
+
+
+def test_header_has_header_line_positive():
+    lines = [
+        header.FormatHeaderLine.from_mapping(
+            vcfpy.OrderedDict([('ID', 'DP'), ('Number', 'R'), ('Type', 'Integer')])),
+        header.InfoHeaderLine.from_mapping(
+            vcfpy.OrderedDict([('ID', 'AD'), ('Number', 'R'), ('Type', 'Integer')])),
+        header.FilterHeaderLine.from_mapping(
+            vcfpy.OrderedDict([('ID', 'PASS'), ('Description', 'All filters passed')])),
+        header.ContigHeaderLine.from_mapping(
+            vcfpy.OrderedDict([('ID', '1'), ('length', 234)])),
+    ]
+    samples = header.SamplesInfos(['one', 'two', 'three'])
+    hdr = header.Header(lines, samples)
+
+    assert hdr.has_header_line('FORMAT', 'DP')
+    assert hdr.has_header_line('INFO', 'AD')
+    assert hdr.has_header_line('FILTER', 'PASS')
+    assert hdr.has_header_line('contig', '1')
+
+
+def test_header_has_header_line_positive():
+    lines = []
+    samples = header.SamplesInfos(['one', 'two', 'three'])
+    hdr = header.Header(lines, samples)
+
+    assert not hdr.has_header_line('FORMAT', 'DP')
+    assert not hdr.has_header_line('INFO', 'AD')
+    assert not hdr.has_header_line('FILTER', 'PASS')
+    assert not hdr.has_header_line('contig', '1')

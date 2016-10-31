@@ -86,7 +86,7 @@ class QuotedStringSplitter:
         # Build resulting list
         return [s[start:end] for start, end in zip(begins, ends)]
 
-    def _handle_normal(self, c, pos, begins, ends):
+    def _handle_normal(self, c, pos, begins, ends):  # pylint: disable=W0613
         if c == self.delim:
             ends.append(pos)
             return self.DELIM
@@ -97,7 +97,7 @@ class QuotedStringSplitter:
         else:
             return self.NORMAL
 
-    def _handle_quoted(self, c, pos, begins, ends):
+    def _handle_quoted(self, c, pos, begins, ends):  # pylint: disable=W0613
         if c == '\\':
             return self.ESCAPED
         elif c == self.quote:
@@ -105,17 +105,17 @@ class QuotedStringSplitter:
         else:
             return self.QUOTED
 
-    def _handle_array(self, c, pos, begins, ends):
+    def _handle_array(self, c, pos, begins, ends):  # pylint: disable=W0613
         if c == self.brackets[1]:
             return self.NORMAL
         else:
             return self.ARRAY
 
-    def _handle_delim(self, c, pos, begins, ends):
+    def _handle_delim(self, c, pos, begins, ends):  # pylint: disable=W0613
         begins.append(pos)
         return self.NORMAL
 
-    def _handle_escaped(self, c, pos, begins, ends):
+    def _handle_escaped(self, c, pos, begins, ends):  # pylint: disable=W0613
         return self.QUOTED
 
 
@@ -248,7 +248,7 @@ _CONVERTERS = {
 }
 
 
-def convert_field_value(key, type_, value):
+def convert_field_value(type_, value):
     """Convert atomic field value according to the type"""
     if value == '.':
         return None
@@ -261,18 +261,18 @@ def convert_field_value(key, type_, value):
         return _CONVERTERS[type_](value)
 
 
-def parse_field_value(key, field_info, value):
+def parse_field_value(field_info, value):
     """Parse ``value`` according to ``field_info``
     """
     if field_info.type == 'Flag':
         return True
     elif field_info.number == 1:
-        return convert_field_value(key, field_info.type, value)
+        return convert_field_value(field_info.type, value)
     else:
         if value == '.':
             return []
         else:
-            return [convert_field_value(key, field_info.type, x)
+            return [convert_field_value(field_info.type, x)
                     for x in value.split(',')]
 
 
@@ -344,7 +344,7 @@ def process_sub(ref, alt_str):
         return process_sub_shrink(ref, alt_str)
 
 
-def process_alt(header, ref, alt_str):
+def process_alt(header, ref, alt_str):  # pylint: disable=W0613
     """Process alternative value using Header in ``header``"""
     # By its nature, this function contains a large number of case distinctions
     if ']' in alt_str or '[' in alt_str:
@@ -537,11 +537,11 @@ class RecordParser:
             if '=' not in entry:  # flag
                 key = entry
                 result[key] = parse_field_value(
-                    key, self.header.get_info_field_info(key), True)
+                    self.header.get_info_field_info(key), True)
             else:
                 key, value = split_mapping(entry, self.warning_helper)
                 result[key] = parse_field_value(
-                    key, self.header.get_info_field_info(key), value)
+                    self.header.get_info_field_info(key), value)
             self._info_checker.run(key, result[key], num_alts)
         return result
 
@@ -560,8 +560,7 @@ class RecordParser:
             # colon characters, although I (Manuel) don't know how strict
             # programs follow this
             for key, info, value in zip(format_, infos, entry.split(':')):
-                data[key] = parse_field_value(
-                    key, info, value)
+                data[key] = parse_field_value(info, value)
             result.append(data)
         return result
 
