@@ -2,8 +2,8 @@
 History
 =======
 
-HEAD
-----
+0.8.0 (2016-10-31)
+------------------
 
 * Adding ``Header.has_header_line`` for querying existence of header line
 * ``Header.add_*_line`` return a ``bool`` no indicating any conflicts
