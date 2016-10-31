@@ -26,5 +26,5 @@
   "keywords": "VCF, Python, software library",
   "license": "MIT",
   "title": "VCFPy",
-  "version": "v0.7.0"
+  "version": "v0.8.0"
 }
