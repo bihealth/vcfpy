@@ -51,8 +51,8 @@ def test_write_minimal_record(header_samples, tmpdir_factory):
     O = vcfpy.OrderedDict
     # open temporary file and setup the Writer with header
     path = tmpdir_factory.mktemp('write_header').join('out.vcf')
-    header, samples = header_samples
-    w = writer.Writer.from_path(path, header, samples)
+    header, _ = header_samples
+    w = writer.Writer.from_path(path, header)
     # construct record to write out from scratch
     r = record.Record(
         '20', 100, [], 'C', [record.Substitution(record.SNV, 'T')],
@@ -77,8 +77,8 @@ def test_write_annotated_record(header_samples, tmpdir_factory):
     S = record.Substitution
     # open temporary file and setup the Writer with header
     path = tmpdir_factory.mktemp('write_annotated_record').join('out.vcf')
-    header, samples = header_samples
-    w = writer.Writer.from_path(path, header, samples)
+    header, _ = header_samples
+    w = writer.Writer.from_path(path, header)
     # construct record to write out from scratch
     r = record.Record(
         '20',
@@ -113,8 +113,8 @@ def test_write_record_with_escaping(header_samples, tmpdir_factory):
     S = record.Substitution
     # open temporary file and setup the Writer with header
     path = tmpdir_factory.mktemp('write_header').join('out.vcf')
-    header, samples = header_samples
-    w = writer.Writer.from_path(path, header, samples)
+    header, _ = header_samples
+    w = writer.Writer.from_path(path, header)
     # construct record to write out from scratch
     r = record.Record(
         '20', 100, [], 'C', [record.Substitution(record.SNV, 'T')],

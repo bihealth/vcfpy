@@ -2,6 +2,11 @@
 History
 =======
 
+HEAD
+----
+
+* Construction of Writer uses samples within header and no extra parameter (breaks API)
+
 0.7.0 (2016-09-25)
 ------------------
 

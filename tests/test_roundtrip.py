@@ -16,7 +16,7 @@ def test_vcf_roundtrip(tmpdir_factory):
     r = reader.Reader.from_path(in_path)
     # open temporary file and setup the Writer with header info from reader
     out_path = tmpdir_factory.mktemp('write_header').join('out.vcf')
-    w = writer.Writer.from_path(out_path, r.header, r.samples)
+    w = writer.Writer.from_path(out_path, r.header)
     # copy records to output file
     for rec in r:
         w.write_record(rec)
