@@ -354,6 +354,21 @@ class Header:
         else:
             return []
 
+    def has_header_line(self, key, id_):
+        """Return whether there is a header line with the given ID of the
+        type given by ``key``
+
+        :param key: The VCF header key/line type.
+        :param id_: The ID value to compare fore
+
+        :return: ``True`` if there is a header line starting with ``##${key}=``
+            in the VCF file having the mapping entry ``ID`` set to ``id_``.
+        """
+        if key not in self._indices:
+            return False
+        else:
+            return id_ in self._indices[key]
+
     def add_line(self, header_line):
         """Add header line, updating any necessary support indices
 
@@ -362,8 +377,8 @@ class Header:
         self.lines.append(header_line)
         self._indices.setdefault(header_line.key, OrderedDict())
         if not hasattr(header_line, 'mapping'):
-            return  # no registration required
-        if header_line.mapping['ID'] in self._indices[header_line.key]:
+            return False  # no registration required
+        if self.has_header_line(header_line.key, header_line.mapping['ID']):
             self.warning_helper.warn_once(
                 ('Detected duplicate header line with type {} and ID {}. '
                  'Ignoring this and subsequent one').format(

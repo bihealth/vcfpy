@@ -5,6 +5,7 @@ History
 HEAD
 ----
 
+* Adding ``Header.has_header_line`` for querying existence of header line
 * ``Header.add_*_line`` return a ``bool`` no indicating any conflicts
 * Construction of Writer uses samples within header and no extra parameter (breaks API)
 
