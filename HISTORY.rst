@@ -2,6 +2,11 @@
 History
 =======
 
+HEAD
+----
+
+* Jumping by samtools coordinate string now also allowed
+
 0.8.0 (2016-10-31)
 ------------------
 

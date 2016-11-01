@@ -91,14 +91,18 @@ class Reader:
         #: name information
         self.samples = self.header.samples
 
-    def fetch(self, chrom, begin, end):
+    def fetch(self, chrom_or_region, begin=None, end=None):
         """Jump to the start position of the given chromosomal position
         and limit iteration to the end position
 
-        :param str chrom: name of the chromosome to jump to
+        :param str chrom_or_region: name of the chromosome to jump to if
+            begin and end are given and a samtools region string otherwise
+            (e.g. "chr1:123,456-123,900").
         :param int begin: 0-based begin position (inclusive)
         :param int end: 0-based end position (exclusive)
         """
+        if begin is not None and end is None:
+            raise ValueError('begin and end must both be None or neither')
         # close tabix file if any and is open
         if self.tabix_file and not self.tabix_file.closed:
             self.tabix_file.close()
@@ -107,7 +111,11 @@ class Reader:
             self.tabix_file = pysam.TabixFile(
                 filename=self.path, index=self.tabix_path)
         # jump to the next position
-        self.tabix_iter = self.tabix_file.fetch(chrom, begin, end)
+        if begin is None:
+            self.tabix_iter = self.tabix_file.fetch(region=chrom_or_region)
+        else:
+            self.tabix_iter = self.tabix_file.fetch(
+                reference=chrom_or_region, start=begin, end=end)
         return self
 
     def close(self):
