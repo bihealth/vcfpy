@@ -43,5 +43,5 @@ Sphinx==1.4.8
 sphinx-rtd-theme==0.1.9
 tornado==4.4.2
 tox==2.4.1
-virtualenv==15.0.3
+virtualenv==15.1.0
 watchdog==0.8.3
