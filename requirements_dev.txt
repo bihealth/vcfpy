@@ -35,7 +35,7 @@ pytest-pep8==1.0.6
 pytz==2016.7
 PyVCF==0.6.8
 PyYAML==3.12
-requests==2.11.1
+requests==2.12.2
 six==1.10.0
 snakeviz==0.4.1
 snowballstemmer==1.2.1
