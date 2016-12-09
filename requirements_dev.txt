@@ -10,7 +10,7 @@ coverage==4.2
 cryptography==1.5.2
 cyordereddict==1.0.0
 Cython==0.25.1
-docutils==0.12
+docutils==0.13.1
 execnet==1.4.1
 flake8==3.0.4
 idna==2.1
