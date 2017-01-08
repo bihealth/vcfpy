@@ -15,7 +15,7 @@ execnet==1.4.1
 flake8==3.0.4
 idna==2.1
 imagesize==0.7.1
-Jinja2==2.8
+Jinja2==2.9.3
 MarkupSafe==0.23
 mccabe==0.5.2
 pathtools==0.1.2
