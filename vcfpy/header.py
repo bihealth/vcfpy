@@ -268,7 +268,8 @@ class Header:
     a filtered list of header lines.
     """
 
-    def __init__(self, lines=None, samples=None, warning_helper=WarningHelper()):
+    def __init__(
+            self, lines=None, samples=None, warning_helper=WarningHelper()):
         #: ``list`` of :py:HeaderLine objects
         self.lines = lines or []
         #: :py:class:`SamplesInfo` object

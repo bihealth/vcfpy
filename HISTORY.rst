@@ -5,6 +5,8 @@ History
 HEAD
 ----
 
+* PEP8 style adjustments
+* Using versioneer for versioning
 * Using ``requirements*.txt`` files now from setup.py
 * Fixing dependency on cyordereddict to be for Python <3.6 instead of <3.5
 * Jumping by samtools coordinate string now also allowed

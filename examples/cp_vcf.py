@@ -90,7 +90,7 @@ def main(argv=None):
     """Main program entry point for parsing command line arguments"""
     parser = argparse.ArgumentParser(description='Benchmark driver')
 
-    parser.add_argument('--max-records', type=int, default=100*1000)
+    parser.add_argument('--max-records', type=int, default=100 * 1000)
     parser.add_argument('--engine', type=str, choices=('vcfpy', 'pyvcf'),
                         default='vcfpy')
     parser.add_argument('--input-vcf', type=str, required=True,
