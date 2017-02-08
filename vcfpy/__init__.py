@@ -24,4 +24,6 @@ from .reader import Reader
 
 from .writer import Writer
 
-__version__ = '0.8.0'
+from ._version import get_versions
+__version__ = get_versions()['version']
+del get_versions
