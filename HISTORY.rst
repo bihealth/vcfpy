@@ -2,8 +2,8 @@
 History
 =======
 
-HEAD
-----
+0.8.1 (2017-02-08)
+------------------
 
 * PEP8 style adjustments
 * Using versioneer for versioning
