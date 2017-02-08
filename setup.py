@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from itertools import chain
 import sys
 
 from setuptools import setup
+import pip
+from pip.req import parse_requirements
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
@@ -11,16 +14,19 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = [
-    'pysam>=0.9',  # for tabix support
-]
+base_reqs = parse_requirements('requirements.txt', session=pip.download.PipSession())
 
 # Add cyordereddict for Python <=3.5 for performance boost
-if sys.version_info[:2] < (3, 5):
-    requirements.append('cyordereddict>=1.0.0')
+if sys.version_info[:2] < (3, 6):
+    pre36_reqs = parse_requirements('requirements_pre36.txt', session=pip.download.PipSession())
+else:
+    pre36_reqs = []
+
+requirements = [str(ir.req) for ir in chain(base_reqs, pre36_reqs)]
 
 test_requirements = [
-    # TODO: put package test requirements here
+    str(ir.req)
+    for ir in parse_requirements('requirements_test.txt', session=pip.download.PipSession())
 ]
 
 setup(

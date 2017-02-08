@@ -1,47 +1,24 @@
-alabaster==0.7.9
-apipkg==1.4
-argh==0.26.2
+# Development requirements
+
+# Include test requirements
+-r requirements_test.txt
+
+# Note: don't forget requirements_pre36.txt for older Python versions
+
+# Fancier output for py.test and dependencies
+pytest-sugar==0.8.0
+termcolor==1.1.0
+
+# Sphinx and dependencies
+Sphinx==1.5.2
 Babel==2.3.4
-backports-abc==0.4
-bumpversion==0.5.3
-cffi==1.8.3
-codacy-coverage==1.3.2
-coverage==4.2
-cryptography==1.5.2
-cyordereddict==1.0.0
-Cython==0.25.1
-docutils==0.12
-execnet==1.4.1
-flake8==3.0.4
-idna==2.1
-imagesize==0.7.1
-Jinja2==2.8
+Jinja2==2.9.5
 MarkupSafe==0.23
-mccabe==0.5.2
-pathtools==0.1.2
-pep8==1.7.0
-pluggy==0.4.0
-py==1.4.31
-pyasn1==0.1.9
-pycodestyle==2.0.0
-pycparser==2.17
-pyflakes==1.3.0
-Pygments==2.1.3
-pysam==0.9.1.4
-pytest==3.0.3
-pytest-cache==1.0
-pytest-cov==2.4.0
-pytest-pep8==1.0.6
-pytz==2016.7
-PyVCF==0.6.8
-PyYAML==3.12
-requests==2.11.1
+Pygments==2.2.0
+alabaster==0.7.9
+docutils==0.13.1
+imagesize==0.7.1
+pytz==2016.10
+requests==2.13.0
 six==1.10.0
-snakeviz==0.4.1
 snowballstemmer==1.2.1
-Sphinx==1.4.8
-sphinx-rtd-theme==0.1.9
-tornado==4.4.2
-tox==2.4.1
-virtualenv==15.0.3
-watchdog==0.8.3
