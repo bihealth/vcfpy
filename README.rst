@@ -13,10 +13,6 @@ VCFPy
         :target: https://vcfpy.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
 
-.. image:: https://pyup.io/repos/github/bihealth/vcfpy/shield.svg
-        :target: https://pyup.io/repos/github/bihealth/vcfpy/
-        :alt: Updates
-
 .. image:: https://api.codacy.com/project/badge/Grade/cfe741307ec34e8fb90dfe37e84a2519
         :target: https://www.codacy.com/app/manuel-holtgrewe/vcfpy?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=bihealth/vcfpy&amp;utm_campaign=Badge_Grade
         :alt: Codacy Analysis
