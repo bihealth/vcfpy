@@ -139,7 +139,8 @@ class Writer:
         row.append(f(';'.join(record.FILTER)))
         row.append(f(self._serialize_info(record)))
         row.append(':'.join(record.FORMAT))
-        row += [self._serialize_call(record.FORMAT, c) for c in record.calls]
+        row += [self._serialize_call(record.FORMAT, record.call_for_sample[s])
+                for s in self.header.samples.names]
         print(*row, sep='\t', file=self.stream)
 
     def _serialize_info(self, record):
