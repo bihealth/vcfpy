@@ -2,8 +2,8 @@
 History
 =======
 
-HEAD
-----
+0.9.0 (2017-02-26)
+------------------
 
 * Restructuring of requirements.txt files
 * Fixing parsing of no-call ``GT`` fields
