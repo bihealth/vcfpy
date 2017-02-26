@@ -67,7 +67,7 @@ class Writer:
         interface".
 
         :param stream: ``file``-like object to write to
-        :param header: VCF header to use
+        :param header: VCF header to use, lines and samples are deep-copied
         :param path: optional string with path to store (for display only)
         :param use_bgzf: indicator whether to write bgzf to ``stream``
             if ``True``, prevent if ``False``, interpret ``path`` if ``None``
@@ -82,7 +82,7 @@ class Writer:
 
         :param path: the path to load from (converted to ``str`` for
             compatibility with ``path.py``)
-        :param header: VCF header to use
+        :param header: VCF header to use, lines and samples are deep-copied
         """
         path = str(path)
         use_bgzf = False  # we already interpret path
@@ -95,8 +95,9 @@ class Writer:
     def __init__(self, stream, header, path=None):
         #: stream (``file``-like object) to read from
         self.stream = stream
-        #: the :py:class:~vcfpy.header.Header` written out
-        self.header = header
+        #: the :py:class:~vcfpy.header.Header` to write out, will be
+        #: deep-copied into the ``Writer`` on initialization
+        self.header = header.copy()
         #: optional ``str`` with the path to the stream
         self.path = path
         # write out headers

@@ -260,7 +260,8 @@ class Header:
     """Represent header of VCF file
 
     While this class allows mutating records, it should not be changed once it
-    has been assigned to a writer
+    has been assigned to a writer.  Use :py:method:`~Header.copy` to create
+    a copy that can be modified without problems.
 
     This class provides function for adding lines to a header and updating the
     supporting index data structures.  There is no explicit API for removing
@@ -269,13 +270,13 @@ class Header:
     """
 
     def __init__(
-            self, lines=None, samples=None, warning_helper=WarningHelper()):
+            self, lines=None, samples=None, warning_helper=None):
         #: ``list`` of :py:HeaderLine objects
         self.lines = lines or []
         #: :py:class:`SamplesInfo` object
         self.samples = samples
         # helper for printing warnings
-        self.warning_helper = warning_helper
+        self.warning_helper = warning_helper or WarningHelper()
         # build indices for the different field types
         self._indices = self._build_indices()
 
@@ -295,6 +296,17 @@ class Header:
                 result.setdefault(line.key, [])
                 result[line.key].append(line)
         return result
+
+    def copy(self, keep_warning_helper=True):
+        """Return a copy of this header, the ``warning_helper`` is not
+        copied by default
+        """
+        if keep_warning_helper:
+            warning_helper = self.warning_helper
+        else:
+            warning_helper = None
+        return Header([line.copy() for line in self.lines],
+                      self.samples.copy(), warning_helper)
 
     def add_filter_line(self, mapping):
         """Add FILTER header line constructed from the given mapping
@@ -414,12 +426,12 @@ class Header:
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
-            return self.__dict__ == other.__dict__
+            return (self.lines, self.samples) == (other.lines, other.samples)
         return NotImplemented
 
     def __ne__(self, other):
         if isinstance(other, self.__class__):
-            return not self.__eq__(other)
+            return (self.lines, self.samples) != (other.lines, other.samples)
         return NotImplemented
 
     def __hash__(self):
@@ -437,13 +449,21 @@ class HeaderLine:
     """Base class for VCF header lines
     """
 
-    def __init__(self, key, value, warning_helper=WarningHelper()):
+    def __init__(self, key, value, warning_helper=None):
         #: ``str`` with key of header line
         self.key = key
         # ``str`` with raw value of header line
         self._value = value
         #: Helper for printing warnings
-        self.warning_helper = warning_helper
+        self.warning_helper = warning_helper or WarningHelper()
+
+    def copy(self, keep_warning_helper=True):
+        """Return a copy, ``warning_helper`` is kept by default"""
+        if keep_warning_helper:
+            warning_helper = self.warning_helper
+        else:
+            warning_helper = None
+        return self.__class__(self.key, self.value, warning_helper)
 
     @property
     def value(self):
@@ -455,12 +475,12 @@ class HeaderLine:
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
-            return self.__dict__ == other.__dict__
+            return (self.key, self.value) == (other.key, other.value)
         return NotImplemented
 
     def __ne__(self, other):
         if isinstance(other, self.__class__):
-            return not self.__eq__(other)
+            return (self.key, self.value) != (other.key, other.value)
         return NotImplemented
 
     def __hash__(self):
@@ -505,6 +525,15 @@ class SimpleHeaderLine(HeaderLine):
         #: ``collections.OrderedDict`` with key/value mapping of the attributes
         self.mapping = OrderedDict(mapping.items())
 
+    def copy(self, keep_warning_helper=True):
+        """Return a copy, ``warning_helper`` is kept by default"""
+        if keep_warning_helper:
+            warning_helper = self.warning_helper
+        else:
+            warning_helper = None
+        mapping = OrderedDict(self.mapping.items())
+        return self.__class__(self.key, self.value, mapping, warning_helper)
+
     @property
     def value(self):
         return mapping_to_str(self.mapping)
@@ -515,6 +544,18 @@ class SimpleHeaderLine(HeaderLine):
     def __str__(self):
         return 'SimpleHeaderLine({}, {}, {})'.format(
             *map(repr, (self.key, self.value, self.mapping)))
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return (self.key, self.value, self.mapping) == (
+                other.key, other.value, other.mapping)
+        return NotImplemented
+
+    def __ne__(self, other):
+        if isinstance(other, self.__class__):
+            return (self.key, self.value, self.mapping) != (
+                other.key, other.value, other.mapping)
+        return NotImplemented
 
 
 class AltAlleleHeaderLine(SimpleHeaderLine):
@@ -533,16 +574,6 @@ class AltAlleleHeaderLine(SimpleHeaderLine):
         super().__init__(key, value, mapping)
         #: name of the alternative allele
         self.id = self.mapping['ID']
-
-    def __eq__(self, other):
-        if isinstance(other, self.__class__):
-            return self.__dict__ == other.__dict__
-        return NotImplemented
-
-    def __ne__(self, other):
-        if isinstance(other, self.__class__):
-            return not self.__eq__(other)
-        return NotImplemented
 
     def __hash__(self):
         raise TypeError('Unhashable type: AltAlleleHeaderLine')
@@ -577,16 +608,6 @@ class ContigHeaderLine(SimpleHeaderLine):
         #: length of the contig, ``None`` if missing
         self.length = self.mapping.get('length')
 
-    def __eq__(self, other):
-        if isinstance(other, self.__class__):
-            return self.__dict__ == other.__dict__
-        return NotImplemented
-
-    def __ne__(self, other):
-        if isinstance(other, self.__class__):
-            return not self.__eq__(other)
-        return NotImplemented
-
     def __hash__(self):
         raise TypeError('Unhashable type: ContigHeaderLine')
 
@@ -616,16 +637,6 @@ class FilterHeaderLine(SimpleHeaderLine):
         #: description for the filter, ``None`` if missing
         self.description = self.mapping.get('Description')
 
-    def __eq__(self, other):
-        if isinstance(other, self.__class__):
-            return self.__dict__ == other.__dict__
-        return NotImplemented
-
-    def __ne__(self, other):
-        if isinstance(other, self.__class__):
-            return not self.__eq__(other)
-        return NotImplemented
-
     def __hash__(self):
         raise TypeError('Unhashable type: FilterHeaderLine')
 
@@ -651,16 +662,6 @@ class MetaHeaderLine(SimpleHeaderLine):
         #: name of the alternative allele
         self.id = self.mapping['ID']
 
-    def __eq__(self, other):
-        if isinstance(other, self.__class__):
-            return self.__dict__ == other.__dict__
-        return NotImplemented
-
-    def __ne__(self, other):
-        if isinstance(other, self.__class__):
-            return not self.__eq__(other)
-        return NotImplemented
-
     def __hash__(self):
         raise TypeError('Unhashable type: MetaHeaderLine')
 
@@ -683,16 +684,6 @@ class PedigreeHeaderLine(SimpleHeaderLine):
         super().__init__(key, value, mapping)
         #: name of the alternative allele
         self.id = self.mapping['ID']
-
-    def __eq__(self, other):
-        if isinstance(other, self.__class__):
-            return self.__dict__ == other.__dict__
-        return NotImplemented
-
-    def __ne__(self, other):
-        if isinstance(other, self.__class__):
-            return not self.__eq__(other)
-        return NotImplemented
 
     def __hash__(self):
         raise TypeError('Unhashable type: PedigreeHeaderLine')
@@ -719,12 +710,14 @@ class SampleHeaderLine(SimpleHeaderLine):
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
-            return self.__dict__ == other.__dict__
+            return (self.key, self.value, self.mapping) == (
+                other.key, other.value, other.mapping)
         return NotImplemented
 
     def __ne__(self, other):
         if isinstance(other, self.__class__):
-            return not self.__eq__(other)
+            return (self.key, self.value, self.mapping) != (
+                other.key, other.value, other.mapping)
         return NotImplemented
 
     def __hash__(self):
@@ -743,9 +736,8 @@ class CompoundHeaderLine(HeaderLine):
     Don't use this class directly but rather the sub classes.
     """
 
-    def __init__(self, key, value, mapping,
-                 warning_helper=WarningHelper()):
-        super().__init__(key, value)
+    def __init__(self, key, value, mapping, warning_helper=None):
+        super().__init__(key, value, warning_helper)
         #: OrderedDict with key/value mapping
         self.mapping = OrderedDict(mapping.items())
         # check that 'Number' is given and use "." otherwise
@@ -761,6 +753,15 @@ class CompoundHeaderLine(HeaderLine):
                    'unbounded/"." instead').format(self.mapping['Number']),
                   file=sys.stderr)
             self.mapping['Number'] = '.'
+
+    def copy(self, keep_warning_helper=True):
+        """Return a copy, ``warning_helper`` is kept by default"""
+        if keep_warning_helper:
+            warning_helper = self.warning_helper
+        else:
+            warning_helper = None
+        mapping = OrderedDict(self.mapping.items())
+        return self.__class__(self.key, self.value, mapping, warning_helper)
 
     @classmethod
     def _parse_number(klass, number):
@@ -834,16 +835,6 @@ class InfoHeaderLine(CompoundHeaderLine):
         #: version of INFO field, ``None`` if not given
         self.version = self.mapping.get('Version')
 
-    def __eq__(self, other):
-        if isinstance(other, self.__class__):
-            return self.__dict__ == other.__dict__
-        return NotImplemented
-
-    def __ne__(self, other):
-        if isinstance(other, self.__class__):
-            return not self.__eq__(other)
-        return NotImplemented
-
     def __hash__(self):
         raise TypeError('Unhashable type: InfoHeaderLine')
 
@@ -894,16 +885,6 @@ class FormatHeaderLine(CompoundHeaderLine):
         #: version of INFO field, ``None`` if not given
         self.version = self.mapping.get('Version')
 
-    def __eq__(self, other):
-        if isinstance(other, self.__class__):
-            return self.__dict__ == other.__dict__
-        return NotImplemented
-
-    def __ne__(self, other):
-        if isinstance(other, self.__class__):
-            return not self.__eq__(other)
-        return NotImplemented
-
     def __hash__(self):
         raise TypeError('Unhashable type: FormatHeaderLine')
 
@@ -923,15 +904,9 @@ class SamplesInfos:
         self.name_to_idx = dict([
             (name, idx) for idx, name in enumerate(self.names)])
 
-    def __eq__(self, other):
-        if isinstance(other, self.__class__):
-            return self.__dict__ == other.__dict__
-        return NotImplemented
-
-    def __ne__(self, other):
-        if isinstance(other, self.__class__):
-            return not self.__eq__(other)
-        return NotImplemented
+    def copy(self):
+        """Return a copy of the object"""
+        return SamplesInfos(self.names)
 
     def __hash__(self):
         raise TypeError('Unhashable type: SamplesInfos')
@@ -943,3 +918,13 @@ class SamplesInfos:
 
     def __repr__(self):
         return str(self)
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.names == other.names
+        return NotImplemented
+
+    def __ne__(self, other):
+        if isinstance(other, self.__class__):
+            return self.names != other.names
+        return NotImplemented

@@ -5,6 +5,7 @@ History
 HEAD
 ----
 
+* Deep-copying header lines and samples infos on ``Writer`` construction
 * Using ``samples`` attribute from ``Header`` in ``Reader`` and ``Writer`` instead of passing explicitely
 
 0.9.0 (2017-02-26)

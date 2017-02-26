@@ -25,6 +25,11 @@ class Reader:
 
     :raises: :py:class:`~vcfpy.exceptions.InvalidHeaderException` in the case
         of problems reading the header
+
+    .. note::
+        It is important to note that the ``header`` member is used during
+        the parsing of the file.  **If you need a modified version then
+        create a copy, e.g., using :py:method:`~vcfpy.header.Header.copy`**.
     """
 
     @classmethod
