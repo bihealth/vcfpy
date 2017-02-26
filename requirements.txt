@@ -1,2 +1,1 @@
-# pysam for fast tabix jumping
-pysam>=0.10.0
+-r requirements/base.txt

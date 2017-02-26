@@ -2,6 +2,12 @@
 History
 =======
 
+HEAD
+----
+
+* Restructuring of requirements.txt files
+* Fixing parsing of no-call ``GT`` fields
+
 0.8.1 (2017-02-08)
 ------------------
 

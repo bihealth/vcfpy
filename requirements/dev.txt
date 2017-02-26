@@ -1,7 +1,7 @@
 # Development requirements
 
 # Include test requirements
--r requirements_test.txt
+-r test.txt
 
 # Note: don't forget requirements_pre36.txt for older Python versions
 

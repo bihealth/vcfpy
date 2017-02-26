@@ -22,7 +22,7 @@ base_reqs = parse_requirements(
 # Add cyordereddict for Python <=3.5 for performance boost
 if sys.version_info[:2] < (3, 6):
     pre36_reqs = parse_requirements(
-        'requirements_pre36.txt', session=pip.download.PipSession())
+        'requirements/pre36.txt', session=pip.download.PipSession())
 else:
     pre36_reqs = []
 
@@ -31,7 +31,7 @@ requirements = [str(ir.req) for ir in chain(base_reqs, pre36_reqs)]
 test_requirements = [
     str(ir.req)
     for ir in parse_requirements(
-        'requirements_test.txt', session=pip.download.PipSession())
+        'requirements/test.txt', session=pip.download.PipSession())
 ]
 
 setup(

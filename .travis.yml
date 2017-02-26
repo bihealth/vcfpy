@@ -6,7 +6,6 @@ python: 3.5
 env:
   - TOXENV=py35
   - TOXENV=py34
-  - TOXENV=py33
 
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install: pip install -U tox
@@ -31,7 +30,7 @@ deploy:
       eUIzcWZ1blRIL0t3U3B5NDhkQ2hoRTVIWkt2Uk1DYmRxTyticU4xWERrbzJoUUNDNG1QTWlQbGY2
       TjJGY1Y5UStpY2piMjMvRmx2a1pzZCtLUU90eTY0SytGR3JMUWNKWnppaWZJMmJjR0JnL0l2Snc9
   true:
-    condition: $TOXENV == py33
+    condition: $TOXENV == py34
     repo: bihealth/vcfpy
     tags: true
   user: Manuel.Holtgrewe
