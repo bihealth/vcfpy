@@ -53,14 +53,14 @@ class VCFPyRunner(BaseRunner):
         self.writer = FakeWriter()
         if args.output_vcf:
             self.writer = vcfpy.VCFWriter.from_path(
-                self.reader.header, self.reader.samples, args.output_vcf)
+                args.output_vcf, self.reader.header)
 
 
 class PyVCFRunner(BaseRunner):
 
     def __init__(self, args):
         super().__init__(args)
-        self.reader = vcf.Reader(filename=args.input_vcf)
+        self.reader = vcf.Reader(args.input_vcf)
         self.writer = FakeWriter()
 
 
