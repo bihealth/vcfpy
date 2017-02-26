@@ -15,8 +15,8 @@ def test_read_text():
     assert r.parser
     assert r.header
     assert len(r.header.lines) == 18
-    assert r.samples
-    assert r.samples.names == ['NA00001', 'NA00002', 'NA00003']
+    assert r.header.samples
+    assert r.header.samples.names == ['NA00001', 'NA00002', 'NA00003']
     records = []
     for record in r:
         records.append(record)
@@ -29,8 +29,8 @@ def test_read_bgzip():
     assert r.parser
     assert r.header
     assert len(r.header.lines) == 18
-    assert r.samples
-    assert r.samples.names == ['NA00001', 'NA00002', 'NA00003']
+    assert r.header.samples
+    assert r.header.samples.names == ['NA00001', 'NA00002', 'NA00003']
     records = []
     for record in r:
         records.append(record)

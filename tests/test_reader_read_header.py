@@ -23,8 +23,8 @@ def test_read_text():
         "('Number', 2), ('Type', 'Integer'), ('Description', "
         "'Haplotype Quality')]))")
     assert str(r.header.lines[-1]) == EXPECTED
-    assert r.samples
-    assert r.samples.names == ['NA00001', 'NA00002', 'NA00003']
+    assert r.header.samples
+    assert r.header.samples.names == ['NA00001', 'NA00002', 'NA00003']
 
 
 def test_read_bgzip():
@@ -41,5 +41,5 @@ def test_read_bgzip():
         "('Number', 2), ('Type', 'Integer'), ('Description', "
         "'Haplotype Quality')]))")
     assert str(r.header.lines[-1]) == EXPECTED
-    assert r.samples
-    assert r.samples.names == ['NA00001', 'NA00002', 'NA00003']
+    assert r.header.samples
+    assert r.header.samples.names == ['NA00001', 'NA00002', 'NA00003']

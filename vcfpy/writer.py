@@ -83,7 +83,6 @@ class Writer:
         :param path: the path to load from (converted to ``str`` for
             compatibility with ``path.py``)
         :param header: VCF header to use
-        :param samples: SamplesInfos to use
         """
         path = str(path)
         use_bgzf = False  # we already interpret path
@@ -93,7 +92,7 @@ class Writer:
             f = open(path, 'wt')
         return klass.from_stream(f, header, path, use_bgzf=use_bgzf)
 
-    def __init__(self, stream, header, samples, path=None):
+    def __init__(self, stream, header, path=None):
         #: stream (``file``-like object) to read from
         self.stream = stream
         #: the :py:class:~vcfpy.header.Header` written out

@@ -87,9 +87,6 @@ class Reader:
         self.parser = parser.Parser(stream, self.path, self.record_checks)
         #: the Header
         self.header = self.parser.parse_header()
-        #: the :py:class:`vcfpy.header.SamplesInfos` object with the sample
-        #: name information
-        self.samples = self.header.samples
 
     def fetch(self, chrom_or_region, begin=None, end=None):
         """Jump to the start position of the given chromosomal position
