@@ -5,6 +5,8 @@ History
 HEAD
 ----
 
+* Extending API to allow for reading subsets of records.
+  (Writing for sample subsets or reordered samples is possible through using the appropriate ``names`` list in the ``SamplesInfos`` for the ``Writer``).
 * Deep-copying header lines and samples infos on ``Writer`` construction
 * Using ``samples`` attribute from ``Header`` in ``Reader`` and ``Writer`` instead of passing explicitely
 

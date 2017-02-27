@@ -30,27 +30,44 @@ class Reader:
         It is important to note that the ``header`` member is used during
         the parsing of the file.  **If you need a modified version then
         create a copy, e.g., using :py:method:`~vcfpy.header.Header.copy`**.
+
+    .. note::
+        If you use the ``parsed_samples`` feature and you write out
+        records then you must not change the ``FORMAT`` of the record.
     """
 
     @classmethod
     def from_stream(klass, stream, path=None, tabix_path=None,
-                    record_checks=None):
+                    record_checks=None, parsed_samples=None):
         """Create new :py:class:`Reader` from file
+
+        .. note::
+            If you use the ``parsed_samples`` feature and you write out
+            records then you must not change the ``FORMAT`` of the record.
 
         :param stream: ``file``-like object to read from
         :param path: optional string with path to store (for display only)
         :param list record_checks: record checks to perform, can contain
             'INFO' and 'FORMAT'
+        :param list parsed_samples: ``list`` of ``str`` values with names of
+            samples to parse call information for (for speedup); leave to
+            ``None`` for ignoring
         """
         record_checks = record_checks or []
         if tabix_path and not path:
             raise ValueError('Must give path if tabix_path is given')
         return Reader(stream=stream, path=path, tabix_path=tabix_path,
-                      record_checks=record_checks)
+                      record_checks=record_checks,
+                      parsed_samples=parsed_samples)
 
     @classmethod
-    def from_path(klass, path, tabix_path=None, record_checks=None):
+    def from_path(klass, path, tabix_path=None, record_checks=None,
+                  parsed_samples=None):
         """Create new :py:class:`Reader` from path
+
+        .. note::
+            If you use the ``parsed_samples`` feature and you write out
+            records then you must not change the ``FORMAT`` of the record.
 
         :param path: the path to load from (converted to ``str`` for
             compatibility with ``path.py``)
@@ -71,10 +88,11 @@ class Reader:
         else:
             f = open(path, 'rt')
         return klass.from_stream(stream=f, path=path, tabix_path=tabix_path,
-                                 record_checks=record_checks)
+                                 record_checks=record_checks,
+                                 parsed_samples=parsed_samples)
 
     def __init__(self, stream, path=None, tabix_path=None,
-                 record_checks=None):
+                 record_checks=None, parsed_samples=None):
         #: stream (``file``-like object) to read from
         self.stream = stream
         #: optional ``str`` with the path to the stream
@@ -83,6 +101,8 @@ class Reader:
         self.tabix_path = tabix_path
         #: checks to perform on records, can contain 'FORMAT' and 'INFO'
         self.record_checks = tuple(record_checks or [])
+        #: if set, list of samples to parse for
+        self.parsed_samples = parsed_samples
         #: the ``pysam.TabixFile`` used for reading from index bgzip-ed VCF;
         #: constructed on the fly
         self.tabix_file = None
@@ -91,7 +111,7 @@ class Reader:
         #: the parser to use
         self.parser = parser.Parser(stream, self.path, self.record_checks)
         #: the Header
-        self.header = self.parser.parse_header()
+        self.header = self.parser.parse_header(parsed_samples)
 
     def fetch(self, chrom_or_region, begin=None, end=None):
         """Jump to the start position of the given chromosomal position

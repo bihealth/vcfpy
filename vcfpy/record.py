@@ -171,6 +171,20 @@ class Record:
         return str(self)
 
 
+class UnparsedCall:
+    """Placeholder for :py:class:`Call` when parsing only a subset of fields
+    """
+
+    def __init__(self, sample, unparsed_data, site=None):
+        #: the name of the sample for which the call was made
+        self.sample = sample
+        #: ``str`` with the unparsed data
+        self.unparsed_data = unparsed_data
+        #: the :py:class:`Record` of this :py:class:`Call`
+        self.site = site
+
+
+#: Regular expression for splitting alleles
 ALLELE_DELIM = re.compile(r'[|/]')
 
 

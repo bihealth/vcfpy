@@ -482,15 +482,17 @@ class RecordParser:
                 format_))
         # per-sample calls
         calls = []
-        pairs = zip(self.samples.names, self._parse_calls_data(
-            format_, self._format_cache[format_str], arr[9:]))
-        pairs = list(pairs)
-        for sample, data in pairs:
-            call = record.Call(sample, data)
-            self._format_checker.run(call, len(alts))
-            self._check_filters(
-                call.data.get('FT'), 'FORMAT/FT', call.sample)
-            calls.append(call)
+        for sample, raw_data in zip(self.samples.names, arr[9:]):
+            if self.samples.is_parsed(sample):
+                data = self._parse_calls_data(
+                    format_, self._format_cache[format_str], raw_data)
+                call = record.Call(sample, data)
+                self._format_checker.run(call, len(alts))
+                self._check_filters(
+                    call.data.get('FT'), 'FORMAT/FT', call.sample)
+                calls.append(call)
+            else:
+                calls.append(record.UnparsedCall(sample, raw_data))
         return calls
 
     def _check_filters(self, filt, source, sample=None):
@@ -546,23 +548,19 @@ class RecordParser:
         return result
 
     @classmethod
-    def _parse_calls_data(klass, format_, infos, arr):
+    def _parse_calls_data(klass, format_, infos, gt_str):
         """Parse genotype call information from arrays using format array
 
         :param list format: List of strings with format names
-        :param list arr: List of strings with genotype information values
-            for each sample
+        :param gt_str arr: string with genotype information values
         """
-        result = []
-        for entry in arr:
-            data = OrderedDict()
-            # The standard is very nice to parsers, we can simply split at
-            # colon characters, although I (Manuel) don't know how strict
-            # programs follow this
-            for key, info, value in zip(format_, infos, entry.split(':')):
-                data[key] = parse_field_value(info, value)
-            result.append(data)
-        return result
+        data = OrderedDict()
+        # The standard is very nice to parsers, we can simply split at
+        # colon characters, although I (Manuel) don't know how strict
+        # programs follow this
+        for key, info, value in zip(format_, infos, gt_str.split(':')):
+            data[key] = parse_field_value(info, value)
+        return data
 
 
 class HeaderChecker:
@@ -734,10 +732,12 @@ class Parser:
         self._line = self.stream.readline()
         return prev_line
 
-    def parse_header(self):
+    def parse_header(self, parsed_samples=None):
         """Read and parse :py:class:`vcfpy.header.Header` from file, set
         into ``self.header`` and return it
 
+        :param list parsed_samples: ``list`` of ``str`` for subsetting the
+            samples to parse
         :returns: ``vcfpy.header.Header``
         :raises: ``vcfpy.exceptions.InvalidHeaderException`` in the case of
             problems reading the header
@@ -749,7 +749,7 @@ class Parser:
             header_lines.append(sub_parser.parse_line(self._line))
             self._read_next_line()
         # parse sample info line
-        self.samples = self._handle_sample_line()
+        self.samples = self._handle_sample_line(parsed_samples)
         # construct Header object
         self.header = header.Header(header_lines, self.samples)
         # check header for consistency
@@ -765,7 +765,7 @@ class Parser:
                 'Expecting non-header line or EOF after "#CHROM" line')
         return self.header
 
-    def _handle_sample_line(self):
+    def _handle_sample_line(self, parsed_samples=None):
         """"Check and interpret the "##CHROM" line and return samples"""
         if not self._line or not self._line.startswith('#CHROM'):
             raise exceptions.IncorrectVCFFormat(
@@ -785,7 +785,8 @@ class Parser:
             arr = self._line.rstrip().split('\t')
 
         self._check_samples_line(arr)
-        return header.SamplesInfos(arr[len(REQUIRE_SAMPLE_HEADER):])
+        return header.SamplesInfos(
+            arr[len(REQUIRE_SAMPLE_HEADER):], parsed_samples)
 
     @classmethod
     def _check_samples_line(klass, arr):

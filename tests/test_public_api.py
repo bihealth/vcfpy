@@ -31,6 +31,7 @@ def test_from_header():
 
 def test_from_record():
     assert vcfpy.Record
+    assert vcfpy.UnparsedCall
     assert vcfpy.Call
     assert vcfpy.AltRecord
     assert vcfpy.Substitution

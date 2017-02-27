@@ -894,12 +894,27 @@ class FormatHeaderLine(CompoundHeaderLine):
 
 
 class SamplesInfos:
-    """Helper class for handling and mapping of sample names to numeric indices
+    """Helper class for handling the samples in VCF files
+
+    The purpose of this class is to decouple the sample name list somewhat
+    from :py:class:`Header`.  This encapsulates subsetting samples for which
+    the genotype should be parsed and reordering samples into output files.
+
+    Note that when subsetting is used and the records are to be written out
+    again then the ``FORMAT`` field must not be touched.
     """
 
-    def __init__(self, sample_names):
-        #: list of sample names
+    def __init__(self, sample_names, parsed_samples=None):
+        #: list of sample that are read from/written to the VCF file at
+        #: hand in the given order
         self.names = list(sample_names)
+        #: ``set`` with the samples for which the genotype call fields should
+        #: be read; can be used for partial parsing (speedup) and defaults
+        #: to the full list of samples, None if all are parsed
+        self.parsed_samples = parsed_samples
+        if self.parsed_samples:
+            self.parsed_samples = set(self.parsed_samples)
+            assert self.parsed_samples <= set(self.names), "Must be subset!"
         #: mapping from sample name to index
         self.name_to_idx = dict([
             (name, idx) for idx, name in enumerate(self.names)])
@@ -907,6 +922,10 @@ class SamplesInfos:
     def copy(self):
         """Return a copy of the object"""
         return SamplesInfos(self.names)
+
+    def is_parsed(self, name):
+        """Return whether the sample name is parsed"""
+        return ((not self.parsed_samples) or name in self.parsed_samples)
 
     def __hash__(self):
         raise TypeError('Unhashable type: SamplesInfos')

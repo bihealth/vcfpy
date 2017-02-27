@@ -156,9 +156,12 @@ class Writer:
 
     def _serialize_call(self, format_, call):
         """Return serialized version of the Call using the record's FORMAT'"""
-        result = [format_value(self.header.get_format_field_info(key),
-                               call.data[key]) for key in format_]
-        return ':'.join(result)
+        if isinstance(call, record.UnparsedCall):
+            return call.unparsed_data
+        else:
+            result = [format_value(self.header.get_format_field_info(key),
+                                   call.data[key]) for key in format_]
+            return ':'.join(result)
 
     @classmethod
     def _empty_to_dot(klass, val):
