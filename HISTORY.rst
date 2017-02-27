@@ -2,8 +2,8 @@
 History
 =======
 
-HEAD
-----
+v0.10.0 (2017-02-27)
+--------------------
 
 * Extending API to allow for reading subsets of records.
   (Writing for sample subsets or reordered samples is possible through using the appropriate ``names`` list in the ``SamplesInfos`` for the ``Writer``).
