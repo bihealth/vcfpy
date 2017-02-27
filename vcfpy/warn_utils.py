@@ -3,10 +3,7 @@
 
 import sys
 
-try:
-    from cyordereddict import OrderedDict
-except ImportError:
-    from collections import OrderedDict
+from .compat import OrderedDict
 
 __author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
 

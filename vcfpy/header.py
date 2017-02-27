@@ -10,11 +10,7 @@ import sys
 
 from . import exceptions
 from .warn_utils import WarningHelper
-
-try:
-    from cyordereddict import OrderedDict
-except ImportError:
-    from collections import OrderedDict
+from .compat import OrderedDict
 
 __author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
 
