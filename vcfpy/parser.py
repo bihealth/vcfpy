@@ -11,7 +11,7 @@ import warnings
 from . import header
 from . import record
 from . import exceptions
-from .warnings import (
+from .exceptions import (
     LeadingTrailingSpaceInKey, UnknownFilter, UnknownVCFVersion, SpaceInChromLine)
 
 

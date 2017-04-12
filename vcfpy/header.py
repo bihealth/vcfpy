@@ -11,7 +11,7 @@ import warnings
 
 from . import exceptions
 from .compat import OrderedDict
-from .warnings import (
+from .exceptions import (
     DuplicateHeaderLineWarning, FieldInfoNotFound, FieldMissingNumber,
     FieldInvalidNumber, HeaderInvalidType, HeaderMissingDescription)
 
