@@ -59,7 +59,6 @@ def test_parse_dup():
         """Call('NA00003', OrderedDict([('GT', '0/0')]))])""")
     rec = p.parse_next_record()
     assert str(rec) == EXPECTED
-    assert not p.warning_helper.warning_counter
     assert rec.ALT[0].serialize() == '<DUP>'
 
 
@@ -77,5 +76,4 @@ def test_parse_iupac():
         """Call('NA00003', OrderedDict([('GT', '0/0')]))])""")
     rec = p.parse_next_record()
     assert str(rec) == EXPECTED
-    assert not p.warning_helper.warning_counter
     assert rec.ALT[0].serialize() == '<R>'

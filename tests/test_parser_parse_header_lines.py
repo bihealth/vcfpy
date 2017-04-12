@@ -10,16 +10,11 @@ from vcfpy import parser
 __author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
 
 
-@pytest.fixture
-def warning_helper():
-    return parser.WarningHelper()
-
-
 # parser.StupidHeaderLineParser.parse_key_value() --------------------------
 
 
-def test_stupid_vcf_header_line_parser_file_format(warning_helper):
-    p = parser.StupidHeaderLineParser(warning_helper)
+def test_stupid_vcf_header_line_parser_file_format():
+    p = parser.StupidHeaderLineParser()
     INPUT = ('fileFormat', 'VCFv4.2')
     EXPECTED = "HeaderLine('fileFormat', 'VCFv4.2')"
     assert str(p.parse_key_value(*INPUT)) == EXPECTED
@@ -28,10 +23,8 @@ def test_stupid_vcf_header_line_parser_file_format(warning_helper):
 # parser.MappingHeaderLineParser.parse_key_value() -------------------------
 
 
-def test_mapping_vcf_header_line_parser_parse_key_value_filter(
-        warning_helper):
-    p = parser.MappingHeaderLineParser(
-        warning_helper, header.FilterHeaderLine)
+def test_mapping_vcf_header_line_parser_parse_key_value_filter():
+    p = parser.MappingHeaderLineParser(header.FilterHeaderLine)
     INPUT = ('FILTER', '<ID=q10,Description="Quality below 10">')
     EXPECTED = ('FilterHeaderLine(\'FILTER\', \'<ID=q10,Description="'
                 'Quality below 10">\', '
@@ -40,10 +33,8 @@ def test_mapping_vcf_header_line_parser_parse_key_value_filter(
     assert str(p.parse_key_value(*INPUT)) == EXPECTED
 
 
-def test_mapping_vcf_header_line_parser_parse_key_value_format(
-        warning_helper):
-    p = parser.MappingHeaderLineParser(
-        warning_helper, header.FormatHeaderLine)
+def test_mapping_vcf_header_line_parser_parse_key_value_format():
+    p = parser.MappingHeaderLineParser(header.FormatHeaderLine)
     INPUT = ('FORMAT', '<ID=GT,Number=1,Type=String,Description="Genotype">')
     EXPECTED = ('FormatHeaderLine(\'FORMAT\', \'<ID=GT,Number=1,'
                 'Type=String,Description="Genotype">\', '
@@ -52,10 +43,8 @@ def test_mapping_vcf_header_line_parser_parse_key_value_format(
     assert str(p.parse_key_value(*INPUT)) == EXPECTED
 
 
-def test_mapping_vcf_header_line_parser_parse_key_value_info(
-        warning_helper):
-    p = parser.MappingHeaderLineParser(
-        warning_helper, header.InfoHeaderLine)
+def test_mapping_vcf_header_line_parser_parse_key_value_info():
+    p = parser.MappingHeaderLineParser(header.InfoHeaderLine)
     INPUT = ('INFO',
              '<ID=NS,Number=1,Type=Integer,Description='
              '"Number of Samples With Data">')
@@ -67,10 +56,8 @@ def test_mapping_vcf_header_line_parser_parse_key_value_info(
     assert str(p.parse_key_value(*INPUT)) == EXPECTED
 
 
-def test_mapping_vcf_header_line_parser_parse_key_value_contig(
-        warning_helper):
-    p = parser.MappingHeaderLineParser(
-        warning_helper, header.ContigHeaderLine)
+def test_mapping_vcf_header_line_parser_parse_key_value_contig():
+    p = parser.MappingHeaderLineParser(header.ContigHeaderLine)
     INPUT = ('contig',
              '<ID=20,length=62435964,assembly=B36,'
              'md5=f126cdf8a6e0c7f379d618ff66beb2da,'
@@ -88,15 +75,15 @@ def test_mapping_vcf_header_line_parser_parse_key_value_contig(
 # parser.HeaderParser.parse_line() -----------------------------------------
 
 
-def test_vcf_header_parser_file_format(warning_helper):
-    p = parser.HeaderParser(parser.build_header_parsers(warning_helper))
+def test_vcf_header_parser_file_format():
+    p = parser.HeaderParser()
     INPUT = '##fileFormat=VCFv4.2\n'
     EXPECTED = "HeaderLine('fileFormat', 'VCFv4.2')"
     assert str(p.parse_line(INPUT)) == EXPECTED
 
 
-def test_vcf_header_parser_parse_line_filter(warning_helper):
-    p = parser.HeaderParser(parser.build_header_parsers(warning_helper))
+def test_vcf_header_parser_parse_line_filter():
+    p = parser.HeaderParser()
     INPUT = '##FILTER=<ID=q10,Description="Quality below 10">\n'
     EXPECTED = ('FilterHeaderLine(\'FILTER\', \'<ID=q10,Description="'
                 'Quality below 10">\', '
@@ -105,8 +92,8 @@ def test_vcf_header_parser_parse_line_filter(warning_helper):
     assert str(p.parse_line(INPUT)) == EXPECTED
 
 
-def test_mapping_vcf_header_parser_parse_line_format(warning_helper):
-    p = parser.HeaderParser(parser.build_header_parsers(warning_helper))
+def test_mapping_vcf_header_parser_parse_line_format():
+    p = parser.HeaderParser()
     INPUT = '##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">\n'
     EXPECTED = ('FormatHeaderLine(\'FORMAT\', \'<ID=GT,Number=1,'
                 'Type=String,Description="Genotype">\', '
@@ -115,8 +102,8 @@ def test_mapping_vcf_header_parser_parse_line_format(warning_helper):
     assert str(p.parse_line(INPUT)) == EXPECTED
 
 
-def test_mapping_vcf_header_parser_parse_line_info(warning_helper):
-    p = parser.HeaderParser(parser.build_header_parsers(warning_helper))
+def test_mapping_vcf_header_parser_parse_line_info():
+    p = parser.HeaderParser()
     INPUT = ('##INFO='
              '<ID=NS,Number=1,Type=Integer,Description='
              '"Number of Samples With Data">\n')
@@ -128,8 +115,8 @@ def test_mapping_vcf_header_parser_parse_line_info(warning_helper):
     assert str(p.parse_line(INPUT)) == EXPECTED
 
 
-def test_mapping_vcf_header_parser_parse_line_contig(warning_helper):
-    p = parser.HeaderParser(parser.build_header_parsers(warning_helper))
+def test_mapping_vcf_header_parser_parse_line_contig():
+    p = parser.HeaderParser()
     INPUT = ('##contig='
              '<ID=20,length=62435964,assembly=B36,'
              'md5=f126cdf8a6e0c7f379d618ff66beb2da,'
@@ -144,8 +131,8 @@ def test_mapping_vcf_header_parser_parse_line_contig(warning_helper):
     assert str(p.parse_line(INPUT)) == EXPECTED
 
 
-def test_mapping_vcf_header_parser_parse_line_alt_allele(warning_helper):
-    p = parser.HeaderParser(parser.build_header_parsers(warning_helper))
+def test_mapping_vcf_header_parser_parse_line_alt_allele():
+    p = parser.HeaderParser()
     INPUT = ('##ALT='
              '<ID=R,Description="IUPAC code R = A/G">\n')
     EXPECTED = ("AltAlleleHeaderLine('ALT', "
@@ -155,8 +142,8 @@ def test_mapping_vcf_header_parser_parse_line_alt_allele(warning_helper):
     assert str(p.parse_line(INPUT)) == EXPECTED
 
 
-def test_mapping_vcf_header_parser_parse_line_meta(warning_helper):
-    p = parser.HeaderParser(parser.build_header_parsers(warning_helper))
+def test_mapping_vcf_header_parser_parse_line_meta():
+    p = parser.HeaderParser()
     INPUT = ('##META='
              '<ID=Assay,Type=String,Number=.,Values=[WholeGenome, Exome]>\n')
     EXPECTED = (
@@ -167,8 +154,8 @@ def test_mapping_vcf_header_parser_parse_line_meta(warning_helper):
     assert str(p.parse_line(INPUT)) == EXPECTED
 
 
-def test_mapping_vcf_header_parser_parse_line_pedigree(warning_helper):
-    p = parser.HeaderParser(parser.build_header_parsers(warning_helper))
+def test_mapping_vcf_header_parser_parse_line_pedigree():
+    p = parser.HeaderParser()
     INPUT = ('##PEDIGREE='
              '<ID=TumourSample,Original=GermlineID>\n')
     EXPECTED = ("PedigreeHeaderLine('PEDIGREE', "
@@ -178,8 +165,8 @@ def test_mapping_vcf_header_parser_parse_line_pedigree(warning_helper):
     assert str(p.parse_line(INPUT)) == EXPECTED
 
 
-def test_mapping_vcf_header_parser_parse_line_sample(warning_helper):
-    p = parser.HeaderParser(parser.build_header_parsers(warning_helper))
+def test_mapping_vcf_header_parser_parse_line_sample():
+    p = parser.HeaderParser()
     INPUT = ('##SAMPLE='
              '<ID=Sample1,Assay=WholeGenome,Ethnicity=AFR,Disease=None,'
              'Description="Patient germline genome from unaffected",'

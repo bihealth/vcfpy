@@ -53,7 +53,6 @@ def test_parse_minimal_record():
         " Call('NA00003', OrderedDict([('GT', None)]))])")
     RESULT = p.parse_next_record()
     assert str(RESULT) == EXPECTED
-    assert not p.warning_helper.warning_counter
 
 
 def test_parse_record_with_info():
@@ -70,7 +69,6 @@ def test_parse_record_with_info():
         " Call('NA00003', OrderedDict([('GT', None)]))])")
     RESULT = p.parse_next_record()
     assert str(RESULT) == EXPECTED
-    assert not p.warning_helper.warning_counter
 
 
 def test_parse_record_with_escaping():
@@ -90,7 +88,6 @@ def test_parse_record_with_escaping():
         " Call('NA00003', OrderedDict([('GT', '1/1'), ('FT', [])]))])")
     RESULT = p.parse_next_record()
     assert str(RESULT) == EXPECTED
-    assert not p.warning_helper.warning_counter
 
 
 def test_parse_record_with_filter_warning():
@@ -107,9 +104,3 @@ def test_parse_record_with_filter_warning():
         " Call('NA00003', OrderedDict([('GT', None), ('FT', [])]))])")
     RESULT = p.parse_next_record()
     assert str(RESULT) == EXPECTED
-    assert len(p.warning_helper.warning_counter) == 2
-    msg1 = 'Filter not found in header: REX; problem in FILTER column'
-    msg2 = 'Filter not found in header: BAR; problem in FORMAT/FT column of sample NA00002'
-    assert list(p.warning_helper.warning_counter.keys()) == [msg1, msg2]
-    assert p.warning_helper.warning_counter[msg1] == 1
-    assert p.warning_helper.warning_counter[msg2] == 1

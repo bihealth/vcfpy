@@ -8,11 +8,6 @@ from vcfpy import parser
 __author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
 
 
-@pytest.fixture
-def warning_helper():
-    return parser.WarningHelper()
-
-
 # parser.split_quoted_string() ------------------------------------------------
 
 
@@ -68,37 +63,33 @@ def test_split_quoted_string_array_syntax_recursion():
 # parser.VCFheaderLineParser.parse_mapping() ----------------------------------
 
 
-def test_vcf_header_line_parser_parse_mapping_simple(warning_helper):
+def test_vcf_header_line_parser_parse_mapping_simple():
     INPUT = r'<key=value,key2=value2>'
     EXPECTED = (('key', 'value'),
                 ('key2', 'value2'))
-    assert EXPECTED == tuple(parser.parse_mapping(
-        INPUT, warning_helper).items())
+    assert EXPECTED == tuple(parser.parse_mapping(INPUT).items())
 
 
-def test_vcf_header_line_parser_parse_mapping_flag(warning_helper):
+def test_vcf_header_line_parser_parse_mapping_flag():
     INPUT = r'<key=value,key2=value,yay>'
     EXPECTED = (('key', 'value'),
                 ('key2', 'value'),
                 ('yay', True))
-    parser.MappingHeaderLineParser(warning_helper, None)
-    assert EXPECTED == tuple(parser.parse_mapping(
-        INPUT, warning_helper).items())
+    parser.MappingHeaderLineParser(None)
+    assert EXPECTED == tuple(parser.parse_mapping(INPUT).items())
 
 
-def test_vcf_header_line_parser_parse_mapping_quoted(warning_helper):
+def test_vcf_header_line_parser_parse_mapping_quoted():
     INPUT = r'<key=value,key2="value,value">'
     EXPECTED = (('key', 'value'),
                 ('key2', 'value,value'))
-    parser.MappingHeaderLineParser(warning_helper, None)
-    assert EXPECTED == tuple(parser.parse_mapping(
-        INPUT, warning_helper).items())
+    parser.MappingHeaderLineParser(None)
+    assert EXPECTED == tuple(parser.parse_mapping(INPUT).items())
 
 
-def test_vcf_header_line_parser_parse_mapping_escaped(warning_helper):
+def test_vcf_header_line_parser_parse_mapping_escaped():
     INPUT = r'<key=value,key2="value,value=\"asdf">'
     EXPECTED = (('key', 'value'),
                 ('key2', 'value,value="asdf'))
-    parser.MappingHeaderLineParser(warning_helper, None)
-    assert EXPECTED == tuple(parser.parse_mapping(
-        INPUT, warning_helper).items())
+    parser.MappingHeaderLineParser(None)
+    assert EXPECTED == tuple(parser.parse_mapping(INPUT).items())

@@ -55,7 +55,6 @@ def test_parse_simple_breakend():
         """Call('NA00003', OrderedDict([('GT', '0/0')]))])""")
     RESULT = p.parse_next_record()
     assert str(RESULT) == EXPECTED
-    assert not p.warning_helper.warning_counter
     assert RESULT.ALT[0].serialize() == 'G]17:198982]'
 
 
@@ -74,7 +73,6 @@ def test_parse_breakend_with_seq():
         """Call('NA00003', OrderedDict([('GT', '0/0')]))])""")
     RESULT = p.parse_next_record()
     assert str(RESULT) == EXPECTED
-    assert not p.warning_helper.warning_counter
     assert RESULT.ALT[0].serialize() == ']13:123456]AGTNNNNNCAT'
 
 
@@ -93,7 +91,6 @@ def test_parse_breakend_telomere():
         """Call('NA00003', OrderedDict([('GT', '0/0')]))])""")
     RESULT = p.parse_next_record()
     assert str(RESULT) == EXPECTED
-    assert not p.warning_helper.warning_counter
     assert RESULT.ALT[0].serialize() == '.[13:123457['
 
 
@@ -113,7 +110,6 @@ def test_parse_breakend_multi_mate():
         """Call('NA00003', OrderedDict([('GT', '0/0')]))])""")
     RESULT = p.parse_next_record()
     assert str(RESULT) == EXPECTED
-    assert not p.warning_helper.warning_counter
     assert RESULT.ALT[0].serialize() == 'C[2:321682['
     assert RESULT.ALT[1].serialize() == 'C[17:198983['
 
@@ -132,7 +128,6 @@ def test_parse_breakend_single_breakend_fwd():
         """Call('NA00003', OrderedDict([('GT', '0/0')]))])""")
     RESULT = p.parse_next_record()
     assert str(RESULT) == EXPECTED
-    assert not p.warning_helper.warning_counter
     assert RESULT.ALT[0].serialize() == '.A'
 
 
@@ -150,5 +145,4 @@ def test_parse_breakend_single_breakend_rev():
         """Call('NA00003', OrderedDict([('GT', '0/0')]))])""")
     RESULT = p.parse_next_record()
     assert str(RESULT) == EXPECTED
-    assert not p.warning_helper.warning_counter
     assert RESULT.ALT[0].serialize() == 'A.'
