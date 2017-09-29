@@ -5,6 +5,7 @@ History
 work in progress
 ----------------
 
+* Switching from warning helper utility code to Python ``warnings`` module.
 * Return ``str`` in case of problems with parsing value.
 
 v0.10.0 (2017-02-27)

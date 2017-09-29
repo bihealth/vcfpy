@@ -286,7 +286,7 @@ class Header:
                     warnings.warn(
                         ('Seen {} header more than once: {}, using first'
                          'occurence').format(line.key, line.mapping['ID']),
-                         DuplicateHeaderLineWarning)
+                        DuplicateHeaderLineWarning)
                 else:
                     result[line.key][line.mapping['ID']] = line
             else:
