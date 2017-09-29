@@ -2,6 +2,11 @@
 History
 =======
 
+work in progress
+----------------
+
+* Return ``str`` in case of problems with parsing value.
+
 v0.10.0 (2017-02-27)
 --------------------
 

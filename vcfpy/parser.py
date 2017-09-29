@@ -12,7 +12,8 @@ from . import header
 from . import record
 from . import exceptions
 from .exceptions import (
-    LeadingTrailingSpaceInKey, UnknownFilter, UnknownVCFVersion, SpaceInChromLine)
+    CannotConvertValue, LeadingTrailingSpaceInKey, UnknownFilter,
+    UnknownVCFVersion, SpaceInChromLine)
 
 
 from .compat import OrderedDict
@@ -240,7 +241,13 @@ def convert_field_value(type_, value):
                 value = value.replace(k, v)
         return value
     else:
-        return _CONVERTERS[type_](value)
+        try:
+            return _CONVERTERS[type_](value)
+        except ValueError:
+            warnings.warn(
+                ('{} cannot be converted to {}, keeping as '
+                 'string.').format(value, type_), CannotConvertValue)
+            return value
 
 
 def parse_field_value(field_info, value):

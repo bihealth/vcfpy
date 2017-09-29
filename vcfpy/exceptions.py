@@ -71,3 +71,7 @@ class IncorrectListLength(VCFPyWarning):
 
 class SpaceInChromLine(VCFPyWarning):
     """Space instead of TAB in ##CHROM line"""
+
+
+class CannotConvertValue(VCFPyWarning):
+    """Cannot convert value."""
