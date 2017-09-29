@@ -253,7 +253,9 @@ def convert_field_value(type_, value):
 def parse_field_value(field_info, value):
     """Parse ``value`` according to ``field_info``
     """
-    if field_info.type == 'Flag':
+    if field_info.id == 'FT':
+        return [x for x in value.split(';') if x != '.']
+    elif field_info.type == 'Flag':
         return True
     elif field_info.number == 1:
         return convert_field_value(field_info.type, value)
@@ -482,13 +484,6 @@ class RecordParser:
     def _check_filters(self, filt, source, sample=None):
         if not filt:
             return
-        # Workaround against 'FT' being a string in the header
-        if isinstance(filt, str):
-            if ',' in filt:
-                filt = filt.split(',')
-            elif ';' in filt:
-                filt = filt.split(';')
-            filt = [f for f in filt if f]
         for f in filt:
             self._check_filter(f, source, sample)
 

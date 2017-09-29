@@ -5,6 +5,8 @@ History
 work in progress
 ----------------
 
+* The field ``FORMAT/FT`` is now expected to be a semicolon-separated string.
+  Internally, we will handle it as a list.
 * Switching from warning helper utility code to Python ``warnings`` module.
 * Return ``str`` in case of problems with parsing value.
 

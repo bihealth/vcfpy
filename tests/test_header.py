@@ -16,8 +16,8 @@ def test_header_field_info():
     assert info1 == info2
     assert info1 != info3
     assert hash(info1) == hash(info2)
-    assert str(info1) == "FieldInfo('Integer', 1, 'Some description')"
-    assert repr(info1) == "FieldInfo('Integer', 1, 'Some description')"
+    assert str(info1) == "FieldInfo('Integer', 1, 'Some description', None)"
+    assert repr(info1) == "FieldInfo('Integer', 1, 'Some description', None)"
 
 
 def test_sample_infos():

@@ -352,7 +352,7 @@ def test_format_ec():
 def test_format_ft():
     assert header.RESERVED_FORMAT['FT']
     assert header.RESERVED_FORMAT['FT'].type == 'String'
-    assert header.RESERVED_FORMAT['FT'].number == '.'
+    assert header.RESERVED_FORMAT['FT'].number == '1'
     assert header.RESERVED_FORMAT['FT'].description
 
 

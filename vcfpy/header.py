@@ -44,13 +44,16 @@ HEADER_NUMBER_UNBOUNDED = '.'
 class FieldInfo:
     """Core information for describing field type and number"""
 
-    def __init__(self, type_, number, description=None):
+    # TODO: always put in id?
+    def __init__(self, type_, number, description=None, id_=None):
         #: The type, one of INFO_TYPES or FORMAT_TYPES
         self.type = type_
         #: Number description, either an int or constant
         self.number = number
         #: Description for the header field, optional
         self.description = description
+        #: The id of the field, optional.
+        self.id = id_
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -66,8 +69,9 @@ class FieldInfo:
         return hash(tuple(sorted(self.__dict__.items())))
 
     def __str__(self):
-        return 'FieldInfo({}, {}, {})'.format(
-            *map(repr, [self.type, self.number, self.description]))
+        return 'FieldInfo({}, {}, {}, {})'.format(
+            *map(repr, [self.type, self.number, self.description,
+                        self.id]))
 
     def __repr__(self):
         return str(self)
@@ -176,7 +180,8 @@ RESERVED_FORMAT = {
     'EC': FieldInfo('Integer', 'A',
                     'Expected alternate allele counts for each alternate '
                     'allele'),
-    'FT': FieldInfo('String', '.', 'Filters applied for this sample'),
+    'FT': FieldInfo('String', '1', 'Filters applied for this sample',
+                    'FORMAT/FT'),
     'GQ': FieldInfo('Integer', 'G',
                     'Phred-scale, conditional genotype quality'),
     'GP': FieldInfo('Float', 'G', 'Genotype posterior probabilities'),
