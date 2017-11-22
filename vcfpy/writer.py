@@ -29,8 +29,13 @@ def format_atomic(value):
         return str(value)
 
 
-def format_value(field_info, value):
+def format_value(field_info, value, section):
     """Format possibly compound value given the FieldInfo"""
+    if section == 'FORMAT' and field_info.id == 'FT':
+        if isinstance(value, str):
+            return value
+        elif isinstance(value, list):
+            return ';'.join(value)
     if field_info.number == 1:
         if value is None:
             return '.'
@@ -151,7 +156,8 @@ class Writer:
             if info.type == 'Flag':
                 result.append(key)
             else:
-                result.append('{}={}'.format(key, format_value(info, value)))
+                result.append('{}={}'.format(key, format_value(
+                    info, value, 'INFO')))
         return ';'.join(result)
 
     def _serialize_call(self, format_, call):
@@ -160,7 +166,8 @@ class Writer:
             return call.unparsed_data
         else:
             result = [format_value(self.header.get_format_field_info(key),
-                                   call.data[key]) for key in format_]
+                                   call.data[key], 'FORMAT')
+                      for key in format_]
             return ':'.join(result)
 
     @classmethod
