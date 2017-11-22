@@ -2,8 +2,8 @@
 History
 =======
 
-work in progress
-----------------
+v0.11.0 (2017-11-22)
+--------------------
 
 * The field ``FORMAT/FT`` is now expected to be a semicolon-separated string.
   Internally, we will handle it as a list.
