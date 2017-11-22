@@ -26,7 +26,7 @@ def test_format_value_with_escape():
     EXPECTED = '%3A%3B%3D%25%2C%0D%0A%09,%25'
     RESULT = writer.format_value(
         header.FieldInfo('String', 2),
-        (':;=%,\r\n\t', '%'))
+        (':;=%,\r\n\t', '%'), 'INFO')
     assert EXPECTED == RESULT
 
 
@@ -34,5 +34,5 @@ def test_format_value_without_escape():
     EXPECTED = 'This is a legal string,me too'
     RESULT = writer.format_value(
         header.FieldInfo('String', 2),
-        ('This is a legal string', 'me too'))
+        ('This is a legal string', 'me too'), 'INFO')
     assert EXPECTED == RESULT

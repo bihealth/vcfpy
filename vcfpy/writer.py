@@ -31,12 +31,10 @@ def format_atomic(value):
 
 def format_value(field_info, value, section):
     """Format possibly compound value given the FieldInfo"""
-    if section == 'FORMAT' and field_info.id == 'FT':
-        if isinstance(value, str):
-            return value
-        elif isinstance(value, list):
-            return ';'.join(value)
-    if field_info.number == 1:
+    if (section == 'FORMAT' and field_info.id == 'FT' and
+            isinstance(value, list)):
+        return ';'.join(map(format_atomic, value))
+    elif field_info.number == 1:
         if value is None:
             return '.'
         else:
