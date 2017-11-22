@@ -134,6 +134,6 @@ def test_write_record_with_escaping(header_samples, tmpdir_factory):
     # compare actual result with expected
     RESULT = path.read()
     LINE = ('20\t100\t.\tC\tT\t.\t.\tANNO=Here%2Care%25some chars,'
-            '%2525\tGT:FT\t0/1:%2525,FOO\t0/0:.\t1/1:.\n')
+            '%2525\tGT:FT\t0/1:%2525;FOO\t0/0:.\t1/1:.\n')
     EXPECTED = MEDIUM_HEADER + LINE
     assert EXPECTED == RESULT
