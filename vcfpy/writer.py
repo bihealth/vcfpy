@@ -166,7 +166,7 @@ class Writer:
             return call.unparsed_data
         else:
             result = [format_value(self.header.get_format_field_info(key),
-                                   call.data[key], 'FORMAT')
+                                   call.data.get(key), 'FORMAT')
                       for key in format_]
             return ':'.join(result)
 

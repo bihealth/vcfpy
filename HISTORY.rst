@@ -5,6 +5,9 @@ History
 work in progress
 ----------------
 
+* Working around problem in HTSJDK output with incomplete ``FORMAT`` fields (#127).
+  Writing out ``.`` instead of keeping trailing empty records empty.
+
 v0.11.0 (2017-11-22)
 --------------------
 
