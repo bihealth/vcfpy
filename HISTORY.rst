@@ -2,8 +2,8 @@
 History
 =======
 
-work in progress
-----------------
+v0.11.1 (2018-03-06)
+--------------------
 
 * Working around problem in HTSJDK output with incomplete ``FORMAT`` fields (#127).
   Writing out ``.`` instead of keeping trailing empty records empty.
