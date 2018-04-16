@@ -2,6 +2,11 @@
 History
 =======
 
+v0.11.2 (2018-04-16)
+--------------------
+
+* Removing ``pip`` module from ``setup.py`` which is not recommended anyway.
+
 v0.11.1 (2018-03-06)
 --------------------
 

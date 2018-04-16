@@ -2,13 +2,28 @@
 # -*- coding: utf-8 -*-
 
 from itertools import chain
+import os.path
 import sys
 
 from setuptools import setup
-import pip
-from pip.req import parse_requirements
 
 import versioneer
+
+def parse_requirements(path):
+    """Parse ``requirements.txt`` at ``path``."""
+    requirements = []
+    with open(path, 'rt') as reqs_f:
+        for line in reqs_f:
+            line = line.strip()
+            if line.startswith('-r'):
+                fname = line.split()[1]
+                inner_path = os.path.join(
+                    os.path.dirname(path), fname)
+                requirements += parse_requirements(inner_path)
+            elif line != '' and not line.startswith('#'):
+                requirements.append(line)
+    return requirements
+
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
@@ -16,23 +31,17 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-base_reqs = parse_requirements(
-    'requirements.txt', session=pip.download.PipSession())
+base_reqs = parse_requirements('requirements.txt')
 
 # Add cyordereddict for Python <=3.5 for performance boost
 if sys.version_info[:2] < (3, 6):
-    pre36_reqs = parse_requirements(
-        'requirements/pre36.txt', session=pip.download.PipSession())
+    pre36_reqs = parse_requirements('requirements/pre36.txt')
 else:
     pre36_reqs = []
 
-requirements = [str(ir.req) for ir in chain(base_reqs, pre36_reqs)]
+requirements = chain(base_reqs, pre36_reqs)
 
-test_requirements = [
-    str(ir.req)
-    for ir in parse_requirements(
-        'requirements/test.txt', session=pip.download.PipSession())
-]
+test_requirements = parse_requirements('requirements/test.txt')
 
 setup(
     name='vcfpy',
