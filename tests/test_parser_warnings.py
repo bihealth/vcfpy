@@ -17,10 +17,8 @@ from vcfpy import parser
 
 def test_header_checker_missing_fileformat():
     # construct Header
-    lines = [
-        header.HeaderLine('key', 'value'),
-    ]
-    hdr = header.Header(lines=lines, samples=header.SamplesInfos(['NA001']))
+    lines = [header.HeaderLine("key", "value")]
+    hdr = header.Header(lines=lines, samples=header.SamplesInfos(["NA001"]))
     # setup HeaderChecker
     stream = io.StringIO()
     checker = parser.HeaderChecker()
@@ -31,32 +29,30 @@ def test_header_checker_missing_fileformat():
 
 def test_header_checker_unknown_vcf_version():
     # construct Header
-    lines = [
-        header.HeaderLine('fileformat', 'VCFv4.4'),
-    ]
-    hdr = header.Header(lines=lines, samples=header.SamplesInfos(['NA001']))
+    lines = [header.HeaderLine("fileformat", "VCFv4.4")]
+    hdr = header.Header(lines=lines, samples=header.SamplesInfos(["NA001"]))
     # setup HeaderChecker
     stream = io.StringIO()
     checker = parser.HeaderChecker()
     # execute
     checker.run(hdr)
     # check result
-    EXPECTED = textwrap.dedent(r"""
-    """).lstrip()
+    EXPECTED = textwrap.dedent(
+        r"""
+    """
+    ).lstrip()
     assert stream.getvalue() == EXPECTED
 
 
 def test_header_checker_known_vcf_version():
     # construct Header
-    lines = [
-        header.HeaderLine('fileformat', 'VCFv4.3'),
-    ]
-    hdr = header.Header(lines=lines, samples=header.SamplesInfos(['NA001']))
+    lines = [header.HeaderLine("fileformat", "VCFv4.3")]
+    hdr = header.Header(lines=lines, samples=header.SamplesInfos(["NA001"]))
     # setup HeaderChecker
     stream = io.StringIO()
     checker = parser.HeaderChecker()
     # execute
     checker.run(hdr)
     # check result
-    EXPECTED = ''
+    EXPECTED = ""
     assert stream.getvalue() == EXPECTED

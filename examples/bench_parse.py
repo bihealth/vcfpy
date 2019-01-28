@@ -10,7 +10,7 @@ import time
 
 from vcfpy import parser
 
-__author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
+__author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"
 
 
 HEADER = """
@@ -42,7 +42,7 @@ LINE = """
 
 def run(args):
     # Setup parser
-    p = parser.VCFParser(io.StringIO(HEADER), '<builtin>')
+    p = parser.VCFParser(io.StringIO(HEADER), "<builtin>")
     # Parse header
     p.parse_header()
     # Parse line several times
@@ -54,24 +54,31 @@ def run(args):
             if args.debug:
                 print(r, file=sys.stderr)
         times.append(time.clock() - begin)
-    print('Took {:.3} seconds (stdev {:.3})'.format(
-        statistics.mean(times), statistics.stdev(times)), file=sys.stderr)
+    print(
+        "Took {:.3} seconds (stdev {:.3})".format(
+            statistics.mean(times), statistics.stdev(times)
+        ),
+        file=sys.stderr,
+    )
 
 
 def main(argv=None):
     """Main program entry point for parsing command line arguments"""
-    parser = argparse.ArgumentParser(description='Parser benchmark')
+    parser = argparse.ArgumentParser(description="Parser benchmark")
 
-    parser.add_argument('--debug', default=False, action='store_true',
-                        help='Enable debugging')
-    parser.add_argument('--repetitions', type=int, default=10,
-                        help='Number of repetitions')
-    parser.add_argument('--line-count', type=int, default=5000,
-                        help='Number of lines to parse')
+    parser.add_argument(
+        "--debug", default=False, action="store_true", help="Enable debugging"
+    )
+    parser.add_argument(
+        "--repetitions", type=int, default=10, help="Number of repetitions"
+    )
+    parser.add_argument(
+        "--line-count", type=int, default=5000, help="Number of lines to parse"
+    )
 
     args = parser.parse_args(argv)
     run(args)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

@@ -9,7 +9,7 @@ import pytest
 
 from vcfpy import header, parser, writer
 
-__author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
+__author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"
 
 MEDIUM_HEADER = """
 ##fileformat=VCFv4.3
@@ -38,15 +38,15 @@ MEDIUM_HEADER = """
 """.lstrip()
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def header_samples():
-    p = parser.Parser(stream=io.StringIO(MEDIUM_HEADER), path='<builtin>')
+    p = parser.Parser(stream=io.StringIO(MEDIUM_HEADER), path="<builtin>")
     p.parse_header()
     return (p.header, p.samples)
 
 
 def test_write_header(header_samples, tmpdir_factory):
-    path = tmpdir_factory.mktemp('write_header').join('out.vcf')
+    path = tmpdir_factory.mktemp("write_header").join("out.vcf")
     header, _ = header_samples
     w = writer.Writer.from_path(path, header)
     w.close()
@@ -57,15 +57,20 @@ def test_write_header(header_samples, tmpdir_factory):
 
 def test_write_header_no_samples(tmpdir_factory):
     # Create header to write out from scratch
-    hdr = header.Header(lines=[header.HeaderLine('fileformat', 'VCFv4.0')], samples=header.SamplesInfos([]))
+    hdr = header.Header(
+        lines=[header.HeaderLine("fileformat", "VCFv4.0")],
+        samples=header.SamplesInfos([]),
+    )
     # Write out header
-    path = tmpdir_factory.mktemp('write_header').join('out.vcf')
+    path = tmpdir_factory.mktemp("write_header").join("out.vcf")
     w = writer.Writer.from_path(path, hdr)
     w.close()
     # Compare result
     RESULT = path.read()
-    EXPECTED = textwrap.dedent(r"""
+    EXPECTED = textwrap.dedent(
+        r"""
     ##fileformat=VCFv4.0
     #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
-    """).lstrip()
+    """
+    ).lstrip()
     assert RESULT == EXPECTED

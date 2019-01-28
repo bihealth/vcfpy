@@ -11,33 +11,46 @@ import warnings
 from . import exceptions
 from .compat import OrderedDict
 from .exceptions import (
-    DuplicateHeaderLineWarning, FieldInfoNotFound, FieldMissingNumber,
-    FieldInvalidNumber, HeaderInvalidType, HeaderMissingDescription)
+    DuplicateHeaderLineWarning,
+    FieldInfoNotFound,
+    FieldMissingNumber,
+    FieldInvalidNumber,
+    HeaderInvalidType,
+    HeaderMissingDescription,
+)
 
-__author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
+__author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"
 
 # Tuples of valid entries -----------------------------------------------------
 #
 #: valid INFO value types
-INFO_TYPES = ('Integer', 'Float', 'Flag', 'Character', 'String')
+INFO_TYPES = ("Integer", "Float", "Flag", "Character", "String")
 #: valid FORMAT value types
-FORMAT_TYPES = ('Integer', 'Float', 'Character', 'String')
+FORMAT_TYPES = ("Integer", "Float", "Character", "String")
 #: valid values for "Number" entries, except for integers
-VALID_NUMBERS = ('A', 'R', 'G', '.')
+VALID_NUMBERS = ("A", "R", "G", ".")
 #: header lines that contain an "ID" entry
-LINES_WITH_ID = ('ALT', 'contig', 'FILTER', 'FORMAT', 'INFO', 'META',
-                 'PEDIGREE', 'SAMPLE')
+LINES_WITH_ID = (
+    "ALT",
+    "contig",
+    "FILTER",
+    "FORMAT",
+    "INFO",
+    "META",
+    "PEDIGREE",
+    "SAMPLE",
+)
 
 # Constants for "Number" entries ----------------------------------------------
 #
 #: number of alleles excluding reference
-HEADER_NUMBER_ALLELES = 'A'
+HEADER_NUMBER_ALLELES = "A"
 #: number of alleles including reference
-HEADER_NUMBER_REF = 'R'
+HEADER_NUMBER_REF = "R"
 #: number of genotypes
-HEADER_NUMBER_GENOTYPES = 'G'
+HEADER_NUMBER_GENOTYPES = "G"
 #: unbounded number of values
-HEADER_NUMBER_UNBOUNDED = '.'
+HEADER_NUMBER_UNBOUNDED = "."
 
 
 class FieldInfo:
@@ -68,9 +81,9 @@ class FieldInfo:
         return hash(tuple(sorted(self.__dict__.items())))
 
     def __str__(self):
-        return 'FieldInfo({}, {}, {}, {})'.format(
-            *map(repr, [self.type, self.number, self.description,
-                        self.id]))
+        return "FieldInfo({}, {}, {}, {})".format(
+            *map(repr, [self.type, self.number, self.description, self.id])
+        )
 
     def __repr__(self):
         return str(self)
@@ -81,138 +94,160 @@ class FieldInfo:
 #: Reserved fields for INFO from VCF v4.3
 RESERVED_INFO = {
     # VCF v4.3, Section 1.6.1
-    'AA': FieldInfo('String', 1, 'Ancestral Allele'),
-    'AC': FieldInfo('Integer', 'A',
-                    'Allele count in genotypes, for each ALT allele, in the '
-                    'same order as listed'),
-    'AD': FieldInfo('Integer', 'R', 'Total read depth for each allele'),
-    'ADF': FieldInfo('Integer', 'R', 'Forward read depth for each allele'),
-    'ADR': FieldInfo('Integer', 'R', 'Reverse read depth for each allele'),
-    'AF': FieldInfo('Float', 'A',
-                    'Allele frequency for each ALT allele in the same order '
-                    'as listed: used for estimating from primary data not '
-                    'called genotypes'),
-    'AN': FieldInfo('Integer', 1,
-                    'Total number of alleles in called genotypes'),
-    'BQ': FieldInfo('Float', 1, 'RMS base quality at this position'),
-    'CIGAR': FieldInfo('String', 'A',
-                       'CIGAR string describing how to align each ALT allele '
-                       'to the reference allele'),
-    'DB': FieldInfo('Flag', 0, 'dbSNP membership'),
-    'DP': FieldInfo('Integer', 1,
-                    'Combined depth across samples for small variants and '
-                    'Read Depth of segment containing breakend for SVs'),
-    'H2': FieldInfo('Flag', 0, 'Membership in HapMap 2'),
-    'H3': FieldInfo('Flag', 0, 'Membership in HapMap 3'),
-    'MQ': FieldInfo('Integer', 1, 'RMS mapping quality'),
-    'MQ0': FieldInfo('Integer', 1,
-                     'Number of MAPQ == 0 reads covering this record'),
-    'NS': FieldInfo('Integer', 1, 'Number of samples with data'),
-    'SB': FieldInfo('Integer', 4, 'Strand bias at this position'),
-    'SOMATIC': FieldInfo('Flag', 0,
-                         'Indicates that the record is a somatic mutation, '
-                         'for cancer genomics'),
-    'VALIDATED': FieldInfo('Flag', 0, 'Validated by follow-up experiment'),
-    '1000G': FieldInfo('Flag', 0, 'Membership in 1000 Genomes'),
-
+    "AA": FieldInfo("String", 1, "Ancestral Allele"),
+    "AC": FieldInfo(
+        "Integer",
+        "A",
+        "Allele count in genotypes, for each ALT allele, in the "
+        "same order as listed",
+    ),
+    "AD": FieldInfo("Integer", "R", "Total read depth for each allele"),
+    "ADF": FieldInfo("Integer", "R", "Forward read depth for each allele"),
+    "ADR": FieldInfo("Integer", "R", "Reverse read depth for each allele"),
+    "AF": FieldInfo(
+        "Float",
+        "A",
+        "Allele frequency for each ALT allele in the same order "
+        "as listed: used for estimating from primary data not "
+        "called genotypes",
+    ),
+    "AN": FieldInfo("Integer", 1, "Total number of alleles in called genotypes"),
+    "BQ": FieldInfo("Float", 1, "RMS base quality at this position"),
+    "CIGAR": FieldInfo(
+        "String",
+        "A",
+        "CIGAR string describing how to align each ALT allele "
+        "to the reference allele",
+    ),
+    "DB": FieldInfo("Flag", 0, "dbSNP membership"),
+    "DP": FieldInfo(
+        "Integer",
+        1,
+        "Combined depth across samples for small variants and "
+        "Read Depth of segment containing breakend for SVs",
+    ),
+    "H2": FieldInfo("Flag", 0, "Membership in HapMap 2"),
+    "H3": FieldInfo("Flag", 0, "Membership in HapMap 3"),
+    "MQ": FieldInfo("Integer", 1, "RMS mapping quality"),
+    "MQ0": FieldInfo("Integer", 1, "Number of MAPQ == 0 reads covering this record"),
+    "NS": FieldInfo("Integer", 1, "Number of samples with data"),
+    "SB": FieldInfo("Integer", 4, "Strand bias at this position"),
+    "SOMATIC": FieldInfo(
+        "Flag",
+        0,
+        "Indicates that the record is a somatic mutation, " "for cancer genomics",
+    ),
+    "VALIDATED": FieldInfo("Flag", 0, "Validated by follow-up experiment"),
+    "1000G": FieldInfo("Flag", 0, "Membership in 1000 Genomes"),
     # VCF v4.3, Section 3
-    'IMPRECISE': FieldInfo('Flag', 0, 'Imprecise structural variation'),
-    'NOVEL': FieldInfo('Flag', 0, 'Indicates a novel structural variation'),
-    'END': FieldInfo('Integer', 1,
-                     'End position of the variant described in this record '
-                     '(for symbolic alleles)'),
-    'SVTYPE': FieldInfo('String', 1, 'Type of structural variant'),
-    'SVLEN': FieldInfo('Integer', 1,
-                       'Difference in length between REF and ALT alleles'),
-    'CIPOS': FieldInfo('Integer', 2,
-                       'Confidence interval around POS for imprecise '
-                       'variants'),
-    'CIEND': FieldInfo('Integer', 2,
-                       'Confidence interval around END for imprecise '
-                       'variants'),
-    'HOMLEN': FieldInfo('Integer', '.',
-                        'Length of base pair identical micro-homology at '
-                        'event breakpoints'),
-    'HOMSEQ': FieldInfo('String', '.',
-                        'Sequence of base pair identical micro-homology at '
-                        'event breakpoints'),
-    'BKPTID': FieldInfo('String', '.',
-                        'ID of the assembled alternate allele in the '
-                        'assembly file'),
-    'MEINFO': FieldInfo('String', 4,
-                        'Mobile element info of the form '
-                        'NAME,START,END,POLARITY'),
-    'METRANS': FieldInfo('String', 4,
-                         'Mobile element transduction info of the form '
-                         'CHR,START,END,POLARITY'),
-    'DGVID': FieldInfo('String', 1,
-                       'ID of this element in Database of Genomic Variation'),
-    'DBVARID': FieldInfo('String', 1, 'ID of this element in DBVAR'),
-    'DBRIPID': FieldInfo('String', 1, 'ID of this element in DBRIP'),
-    'MATEID': FieldInfo('String', '.', 'ID of mate breakends'),
-    'PARID': FieldInfo('String', 1, 'ID of partner breakend'),
-    'EVENT': FieldInfo('String', 1, 'ID of event associated to breakend'),
-    'CILEN': FieldInfo('Integer', 2,
-                       'Confidence interval around the inserted material '
-                       'between breakends'),
-    'DPADJ': FieldInfo('Integer', '.', 'Read Depth of adjacency'),
-    'CN': FieldInfo('Integer', 1,
-                    'Copy number of segment containing breakend'),
-    'CNADJ': FieldInfo('Integer', '.', 'Copy number of adjacency'),
-    'CICN': FieldInfo('Integer', 2,
-                      'Confidence interval around copy number for the '
-                      'segment'),
-    'CICNADJ': FieldInfo('Integer', '.',
-                         'Confidence interval around copy number for the '
-                         'adjacency'),
+    "IMPRECISE": FieldInfo("Flag", 0, "Imprecise structural variation"),
+    "NOVEL": FieldInfo("Flag", 0, "Indicates a novel structural variation"),
+    "END": FieldInfo(
+        "Integer",
+        1,
+        "End position of the variant described in this record "
+        "(for symbolic alleles)",
+    ),
+    "SVTYPE": FieldInfo("String", 1, "Type of structural variant"),
+    "SVLEN": FieldInfo(
+        "Integer", 1, "Difference in length between REF and ALT alleles"
+    ),
+    "CIPOS": FieldInfo(
+        "Integer", 2, "Confidence interval around POS for imprecise " "variants"
+    ),
+    "CIEND": FieldInfo(
+        "Integer", 2, "Confidence interval around END for imprecise " "variants"
+    ),
+    "HOMLEN": FieldInfo(
+        "Integer",
+        ".",
+        "Length of base pair identical micro-homology at " "event breakpoints",
+    ),
+    "HOMSEQ": FieldInfo(
+        "String",
+        ".",
+        "Sequence of base pair identical micro-homology at " "event breakpoints",
+    ),
+    "BKPTID": FieldInfo(
+        "String", ".", "ID of the assembled alternate allele in the " "assembly file"
+    ),
+    "MEINFO": FieldInfo(
+        "String", 4, "Mobile element info of the form " "NAME,START,END,POLARITY"
+    ),
+    "METRANS": FieldInfo(
+        "String",
+        4,
+        "Mobile element transduction info of the form " "CHR,START,END,POLARITY",
+    ),
+    "DGVID": FieldInfo(
+        "String", 1, "ID of this element in Database of Genomic Variation"
+    ),
+    "DBVARID": FieldInfo("String", 1, "ID of this element in DBVAR"),
+    "DBRIPID": FieldInfo("String", 1, "ID of this element in DBRIP"),
+    "MATEID": FieldInfo("String", ".", "ID of mate breakends"),
+    "PARID": FieldInfo("String", 1, "ID of partner breakend"),
+    "EVENT": FieldInfo("String", 1, "ID of event associated to breakend"),
+    "CILEN": FieldInfo(
+        "Integer",
+        2,
+        "Confidence interval around the inserted material " "between breakends",
+    ),
+    "DPADJ": FieldInfo("Integer", ".", "Read Depth of adjacency"),
+    "CN": FieldInfo("Integer", 1, "Copy number of segment containing breakend"),
+    "CNADJ": FieldInfo("Integer", ".", "Copy number of adjacency"),
+    "CICN": FieldInfo(
+        "Integer", 2, "Confidence interval around copy number for the " "segment"
+    ),
+    "CICNADJ": FieldInfo(
+        "Integer", ".", "Confidence interval around copy number for the " "adjacency"
+    ),
 }
 
 # Reserved FORMAT keys --------------------------------------------------------
 
 RESERVED_FORMAT = {
     # VCF v 4.3, Section 1.6.2
-    'AD': FieldInfo('Integer', 'R', 'Total, per-sample read depth'),
-    'ADF': FieldInfo('Integer', 'R', 'Forward-strand, per-sample read depth'),
-    'ADR': FieldInfo('Integer', 'R', 'Reverse-strand, per-sample read depth'),
-    'DP': FieldInfo('Integer', 1,
-                    'Read depth at this position for this sample'),
-    'EC': FieldInfo('Integer', 'A',
-                    'Expected alternate allele counts for each alternate '
-                    'allele'),
-    'FT': FieldInfo('String', '1', 'Filters applied for this sample',
-                    'FORMAT/FT'),
-    'GQ': FieldInfo('Integer', 'G',
-                    'Phred-scale, conditional genotype quality'),
-    'GP': FieldInfo('Float', 'G', 'Genotype posterior probabilities'),
-    'GT': FieldInfo('String', 1, 'Genotype call'),
-    'GL': FieldInfo('Float', 'G', 'Log10-scaled likelihoods for genotypes'),
-    'HQ': FieldInfo('Integer', 2, 'Haplotype qualities'),
-    'MQ': FieldInfo('Integer', 1, 'RMS mapping quality'),
-    'PL': FieldInfo('Integer', 'G',
-                    'Phred-scaled genotype likelihoods, rounded to integers'),
-    'PQ': FieldInfo('Integer', 1, 'Phasing quality'),
-    'PS': FieldInfo('Integer', 1,
-                    'Non-negative 32 bit integer giving phasing set '
-                    'for this sample and this chromosome'),
-
+    "AD": FieldInfo("Integer", "R", "Total, per-sample read depth"),
+    "ADF": FieldInfo("Integer", "R", "Forward-strand, per-sample read depth"),
+    "ADR": FieldInfo("Integer", "R", "Reverse-strand, per-sample read depth"),
+    "DP": FieldInfo("Integer", 1, "Read depth at this position for this sample"),
+    "EC": FieldInfo(
+        "Integer", "A", "Expected alternate allele counts for each alternate " "allele"
+    ),
+    "FT": FieldInfo("String", "1", "Filters applied for this sample", "FORMAT/FT"),
+    "GQ": FieldInfo("Integer", "G", "Phred-scale, conditional genotype quality"),
+    "GP": FieldInfo("Float", "G", "Genotype posterior probabilities"),
+    "GT": FieldInfo("String", 1, "Genotype call"),
+    "GL": FieldInfo("Float", "G", "Log10-scaled likelihoods for genotypes"),
+    "HQ": FieldInfo("Integer", 2, "Haplotype qualities"),
+    "MQ": FieldInfo("Integer", 1, "RMS mapping quality"),
+    "PL": FieldInfo(
+        "Integer", "G", "Phred-scaled genotype likelihoods, rounded to integers"
+    ),
+    "PQ": FieldInfo("Integer", 1, "Phasing quality"),
+    "PS": FieldInfo(
+        "Integer",
+        1,
+        "Non-negative 32 bit integer giving phasing set "
+        "for this sample and this chromosome",
+    ),
     # VCF v4.3, Section 4
-    'CN': FieldInfo('Integer', 1, 'Copy number genotype for imprecise events'),
-    'CNQ': FieldInfo('Float', 1,
-                     'Copy number genotype quality for imprecise events'),
-    'CNL': FieldInfo('Float', 'G',
-                     'Copy number genotype likelihood for imprecise events'),
-    'CNP': FieldInfo('Float', 'G',
-                     'Copy number posterior probabilities'),
-    'NQ': FieldInfo('Integer', 1,
-                    'Phred style probability score that the variant is novel'),
-    'HAP': FieldInfo('Integer', 1, 'Unique haplotype identifier'),
-    'AHAP': FieldInfo('Integer', 1,
-                      'Unique identifier of ancestral haplotype'),
+    "CN": FieldInfo("Integer", 1, "Copy number genotype for imprecise events"),
+    "CNQ": FieldInfo("Float", 1, "Copy number genotype quality for imprecise events"),
+    "CNL": FieldInfo(
+        "Float", "G", "Copy number genotype likelihood for imprecise events"
+    ),
+    "CNP": FieldInfo("Float", "G", "Copy number posterior probabilities"),
+    "NQ": FieldInfo(
+        "Integer", 1, "Phred style probability score that the variant is novel"
+    ),
+    "HAP": FieldInfo("Integer", 1, "Unique haplotype identifier"),
+    "AHAP": FieldInfo("Integer", 1, "Unique identifier of ancestral haplotype"),
 }
 
 
 # header files to enforce double-quoting for
-QUOTE_FIELDS = ('Description', 'Source', 'Version')
+QUOTE_FIELDS = ("Description", "Source", "Version")
 
 
 def serialize_for_header(key, value):
@@ -220,12 +255,12 @@ def serialize_for_header(key, value):
     if key in QUOTE_FIELDS:
         return json.dumps(value)
     elif isinstance(value, str):
-        if ' ' in value or '\t' in value:
+        if " " in value or "\t" in value:
             return json.dumps(value)
         else:
             return value
     elif isinstance(value, list):
-        return '[{}]'.format(', '.join(value))
+        return "[{}]".format(", ".join(value))
     else:
         return str(value)
 
@@ -249,8 +284,8 @@ def header_without_lines(header, remove):
     # Copy over lines that are not removed
     lines = []
     for line in header.lines:
-        if hasattr(line, 'mapping'):
-            if (line.key, line.mapping.get('ID', None)) in remove:
+        if hasattr(line, "mapping"):
+            if (line.key, line.mapping.get("ID", None)) in remove:
                 continue  # filter out
         else:
             if (line.key, line.value) in remove:
@@ -286,13 +321,15 @@ class Header:
         for line in self.lines:
             if line.key in LINES_WITH_ID:
                 result.setdefault(line.key, OrderedDict())
-                if line.mapping['ID'] in result[line.key]:
+                if line.mapping["ID"] in result[line.key]:
                     warnings.warn(
-                        ('Seen {} header more than once: {}, using first'
-                         'occurence').format(line.key, line.mapping['ID']),
-                        DuplicateHeaderLineWarning)
+                        (
+                            "Seen {} header more than once: {}, using first" "occurence"
+                        ).format(line.key, line.mapping["ID"]),
+                        DuplicateHeaderLineWarning,
+                    )
                 else:
-                    result[line.key][line.mapping['ID']] = line
+                    result[line.key][line.mapping["ID"]] = line
             else:
                 result.setdefault(line.key, [])
                 result[line.key].append(line)
@@ -300,8 +337,7 @@ class Header:
 
     def copy(self):
         """Return a copy of this header"""
-        return Header([line.copy() for line in self.lines],
-                      self.samples.copy())
+        return Header([line.copy() for line in self.lines], self.samples.copy())
 
     def add_filter_line(self, mapping):
         """Add FILTER header line constructed from the given mapping
@@ -345,15 +381,15 @@ class Header:
 
     def format_ids(self):
         """Return list of all format IDs"""
-        return list(self._indices['FORMAT'].keys())
+        return list(self._indices["FORMAT"].keys())
 
     def filter_ids(self):
         """Return list of all filter IDs"""
-        return list(self._indices['FILTER'].keys())
+        return list(self._indices["FILTER"].keys())
 
     def info_ids(self):
         """Return list of all info IDs"""
-        return list(self._indices['INFO'].keys())
+        return list(self._indices["INFO"].keys())
 
     def get_lines(self, key):
         """Return header lines having the given ``key`` as their type"""
@@ -384,41 +420,43 @@ class Header:
         """
         self.lines.append(header_line)
         self._indices.setdefault(header_line.key, OrderedDict())
-        if not hasattr(header_line, 'mapping'):
+        if not hasattr(header_line, "mapping"):
             return False  # no registration required
-        if self.has_header_line(header_line.key, header_line.mapping['ID']):
+        if self.has_header_line(header_line.key, header_line.mapping["ID"]):
             warnings.warn(
-                ('Detected duplicate header line with type {} and ID {}. '
-                 'Ignoring this and subsequent one').format(
-                     header_line.key, header_line.mapping['ID']),
-                DuplicateHeaderLineWarning)
+                (
+                    "Detected duplicate header line with type {} and ID {}. "
+                    "Ignoring this and subsequent one"
+                ).format(header_line.key, header_line.mapping["ID"]),
+                DuplicateHeaderLineWarning,
+            )
             return False
         else:
-            self._indices[header_line.key][
-                header_line.mapping['ID']] = header_line
+            self._indices[header_line.key][header_line.mapping["ID"]] = header_line
             return True
 
     def get_info_field_info(self, key):
         """Return :py:class:`FieldInfo` for the given INFO field"""
-        return self._get_field_info('INFO', key)
+        return self._get_field_info("INFO", key)
 
     def get_format_field_info(self, key):
         """Return :py:class:`FieldInfo` for the given INFO field"""
-        return self._get_field_info('FORMAT', key)
+        return self._get_field_info("FORMAT", key)
 
     def _get_field_info(self, type_, key):
         result = self._indices[type_].get(key)
         if result:
             return result
         if key in RESERVED_INFO:
-            res = FieldInfo(RESERVED_INFO[key].type,
-                            RESERVED_INFO[key].number)
+            res = FieldInfo(RESERVED_INFO[key].type, RESERVED_INFO[key].number)
         else:
-            res = FieldInfo('String', HEADER_NUMBER_UNBOUNDED)
+            res = FieldInfo("String", HEADER_NUMBER_UNBOUNDED)
         warnings.warn(
-            '{} {} not found using {}/{} instead'.format(
-                type_, key, res.type, repr(res.number)),
-            FieldInfoNotFound)
+            "{} {} not found using {}/{} instead".format(
+                type_, key, res.type, repr(res.number)
+            ),
+            FieldInfoNotFound,
+        )
         return res
 
     def __eq__(self, other):
@@ -432,10 +470,10 @@ class Header:
         return NotImplemented
 
     def __hash__(self):
-        raise TypeError('Unhashable type: Header')
+        raise TypeError("Unhashable type: Header")
 
     def __str__(self):
-        tpl = 'Header(lines={}, samples={})'
+        tpl = "Header(lines={}, samples={})"
         return tpl.format(*map(repr, (self.lines, self.samples)))
 
     def __repr__(self):
@@ -462,7 +500,7 @@ class HeaderLine:
 
     def serialize(self):
         """Return VCF-serialized version of this header line"""
-        return ''.join(('##', self.key, '=', self.value))
+        return "".join(("##", self.key, "=", self.value))
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -475,11 +513,10 @@ class HeaderLine:
         return NotImplemented
 
     def __hash__(self):
-        raise TypeError('Unhashable type: HeaderLine')
+        raise TypeError("Unhashable type: HeaderLine")
 
     def __str__(self):
-        return 'HeaderLine({}, {})'.format(
-            *map(repr, (self.key, self.value)))
+        return "HeaderLine({}, {})".format(*map(repr, (self.key, self.value)))
 
     def __repr__(self):
         return str(self)
@@ -487,13 +524,13 @@ class HeaderLine:
 
 def mapping_to_str(mapping):
     """Convert mapping to string"""
-    result = ['<']
+    result = ["<"]
     for i, (key, value) in enumerate(mapping.items()):
         if i > 0:
-            result.append(',')
-        result += [key, '=', serialize_for_header(key, value)]
-    result += ['>']
-    return ''.join(result)
+            result.append(",")
+        result += [key, "=", serialize_for_header(key, value)]
+    result += [">"]
+    return "".join(result)
 
 
 class SimpleHeaderLine(HeaderLine):
@@ -509,10 +546,10 @@ class SimpleHeaderLine(HeaderLine):
     def __init__(self, key, value, mapping):
         super().__init__(key, value)
         # check existence of key "ID"
-        if 'ID' not in mapping:
+        if "ID" not in mapping:
             raise exceptions.InvalidHeaderException(
-                'Missing key "ID" in header line "{}={}"'.format(
-                    key, value))
+                'Missing key "ID" in header line "{}={}"'.format(key, value)
+            )
         #: ``collections.OrderedDict`` with key/value mapping of the attributes
         self.mapping = OrderedDict(mapping.items())
 
@@ -526,22 +563,29 @@ class SimpleHeaderLine(HeaderLine):
         return mapping_to_str(self.mapping)
 
     def serialize(self):
-        return ''.join(map(str, ['##', self.key, '=', self.value]))
+        return "".join(map(str, ["##", self.key, "=", self.value]))
 
     def __str__(self):
-        return 'SimpleHeaderLine({}, {}, {})'.format(
-            *map(repr, (self.key, self.value, self.mapping)))
+        return "SimpleHeaderLine({}, {}, {})".format(
+            *map(repr, (self.key, self.value, self.mapping))
+        )
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
             return (self.key, self.value, self.mapping) == (
-                other.key, other.value, other.mapping)
+                other.key,
+                other.value,
+                other.mapping,
+            )
         return NotImplemented
 
     def __ne__(self, other):
         if isinstance(other, self.__class__):
             return (self.key, self.value, self.mapping) != (
-                other.key, other.value, other.mapping)
+                other.key,
+                other.value,
+                other.mapping,
+            )
         return NotImplemented
 
 
@@ -555,19 +599,20 @@ class AltAlleleHeaderLine(SimpleHeaderLine):
     @classmethod
     def from_mapping(klass, mapping):
         """Construct from mapping, not requiring the string value"""
-        return AltAlleleHeaderLine('ALT', mapping_to_str(mapping), mapping)
+        return AltAlleleHeaderLine("ALT", mapping_to_str(mapping), mapping)
 
     def __init__(self, key, value, mapping):
         super().__init__(key, value, mapping)
         #: name of the alternative allele
-        self.id = self.mapping['ID']
+        self.id = self.mapping["ID"]
 
     def __hash__(self):
-        raise TypeError('Unhashable type: AltAlleleHeaderLine')
+        raise TypeError("Unhashable type: AltAlleleHeaderLine")
 
     def __str__(self):
-        return 'AltAlleleHeaderLine({}, {}, {})'.format(
-            *map(repr, (self.key, self.value, self.mapping)))
+        return "AltAlleleHeaderLine({}, {}, {})".format(
+            *map(repr, (self.key, self.value, self.mapping))
+        )
 
 
 class ContigHeaderLine(SimpleHeaderLine):
@@ -579,29 +624,30 @@ class ContigHeaderLine(SimpleHeaderLine):
     @classmethod
     def from_mapping(klass, mapping):
         """Construct from mapping, not requiring the string value"""
-        return ContigHeaderLine('contig', mapping_to_str(mapping), mapping)
+        return ContigHeaderLine("contig", mapping_to_str(mapping), mapping)
 
     def __init__(self, key, value, mapping):
         super().__init__(key, value, mapping)
         # convert 'length' entry to integer if possible
-        if 'length' in self.mapping:
-            mapping['length'] = int(mapping['length'])
+        if "length" in self.mapping:
+            mapping["length"] = int(mapping["length"])
         else:
             warnings.warn(
-                'Field "length" not found in header line {}={}'.format(
-                    key, value),
-                FieldInfoNotFound)
+                'Field "length" not found in header line {}={}'.format(key, value),
+                FieldInfoNotFound,
+            )
         #: name of the contig
-        self.id = self.mapping['ID']
+        self.id = self.mapping["ID"]
         #: length of the contig, ``None`` if missing
-        self.length = self.mapping.get('length')
+        self.length = self.mapping.get("length")
 
     def __hash__(self):
-        raise TypeError('Unhashable type: ContigHeaderLine')
+        raise TypeError("Unhashable type: ContigHeaderLine")
 
     def __str__(self):
-        return 'ContigHeaderLine({}, {}, {})'.format(
-            *map(repr, (self.key, self.value, self.mapping)))
+        return "ContigHeaderLine({}, {}, {})".format(
+            *map(repr, (self.key, self.value, self.mapping))
+        )
 
 
 class FilterHeaderLine(SimpleHeaderLine):
@@ -611,27 +657,28 @@ class FilterHeaderLine(SimpleHeaderLine):
     @classmethod
     def from_mapping(klass, mapping):
         """Construct from mapping, not requiring the string value"""
-        return FilterHeaderLine('FILTER', mapping_to_str(mapping), mapping)
+        return FilterHeaderLine("FILTER", mapping_to_str(mapping), mapping)
 
     def __init__(self, key, value, mapping):
         super().__init__(key, value, mapping)
         # check for "Description" key
-        if 'Description' not in self.mapping:
+        if "Description" not in self.mapping:
             warnings.warn(
-                'Field "Description" not found in header line {}={}'.format(
-                    key, value),
-                FieldInfoNotFound)
+                'Field "Description" not found in header line {}={}'.format(key, value),
+                FieldInfoNotFound,
+            )
         #: token for the filter
-        self.id = self.mapping['ID']
+        self.id = self.mapping["ID"]
         #: description for the filter, ``None`` if missing
-        self.description = self.mapping.get('Description')
+        self.description = self.mapping.get("Description")
 
     def __hash__(self):
-        raise TypeError('Unhashable type: FilterHeaderLine')
+        raise TypeError("Unhashable type: FilterHeaderLine")
 
     def __str__(self):
-        return 'FilterHeaderLine({}, {}, {})'.format(
-            *map(repr, (self.key, self.value, self.mapping)))
+        return "FilterHeaderLine({}, {}, {})".format(
+            *map(repr, (self.key, self.value, self.mapping))
+        )
 
 
 class MetaHeaderLine(SimpleHeaderLine):
@@ -643,19 +690,20 @@ class MetaHeaderLine(SimpleHeaderLine):
     @classmethod
     def from_mapping(klass, mapping):
         """Construct from mapping, not requiring the string value"""
-        return MetaHeaderLine('META', mapping_to_str(mapping), mapping)
+        return MetaHeaderLine("META", mapping_to_str(mapping), mapping)
 
     def __init__(self, key, value, mapping):
         super().__init__(key, value, mapping)
         #: name of the alternative allele
-        self.id = self.mapping['ID']
+        self.id = self.mapping["ID"]
 
     def __hash__(self):
-        raise TypeError('Unhashable type: MetaHeaderLine')
+        raise TypeError("Unhashable type: MetaHeaderLine")
 
     def __str__(self):
-        return 'MetaHeaderLine({}, {}, {})'.format(
-            *map(repr, (self.key, self.value, self.mapping)))
+        return "MetaHeaderLine({}, {}, {})".format(
+            *map(repr, (self.key, self.value, self.mapping))
+        )
 
 
 class PedigreeHeaderLine(SimpleHeaderLine):
@@ -665,19 +713,20 @@ class PedigreeHeaderLine(SimpleHeaderLine):
     @classmethod
     def from_mapping(klass, mapping):
         """Construct from mapping, not requiring the string value"""
-        return PedigreeHeaderLine('PEDIGREE', mapping_to_str(mapping), mapping)
+        return PedigreeHeaderLine("PEDIGREE", mapping_to_str(mapping), mapping)
 
     def __init__(self, key, value, mapping):
         super().__init__(key, value, mapping)
         #: name of the alternative allele
-        self.id = self.mapping['ID']
+        self.id = self.mapping["ID"]
 
     def __hash__(self):
-        raise TypeError('Unhashable type: PedigreeHeaderLine')
+        raise TypeError("Unhashable type: PedigreeHeaderLine")
 
     def __str__(self):
-        return 'PedigreeHeaderLine({}, {}, {})'.format(
-            *map(repr, (self.key, self.value, self.mapping)))
+        return "PedigreeHeaderLine({}, {}, {})".format(
+            *map(repr, (self.key, self.value, self.mapping))
+        )
 
 
 class SampleHeaderLine(SimpleHeaderLine):
@@ -687,31 +736,38 @@ class SampleHeaderLine(SimpleHeaderLine):
     @classmethod
     def from_mapping(klass, mapping):
         """Construct from mapping, not requiring the string value"""
-        return SampleHeaderLine('SAMPLE', mapping_to_str(mapping), mapping)
+        return SampleHeaderLine("SAMPLE", mapping_to_str(mapping), mapping)
 
     def __init__(self, key, value, mapping):
         super().__init__(key, value, mapping)
         #: name of the alternative allele
-        self.id = self.mapping['ID']
+        self.id = self.mapping["ID"]
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
             return (self.key, self.value, self.mapping) == (
-                other.key, other.value, other.mapping)
+                other.key,
+                other.value,
+                other.mapping,
+            )
         return NotImplemented
 
     def __ne__(self, other):
         if isinstance(other, self.__class__):
             return (self.key, self.value, self.mapping) != (
-                other.key, other.value, other.mapping)
+                other.key,
+                other.value,
+                other.mapping,
+            )
         return NotImplemented
 
     def __hash__(self):
-        raise TypeError('Unhashable type: SampleHeaderLine')
+        raise TypeError("Unhashable type: SampleHeaderLine")
 
     def __str__(self):
-        return 'SampleHeaderLine({}, {}, {})'.format(
-            *map(repr, (self.key, self.value, self.mapping)))
+        return "SampleHeaderLine({}, {}, {})".format(
+            *map(repr, (self.key, self.value, self.mapping))
+        )
 
 
 class CompoundHeaderLine(HeaderLine):
@@ -727,20 +783,22 @@ class CompoundHeaderLine(HeaderLine):
         #: OrderedDict with key/value mapping
         self.mapping = OrderedDict(mapping.items())
         # check that 'Number' is given and use "." otherwise
-        if 'Number' not in self.mapping:
+        if "Number" not in self.mapping:
             warnings.warn(
                 '[vcfpy] WARNING: missing number, using unbounded/"." instead',
-                FieldMissingNumber)
-            self.mapping['Number'] = '.'
+                FieldMissingNumber,
+            )
+            self.mapping["Number"] = "."
         try:
-            self.mapping['Number'] = self._parse_number(
-                self.mapping['Number'])
+            self.mapping["Number"] = self._parse_number(self.mapping["Number"])
         except ValueError:
             warnings.warn(
-                ('[vcfpy] WARNING: invalid number {}, using '
-                 'unbounded/"." instead').format(self.mapping['Number']),
-                FieldInvalidNumber)
-            self.mapping['Number'] = '.'
+                (
+                    "[vcfpy] WARNING: invalid number {}, using " 'unbounded/"." instead'
+                ).format(self.mapping["Number"]),
+                FieldInvalidNumber,
+            )
+            self.mapping["Number"] = "."
 
     def copy(self):
         """Return a copy"""
@@ -767,11 +825,12 @@ class CompoundHeaderLine(HeaderLine):
         return mapping_to_str(self.mapping)
 
     def serialize(self):
-        return ''.join(map(str, ['##', self.key, '=', self.value]))
+        return "".join(map(str, ["##", self.key, "=", self.value]))
 
     def __str__(self):
-        return 'CompoundHeaderLine({}, {}, {})'.format(
-            *map(repr, (self.key, self.value, self.mapping)))
+        return "CompoundHeaderLine({}, {}, {})".format(
+            *map(repr, (self.key, self.value, self.mapping))
+        )
 
 
 class InfoHeaderLine(CompoundHeaderLine):
@@ -784,48 +843,56 @@ class InfoHeaderLine(CompoundHeaderLine):
     @classmethod
     def from_mapping(klass, mapping):
         """Construct from mapping, not requiring the string value"""
-        return InfoHeaderLine('INFO', mapping_to_str(mapping), mapping)
+        return InfoHeaderLine("INFO", mapping_to_str(mapping), mapping)
 
     def __init__(self, key, value, mapping):
         super().__init__(key, value, mapping)
         #: key in the INFO field
-        self.id = self.mapping['ID']
+        self.id = self.mapping["ID"]
         # check for "Number" field
-        self.number = self.mapping['Number']
+        self.number = self.mapping["Number"]
         # check for "Type" field
-        type_ = self.mapping.get('Type')
-        if 'Type' not in self.mapping:
+        type_ = self.mapping.get("Type")
+        if "Type" not in self.mapping:
             warnings.warn(
-                ('Field "Type" not found in header line, using String '
-                 'instead {}={}').format(key, value),
-                HeaderInvalidType)
-            type_ = 'String'
-        if 'Type' in self.mapping and type_ not in INFO_TYPES:
+                (
+                    'Field "Type" not found in header line, using String '
+                    "instead {}={}"
+                ).format(key, value),
+                HeaderInvalidType,
+            )
+            type_ = "String"
+        if "Type" in self.mapping and type_ not in INFO_TYPES:
             warnings.warn(
-                ('Invalid INFO value type {} in header line, using String '
-                 'instead, {}={}').format(self.mapping['Type'], key, value),
-                HeaderInvalidType)
-            type_ = 'String'
+                (
+                    "Invalid INFO value type {} in header line, using String "
+                    "instead, {}={}"
+                ).format(self.mapping["Type"], key, value),
+                HeaderInvalidType,
+            )
+            type_ = "String"
         #: value type
         self.type = type_
         # check for "Description" key
-        if 'Description' not in self.mapping:
+        if "Description" not in self.mapping:
             warnings.warn(
-                'Field "Description" not found in header line {}={}'.format(
-                    key, value), HeaderMissingDescription)
+                'Field "Description" not found in header line {}={}'.format(key, value),
+                HeaderMissingDescription,
+            )
         #: description, should be given, ``None`` if not given
-        self.description = self.mapping.get('Description')
+        self.description = self.mapping.get("Description")
         #: source of INFO field, ``None`` if not given
-        self.source = self.mapping.get('Source')
+        self.source = self.mapping.get("Source")
         #: version of INFO field, ``None`` if not given
-        self.version = self.mapping.get('Version')
+        self.version = self.mapping.get("Version")
 
     def __hash__(self):
-        raise TypeError('Unhashable type: InfoHeaderLine')
+        raise TypeError("Unhashable type: InfoHeaderLine")
 
     def __str__(self):
-        return 'InfoHeaderLine({}, {}, {})'.format(
-            *map(repr, (self.key, self.value, self.mapping)))
+        return "InfoHeaderLine({}, {}, {})".format(
+            *map(repr, (self.key, self.value, self.mapping))
+        )
 
 
 class FormatHeaderLine(CompoundHeaderLine):
@@ -835,48 +902,56 @@ class FormatHeaderLine(CompoundHeaderLine):
     @classmethod
     def from_mapping(klass, mapping):
         """Construct from mapping, not requiring the string value"""
-        return FormatHeaderLine('FORMAT', mapping_to_str(mapping), mapping)
+        return FormatHeaderLine("FORMAT", mapping_to_str(mapping), mapping)
 
     def __init__(self, key, value, mapping):
         super().__init__(key, value, mapping)
         #: key in the INFO field
-        self.id = self.mapping['ID']
+        self.id = self.mapping["ID"]
         # check for "Number" field
-        self.number = self.mapping['Number']
+        self.number = self.mapping["Number"]
         # check for "Type" field
-        type_ = self.mapping.get('Type')
-        if 'Type' not in self.mapping:
+        type_ = self.mapping.get("Type")
+        if "Type" not in self.mapping:
             warnings.warn(
-                ('Field "Type" not found in header line, using String '
-                 'instead {}={}').format(key, value),
-                HeaderInvalidType)
-            type_ = 'String'
-        if 'Type' in self.mapping and type_ not in FORMAT_TYPES:
+                (
+                    'Field "Type" not found in header line, using String '
+                    "instead {}={}"
+                ).format(key, value),
+                HeaderInvalidType,
+            )
+            type_ = "String"
+        if "Type" in self.mapping and type_ not in FORMAT_TYPES:
             warnings.warn(
-                ('Invalid FORMAT value type {} in header line, using String '
-                 'instead, {}={}').format(self.mapping['Type'], key, value),
-                HeaderInvalidType)
-            type_ = 'String'
+                (
+                    "Invalid FORMAT value type {} in header line, using String "
+                    "instead, {}={}"
+                ).format(self.mapping["Type"], key, value),
+                HeaderInvalidType,
+            )
+            type_ = "String"
         #: value type
         self.type = type_
         # check for "Description" key
-        if 'Description' not in self.mapping:
+        if "Description" not in self.mapping:
             warnings.warn(
-                'Field "Description" not found in header line {}={}'.format(
-                    key, value), HeaderMissingDescription)
+                'Field "Description" not found in header line {}={}'.format(key, value),
+                HeaderMissingDescription,
+            )
         #: description, should be given, ``None`` if not given
-        self.description = self.mapping.get('Description')
+        self.description = self.mapping.get("Description")
         #: source of INFO field, ``None`` if not given
-        self.source = self.mapping.get('Source')
+        self.source = self.mapping.get("Source")
         #: version of INFO field, ``None`` if not given
-        self.version = self.mapping.get('Version')
+        self.version = self.mapping.get("Version")
 
     def __hash__(self):
-        raise TypeError('Unhashable type: FormatHeaderLine')
+        raise TypeError("Unhashable type: FormatHeaderLine")
 
     def __str__(self):
-        return 'FormatHeaderLine({}, {}, {})'.format(
-            *map(repr, (self.key, self.value, self.mapping)))
+        return "FormatHeaderLine({}, {}, {})".format(
+            *map(repr, (self.key, self.value, self.mapping))
+        )
 
 
 class SamplesInfos:
@@ -902,8 +977,7 @@ class SamplesInfos:
             self.parsed_samples = set(self.parsed_samples)
             assert self.parsed_samples <= set(self.names), "Must be subset!"
         #: mapping from sample name to index
-        self.name_to_idx = dict([
-            (name, idx) for idx, name in enumerate(self.names)])
+        self.name_to_idx = dict([(name, idx) for idx, name in enumerate(self.names)])
 
     def copy(self):
         """Return a copy of the object"""
@@ -911,15 +985,14 @@ class SamplesInfos:
 
     def is_parsed(self, name):
         """Return whether the sample name is parsed"""
-        return ((not self.parsed_samples) or name in self.parsed_samples)
+        return (not self.parsed_samples) or name in self.parsed_samples
 
     def __hash__(self):
-        raise TypeError('Unhashable type: SamplesInfos')
+        raise TypeError("Unhashable type: SamplesInfos")
 
     def __str__(self):
-        tpl = 'SamplesInfos(names={}, name_to_idx={})'
-        return tpl.format(self.names, pprint.pformat(
-            self.name_to_idx, width=10**10))
+        tpl = "SamplesInfos(names={}, name_to_idx={})"
+        return tpl.format(self.names, pprint.pformat(self.name_to_idx, width=10 ** 10))
 
     def __repr__(self):
         return str(self)

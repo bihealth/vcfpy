@@ -6,7 +6,7 @@ import io
 
 from vcfpy import parser
 
-__author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
+__author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"
 
 
 MEDIUM_HEADER = """
@@ -36,12 +36,12 @@ MEDIUM_HEADER = """
 
 
 def vcf_parser(lines):
-    return parser.Parser(io.StringIO(MEDIUM_HEADER + lines), '<builtin>')
+    return parser.Parser(io.StringIO(MEDIUM_HEADER + lines), "<builtin>")
 
 
 def test_parse_minimal_record():
     # Setup parser with stock header and lines to parse
-    LINES = '20\t1\t.\tC\tG\t.\t.\t.\tGT\t0/1\t0/2\t.\n'
+    LINES = "20\t1\t.\tC\tG\t.\t.\t.\tGT\t0/1\t0/2\t.\n"
     p = vcf_parser(LINES)
     p.parse_header()
     # Perform the actual test
@@ -50,14 +50,15 @@ def test_parse_minimal_record():
         "None, [], OrderedDict(), ['GT'], "
         "[Call('NA00001', OrderedDict([('GT', '0/1')])),"
         " Call('NA00002', OrderedDict([('GT', '0/2')])),"
-        " Call('NA00003', OrderedDict([('GT', None)]))])")
+        " Call('NA00003', OrderedDict([('GT', None)]))])"
+    )
     RESULT = p.parse_next_record()
     assert str(RESULT) == EXPECTED
 
 
 def test_parse_record_with_info():
     # Setup parser with stock header and lines to parse
-    LINES = '20\t1\t.\tC\tG\t.\t.\tAA=G\tGT\t0/1\t0/1\t.\n'
+    LINES = "20\t1\t.\tC\tG\t.\t.\tAA=G\tGT\t0/1\t0/1\t.\n"
     p = vcf_parser(LINES)
     p.parse_header()
     # Perform the actual test
@@ -66,15 +67,18 @@ def test_parse_record_with_info():
         "None, [], OrderedDict([('AA', 'G')]), ['GT'], "
         "[Call('NA00001', OrderedDict([('GT', '0/1')])),"
         " Call('NA00002', OrderedDict([('GT', '0/1')])),"
-        " Call('NA00003', OrderedDict([('GT', None)]))])")
+        " Call('NA00003', OrderedDict([('GT', None)]))])"
+    )
     RESULT = p.parse_next_record()
     assert str(RESULT) == EXPECTED
 
 
 def test_parse_record_with_escaping():
     # Setup parser with stock header and lines to parse
-    LINES = ('20\t100\t.\tC\tG\t.\t.\tANNO=Here%2Care%25some chars,'
-             '%2525\tGT:FT\t0/1:FOO\t0/0:.\t1/1:.\n')
+    LINES = (
+        "20\t100\t.\tC\tG\t.\t.\tANNO=Here%2Care%25some chars,"
+        "%2525\tGT:FT\t0/1:FOO\t0/0:.\t1/1:.\n"
+    )
     p = vcf_parser(LINES)
     p.parse_header()
     # Perform the actual test
@@ -85,14 +89,15 @@ def test_parse_record_with_escaping():
         "[Call('NA00001', OrderedDict([('GT', '0/1'),"
         " ('FT', ['FOO'])])),"
         " Call('NA00002', OrderedDict([('GT', '0/0'), ('FT', [])])),"
-        " Call('NA00003', OrderedDict([('GT', '1/1'), ('FT', [])]))])")
+        " Call('NA00003', OrderedDict([('GT', '1/1'), ('FT', [])]))])"
+    )
     RESULT = p.parse_next_record()
     assert str(RESULT) == EXPECTED
 
 
 def test_parse_record_with_filter_warning():
     # Setup parser with stock header and lines to parse
-    LINES = '20\t1\t.\tC\tG\t.\tREX\t.\tGT:FT\t0/1:.\t0/2:BAR\t.:.\n'
+    LINES = "20\t1\t.\tC\tG\t.\tREX\t.\tGT:FT\t0/1:.\t0/2:BAR\t.:.\n"
     p = vcf_parser(LINES)
     p.parse_header()
     # Perform the actual test
@@ -101,6 +106,7 @@ def test_parse_record_with_filter_warning():
         "None, ['REX'], OrderedDict(), ['GT', 'FT'], "
         "[Call('NA00001', OrderedDict([('GT', '0/1'), ('FT', [])])),"
         " Call('NA00002', OrderedDict([('GT', '0/2'), ('FT', ['BAR'])])),"
-        " Call('NA00003', OrderedDict([('GT', None), ('FT', [])]))])")
+        " Call('NA00003', OrderedDict([('GT', None), ('FT', [])]))])"
+    )
     RESULT = p.parse_next_record()
     assert str(RESULT) == EXPECTED

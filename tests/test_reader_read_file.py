@@ -6,17 +6,17 @@ import os
 
 from vcfpy import reader
 
-__author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
+__author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"
 
 
 def test_read_text():
-    path = os.path.join(os.path.dirname(__file__), 'vcfs/full_vcf43.vcf')
+    path = os.path.join(os.path.dirname(__file__), "vcfs/full_vcf43.vcf")
     r = reader.Reader.from_path(path)
     assert r.parser
     assert r.header
     assert len(r.header.lines) == 18
     assert r.header.samples
-    assert r.header.samples.names == ['NA00001', 'NA00002', 'NA00003']
+    assert r.header.samples.names == ["NA00001", "NA00002", "NA00003"]
     records = []
     for record in r:
         records.append(record)
@@ -24,13 +24,13 @@ def test_read_text():
 
 
 def test_read_bgzip():
-    path = os.path.join(os.path.dirname(__file__), 'vcfs/full_vcf43.vcf.gz')
+    path = os.path.join(os.path.dirname(__file__), "vcfs/full_vcf43.vcf.gz")
     r = reader.Reader.from_path(path)
     assert r.parser
     assert r.header
     assert len(r.header.lines) == 18
     assert r.header.samples
-    assert r.header.samples.names == ['NA00001', 'NA00002', 'NA00003']
+    assert r.header.samples.names == ["NA00001", "NA00002", "NA00003"]
     records = []
     for record in r:
         records.append(record)
@@ -38,7 +38,7 @@ def test_read_bgzip():
 
 
 def test_read_text_no_samples():
-    path = os.path.join(os.path.dirname(__file__), 'vcfs/full_vcf43_no_samples.vcf')
+    path = os.path.join(os.path.dirname(__file__), "vcfs/full_vcf43_no_samples.vcf")
     r = reader.Reader.from_path(path)
     assert r.parser
     assert r.header

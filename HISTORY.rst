@@ -5,6 +5,7 @@ History
 HEAD (unreleased)
 -----------------
 
+* Applying ``black`` formatting.
 * Replacing Makefile with more minimal one.
 * Removing some linting errors from flake8.
 * Adding support for reading VCF without ``FORMAT`` or any sample column.

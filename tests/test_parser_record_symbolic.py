@@ -6,7 +6,7 @@ import io
 
 from vcfpy import parser
 
-__author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
+__author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"
 
 
 MEDIUM_HEADER = """
@@ -41,12 +41,12 @@ MEDIUM_HEADER = """
 
 
 def vcf_parser(lines):
-    return parser.Parser(io.StringIO(MEDIUM_HEADER + lines), '<builtin>')
+    return parser.Parser(io.StringIO(MEDIUM_HEADER + lines), "<builtin>")
 
 
 def test_parse_dup():
     # Setup parser with stock header and lines to parse
-    LINES = '2\t321681\t.\tN\t<DUP>\t.\tPASS\tSVTYPE=DUP;END=324681;SVLEN=3000\tGT\t0/1\t0/0\t0/0\n'
+    LINES = "2\t321681\t.\tN\t<DUP>\t.\tPASS\tSVTYPE=DUP;END=324681;SVLEN=3000\tGT\t0/1\t0/0\t0/0\n"
     p = vcf_parser(LINES)
     p.parse_header()
     # Perform the actual test
@@ -56,15 +56,16 @@ def test_parse_dup():
         """('SVLEN', 3000)]), ['GT'], """
         """[Call('NA00001', OrderedDict([('GT', '0/1')])), """
         """Call('NA00002', OrderedDict([('GT', '0/0')])), """
-        """Call('NA00003', OrderedDict([('GT', '0/0')]))])""")
+        """Call('NA00003', OrderedDict([('GT', '0/0')]))])"""
+    )
     rec = p.parse_next_record()
     assert str(rec) == EXPECTED
-    assert rec.ALT[0].serialize() == '<DUP>'
+    assert rec.ALT[0].serialize() == "<DUP>"
 
 
 def test_parse_iupac():
     # Setup parser with stock header and lines to parse
-    LINES = '2\t321681\t.\tC\t<R>\t.\tPASS\t.\tGT\t0/1\t0/0\t0/0\n'
+    LINES = "2\t321681\t.\tC\t<R>\t.\tPASS\t.\tGT\t0/1\t0/0\t0/0\n"
     p = vcf_parser(LINES)
     p.parse_header()
     # Perform the actual test
@@ -73,7 +74,8 @@ def test_parse_iupac():
         """['PASS'], OrderedDict(), ['GT'], """
         """[Call('NA00001', OrderedDict([('GT', '0/1')])), """
         """Call('NA00002', OrderedDict([('GT', '0/0')])), """
-        """Call('NA00003', OrderedDict([('GT', '0/0')]))])""")
+        """Call('NA00003', OrderedDict([('GT', '0/0')]))])"""
+    )
     rec = p.parse_next_record()
     assert str(rec) == EXPECTED
-    assert rec.ALT[0].serialize() == '<R>'
+    assert rec.ALT[0].serialize() == "<R>"

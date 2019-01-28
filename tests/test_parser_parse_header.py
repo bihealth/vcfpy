@@ -8,7 +8,7 @@ import pytest
 
 from vcfpy import parser
 
-__author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
+__author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"
 
 MEDIUM_HEADER = """
 ##fileformat=VCFv4.3
@@ -33,13 +33,13 @@ MEDIUM_HEADER = """
 """.lstrip()
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def medium_header():
     return io.StringIO(MEDIUM_HEADER)
 
 
 def test_parse_header(medium_header):
-    p = parser.Parser(stream=medium_header, path='<builtin>')
+    p = parser.Parser(stream=medium_header, path="<builtin>")
     header = p.parse_header()
     assert header.lines
     assert len(header.lines) == 18
@@ -49,6 +49,7 @@ def test_parse_header(medium_header):
         "FormatHeaderLine('FORMAT', '<ID=HQ,Number=2,Type=Integer,"
         "Description=\"Haplotype Quality\">', OrderedDict([('ID', 'HQ'), "
         "('Number', 2), ('Type', 'Integer'), ('Description', "
-        "'Haplotype Quality')]))")
+        "'Haplotype Quality')]))"
+    )
     assert str(header.lines[-1]) == EXPECTED
-    assert header.samples.names == ['NA00001', 'NA00002', 'NA00003']
+    assert header.samples.names == ["NA00001", "NA00002", "NA00003"]

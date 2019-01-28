@@ -9,7 +9,7 @@ import pysam
 
 from . import parser
 
-__author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
+__author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"
 
 
 class Reader:
@@ -37,8 +37,14 @@ class Reader:
     """
 
     @classmethod
-    def from_stream(klass, stream, path=None, tabix_path=None,
-                    record_checks=None, parsed_samples=None):
+    def from_stream(
+        klass,
+        stream,
+        path=None,
+        tabix_path=None,
+        record_checks=None,
+        parsed_samples=None,
+    ):
         """Create new :py:class:`Reader` from file
 
         .. note::
@@ -55,14 +61,19 @@ class Reader:
         """
         record_checks = record_checks or []
         if tabix_path and not path:
-            raise ValueError('Must give path if tabix_path is given')
-        return Reader(stream=stream, path=path, tabix_path=tabix_path,
-                      record_checks=record_checks,
-                      parsed_samples=parsed_samples)
+            raise ValueError("Must give path if tabix_path is given")
+        return Reader(
+            stream=stream,
+            path=path,
+            tabix_path=tabix_path,
+            record_checks=record_checks,
+            parsed_samples=parsed_samples,
+        )
 
     @classmethod
-    def from_path(klass, path, tabix_path=None, record_checks=None,
-                  parsed_samples=None):
+    def from_path(
+        klass, path, tabix_path=None, record_checks=None, parsed_samples=None
+    ):
         """Create new :py:class:`Reader` from path
 
         .. note::
@@ -79,20 +90,30 @@ class Reader:
         """
         record_checks = record_checks or []
         path = str(path)
-        if path.endswith('.gz'):
-            f = gzip.open(path, 'rt')
+        if path.endswith(".gz"):
+            f = gzip.open(path, "rt")
             if not tabix_path:
-                tabix_path = path + '.tbi'
+                tabix_path = path + ".tbi"
                 if not os.path.exists(tabix_path):
                     tabix_path = None  # guessing path failed
         else:
-            f = open(path, 'rt')
-        return klass.from_stream(stream=f, path=path, tabix_path=tabix_path,
-                                 record_checks=record_checks,
-                                 parsed_samples=parsed_samples)
+            f = open(path, "rt")
+        return klass.from_stream(
+            stream=f,
+            path=path,
+            tabix_path=tabix_path,
+            record_checks=record_checks,
+            parsed_samples=parsed_samples,
+        )
 
-    def __init__(self, stream, path=None, tabix_path=None,
-                 record_checks=None, parsed_samples=None):
+    def __init__(
+        self,
+        stream,
+        path=None,
+        tabix_path=None,
+        record_checks=None,
+        parsed_samples=None,
+    ):
         #: stream (``file``-like object) to read from
         self.stream = stream
         #: optional ``str`` with the path to the stream
@@ -124,20 +145,20 @@ class Reader:
         :param int end: 0-based end position (exclusive)
         """
         if begin is not None and end is None:
-            raise ValueError('begin and end must both be None or neither')
+            raise ValueError("begin and end must both be None or neither")
         # close tabix file if any and is open
         if self.tabix_file and not self.tabix_file.closed:
             self.tabix_file.close()
         # open tabix file if not yet open
         if not self.tabix_file or self.tabix_file.closed:
-            self.tabix_file = pysam.TabixFile(
-                filename=self.path, index=self.tabix_path)
+            self.tabix_file = pysam.TabixFile(filename=self.path, index=self.tabix_path)
         # jump to the next position
         if begin is None:
             self.tabix_iter = self.tabix_file.fetch(region=chrom_or_region)
         else:
             self.tabix_iter = self.tabix_file.fetch(
-                reference=chrom_or_region, start=begin, end=end)
+                reference=chrom_or_region, start=begin, end=end
+            )
         return self
 
     def close(self):

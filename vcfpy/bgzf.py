@@ -32,10 +32,11 @@ import zlib
 # For Python 2 can just use: _bgzf_magic = '\x1f\x8b\x08\x04'
 # but need to use bytes on Python 3
 _bgzf_magic = b"\x1f\x8b\x08\x04"
-_bgzf_header = (b"\x1f\x8b\x08\x04\x00\x00\x00\x00\x00\xff\x06\x00\x42"
-                b"\x43\x02\x00")
-_bgzf_eof = (b"\x1f\x8b\x08\x04\x00\x00\x00\x00\x00\xff\x06\x00BC\x02\x00"
-             b"\x1b\x00\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00")
+_bgzf_header = b"\x1f\x8b\x08\x04\x00\x00\x00\x00\x00\xff\x06\x00\x42" b"\x43\x02\x00"
+_bgzf_eof = (
+    b"\x1f\x8b\x08\x04\x00\x00\x00\x00\x00\xff\x06\x00BC\x02\x00"
+    b"\x1b\x00\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+)
 _bytes_BC = b"BC"
 
 
@@ -76,24 +77,24 @@ def make_virtual_offset(block_start_offset, within_block_offset):
     ValueError: Require 0 <= block_start_offset < 2**48, got 281474976710656
     """
     if within_block_offset < 0 or within_block_offset >= 65536:
-        raise ValueError("Require 0 <= within_block_offset < 2**16, got %i" %
-                         within_block_offset)
+        raise ValueError(
+            "Require 0 <= within_block_offset < 2**16, got %i" % within_block_offset
+        )
     if block_start_offset < 0 or block_start_offset >= 281474976710656:
-        raise ValueError("Require 0 <= block_start_offset < 2**48, got %i" %
-                         block_start_offset)
+        raise ValueError(
+            "Require 0 <= block_start_offset < 2**48, got %i" % block_start_offset
+        )
     return (block_start_offset << 16) | within_block_offset
 
 
 class BgzfWriter(object):
-
     def __init__(self, filename=None, mode="w", fileobj=None, compresslevel=6):
         if fileobj:
             assert filename is None
             handle = fileobj
         else:
             if "w" not in mode.lower() and "a" not in mode.lower():
-                raise ValueError(
-                    "Must use write or append mode, not %r" % mode)
+                raise ValueError("Must use write or append mode, not %r" % mode)
             if "a" in mode.lower():
                 handle = open(filename, "ab")
             else:
@@ -108,15 +109,14 @@ class BgzfWriter(object):
         assert len(block) <= 65536
         # Giving a negative window bits means no gzip/zlib headers,
         # -15 used in samtools
-        c = zlib.compressobj(self.compresslevel,
-                             zlib.DEFLATED,
-                             -15,
-                             zlib.DEF_MEM_LEVEL,
-                             0)
+        c = zlib.compressobj(
+            self.compresslevel, zlib.DEFLATED, -15, zlib.DEF_MEM_LEVEL, 0
+        )
         compressed = c.compress(block) + c.flush()
         del c
-        assert len(compressed) < 65536, \
-            "TODO - Didn't compress enough, try less data in this block"
+        assert (
+            len(compressed) < 65536
+        ), "TODO - Didn't compress enough, try less data in this block"
         crc = zlib.crc32(block)
         # Should cope with a mix of Python platforms...
         if crc < 0:
@@ -124,7 +124,7 @@ class BgzfWriter(object):
         else:
             crc = struct.pack("<I", crc)
         bsize = struct.pack("<H", len(compressed) + 25)  # includes -1
-        crc = struct.pack("<I", zlib.crc32(block) & 0xffffffff)
+        crc = struct.pack("<I", zlib.crc32(block) & 0xFFFFFFFF)
         uncompressed_length = struct.pack("<I", len(block))
         # Fixed 16 bytes,
         # gzip magic bytes (4) mod time (4),

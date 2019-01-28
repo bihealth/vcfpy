@@ -12,25 +12,45 @@ from . import header
 from . import record
 from . import exceptions
 from .exceptions import (
-    CannotConvertValue, LeadingTrailingSpaceInKey, UnknownFilter,
-    UnknownVCFVersion, SpaceInChromLine)
+    CannotConvertValue,
+    LeadingTrailingSpaceInKey,
+    UnknownFilter,
+    UnknownVCFVersion,
+    SpaceInChromLine,
+)
 
 
 from .compat import OrderedDict
 
-__author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
+__author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"
 
 
 # expected "#CHROM" header prefix when there are samples
 REQUIRE_SAMPLE_HEADER = (
-    '#CHROM', 'POS', 'ID', 'REF', 'ALT', 'QUAL', 'FILTER', 'INFO', 'FORMAT')
+    "#CHROM",
+    "POS",
+    "ID",
+    "REF",
+    "ALT",
+    "QUAL",
+    "FILTER",
+    "INFO",
+    "FORMAT",
+)
 # expected "#CHROM" header prefix when there are no samples
 REQUIRE_NO_SAMPLE_HEADER = (
-    '#CHROM', 'POS', 'ID', 'REF', 'ALT', 'QUAL', 'FILTER', 'INFO')
+    "#CHROM",
+    "POS",
+    "ID",
+    "REF",
+    "ALT",
+    "QUAL",
+    "FILTER",
+    "INFO",
+)
 
 #: Supported VCF versions, a warning will be issued otherwise
-SUPPORTED_VCF_VERSIONS = (
-    'VCFv4.0', 'VCFv4.1', 'VCFv4.2', 'VCFv4.3')
+SUPPORTED_VCF_VERSIONS = ("VCFv4.0", "VCFv4.1", "VCFv4.2", "VCFv4.3")
 
 
 class QuotedStringSplitter:
@@ -51,7 +71,7 @@ class QuotedStringSplitter:
     #: state constant for delimiter
     DELIM = 4
 
-    def __init__(self, delim=',', quote='"', brackets='[]'):
+    def __init__(self, delim=",", quote='"', brackets="[]"):
         #: string delimiter
         self.delim = delim
         #: quote character
@@ -99,7 +119,7 @@ class QuotedStringSplitter:
             return self.NORMAL
 
     def _handle_quoted(self, c, pos, begins, ends):  # pylint: disable=W0613
-        if c == '\\':
+        if c == "\\":
             return self.ESCAPED
         elif c == self.quote:
             return self.NORMAL
@@ -120,7 +140,7 @@ class QuotedStringSplitter:
         return self.QUOTED
 
 
-def split_quoted_string(s, delim=',', quote='"', brackets='[]'):
+def split_quoted_string(s, delim=",", quote='"', brackets="[]"):
     return QuotedStringSplitter(delim, quote, brackets).run(s)
 
 
@@ -129,11 +149,13 @@ def split_mapping(pair_str):
 
     Warn if key needs to be stripped
     """
-    orig_key, value = pair_str.split('=', 1)
+    orig_key, value = pair_str.split("=", 1)
     key = orig_key.strip()
     if key != orig_key:
-        warnings.warn('Mapping key {} has leading or trailing space'.format(
-            repr(orig_key)), LeadingTrailingSpaceInKey)
+        warnings.warn(
+            "Mapping key {} has leading or trailing space".format(repr(orig_key)),
+            LeadingTrailingSpaceInKey,
+        )
     return key, value
 
 
@@ -148,21 +170,22 @@ def parse_mapping(value):
     :raises: :py:class:`vcfpy.exceptions.InvalidHeaderException` if
         there was a problem parsing the file
     """
-    if not value.startswith('<') or not value.endswith('>'):
+    if not value.startswith("<") or not value.endswith(">"):
         raise exceptions.InvalidHeaderException(
-            'Header mapping value was not wrapped in angular brackets')
+            "Header mapping value was not wrapped in angular brackets"
+        )
     # split the comma-separated list into pairs, ignoring commas in quotes
-    pairs = split_quoted_string(value[1:-1], delim=',', quote='"')
+    pairs = split_quoted_string(value[1:-1], delim=",", quote='"')
     # split these pairs into key/value pairs, converting flags to mappings
     # to True
     key_values = []
     for pair in pairs:
-        if '=' in pair:
+        if "=" in pair:
             key, value = split_mapping(pair)
             if value.startswith('"') and value.endswith('"'):
                 value = ast.literal_eval(value)
-            elif value.startswith('[') and value.endswith(']'):
-                value = [v.strip() for v in value[1:-1].split(',')]
+            elif value.startswith("[") and value.endswith("]"):
+                value = [v.strip() for v in value[1:-1].split(",")]
         else:
             key, value = pair, True
         key_values.append((key, value))
@@ -180,7 +203,7 @@ class HeaderLineParserBase:
         :param str value: the value to parse
         :returns: :py:class:`vcfpy.header.HeaderLine` object
         """
-        raise NotImplementedError('Must be overridden')
+        raise NotImplementedError("Must be overridden")
 
 
 class StupidHeaderLineParser(HeaderLineParserBase):
@@ -208,35 +231,35 @@ def build_header_parsers():
     Inject the WarningHelper into the parsers.
     """
     result = {
-        'ALT': MappingHeaderLineParser(header.AltAlleleHeaderLine),
-        'contig': MappingHeaderLineParser(header.ContigHeaderLine),
-        'FILTER': MappingHeaderLineParser(header.FilterHeaderLine),
-        'FORMAT': MappingHeaderLineParser(header.FormatHeaderLine),
-        'INFO': MappingHeaderLineParser(header.InfoHeaderLine),
-        'META': MappingHeaderLineParser(header.MetaHeaderLine),
-        'PEDIGREE': MappingHeaderLineParser(header.PedigreeHeaderLine),
-        'SAMPLE': MappingHeaderLineParser(header.SampleHeaderLine),
-        '__default__': StupidHeaderLineParser(),  # fallback
+        "ALT": MappingHeaderLineParser(header.AltAlleleHeaderLine),
+        "contig": MappingHeaderLineParser(header.ContigHeaderLine),
+        "FILTER": MappingHeaderLineParser(header.FilterHeaderLine),
+        "FORMAT": MappingHeaderLineParser(header.FormatHeaderLine),
+        "INFO": MappingHeaderLineParser(header.InfoHeaderLine),
+        "META": MappingHeaderLineParser(header.MetaHeaderLine),
+        "PEDIGREE": MappingHeaderLineParser(header.PedigreeHeaderLine),
+        "SAMPLE": MappingHeaderLineParser(header.SampleHeaderLine),
+        "__default__": StupidHeaderLineParser(),  # fallback
     }
     return result
 
 
 # Field value converters
 _CONVERTERS = {
-    'Integer': int,
-    'Float': float,
-    'Flag': lambda x: True,
-    'Character': str,
-    'String': str,
+    "Integer": int,
+    "Float": float,
+    "Flag": lambda x: True,
+    "Character": str,
+    "String": str,
 }
 
 
 def convert_field_value(type_, value):
     """Convert atomic field value according to the type"""
-    if value == '.':
+    if value == ".":
         return None
-    elif type_ in ('Character', 'String'):
-        if '%' in value:
+    elif type_ in ("Character", "String"):
+        if "%" in value:
             for k, v in record.UNESCAPE_MAPPING:
                 value = value.replace(k, v)
         return value
@@ -245,30 +268,32 @@ def convert_field_value(type_, value):
             return _CONVERTERS[type_](value)
         except ValueError:
             warnings.warn(
-                ('{} cannot be converted to {}, keeping as '
-                 'string.').format(value, type_), CannotConvertValue)
+                ("{} cannot be converted to {}, keeping as " "string.").format(
+                    value, type_
+                ),
+                CannotConvertValue,
+            )
             return value
 
 
 def parse_field_value(field_info, value):
     """Parse ``value`` according to ``field_info``
     """
-    if field_info.id == 'FT':
-        return [x for x in value.split(';') if x != '.']
-    elif field_info.type == 'Flag':
+    if field_info.id == "FT":
+        return [x for x in value.split(";") if x != "."]
+    elif field_info.type == "Flag":
         return True
     elif field_info.number == 1:
         return convert_field_value(field_info.type, value)
     else:
-        if value == '.':
+        if value == ".":
             return []
         else:
-            return [convert_field_value(field_info.type, x)
-                    for x in value.split(',')]
+            return [convert_field_value(field_info.type, x) for x in value.split(",")]
 
 
 # Regular expression for break-end
-BREAKEND_PATTERN = re.compile('[\\[\\]]')
+BREAKEND_PATTERN = re.compile("[\\[\\]]")
 
 
 def parse_breakend(alt_str):
@@ -276,29 +301,34 @@ def parse_breakend(alt_str):
     constructor
     """
     arr = BREAKEND_PATTERN.split(alt_str)
-    mate_chrom, mate_pos = arr[1].split(':', 1)
+    mate_chrom, mate_pos = arr[1].split(":", 1)
     mate_pos = int(mate_pos)
-    if mate_chrom[0] == '<':
+    if mate_chrom[0] == "<":
         mate_chrom = mate_chrom[1:-1]
         within_main_assembly = False
     else:
         within_main_assembly = True
     FWD_REV = {True: record.FORWARD, False: record.REVERSE}
-    orientation = FWD_REV[alt_str[0] == '[' or alt_str[0] == ']']
-    mate_orientation = FWD_REV['[' in alt_str]
+    orientation = FWD_REV[alt_str[0] == "[" or alt_str[0] == "]"]
+    mate_orientation = FWD_REV["[" in alt_str]
     if orientation == record.FORWARD:
         sequence = arr[2]
     else:
         sequence = arr[0]
-    return (mate_chrom, mate_pos, orientation, mate_orientation,
-            sequence, within_main_assembly)
+    return (
+        mate_chrom,
+        mate_pos,
+        orientation,
+        mate_orientation,
+        sequence,
+        within_main_assembly,
+    )
 
 
 def process_sub_grow(ref, alt_str):
     """Process substution where the string grows"""
     if len(alt_str) == 0:
-        raise exceptions.InvalidRecordException(
-            'Invalid VCF, empty ALT')
+        raise exceptions.InvalidRecordException("Invalid VCF, empty ALT")
     elif len(alt_str) == 1:
         if ref[0] == alt_str[0]:
             return record.Substitution(record.DEL, alt_str)
@@ -311,8 +341,7 @@ def process_sub_grow(ref, alt_str):
 def process_sub_shrink(ref, alt_str):
     """Process substution where the string shrink"""
     if len(ref) == 0:
-        raise exceptions.InvalidRecordException(
-            'Invalid VCF, empty REF')
+        raise exceptions.InvalidRecordException("Invalid VCF, empty REF")
     elif len(ref) == 1:
         if ref[0] == alt_str[0]:
             return record.Substitution(record.INS, alt_str)
@@ -338,13 +367,13 @@ def process_sub(ref, alt_str):
 def process_alt(header, ref, alt_str):  # pylint: disable=W0613
     """Process alternative value using Header in ``header``"""
     # By its nature, this function contains a large number of case distinctions
-    if ']' in alt_str or '[' in alt_str:
+    if "]" in alt_str or "[" in alt_str:
         return record.BreakEnd(*parse_breakend(alt_str))
-    elif alt_str[0] == '.' and len(alt_str) > 0:
+    elif alt_str[0] == "." and len(alt_str) > 0:
         return record.SingleBreakEnd(record.FORWARD, alt_str[1:])
-    elif alt_str[-1] == '.' and len(alt_str) > 0:
+    elif alt_str[-1] == "." and len(alt_str) > 0:
         return record.SingleBreakEnd(record.REVERSE, alt_str[:-1])
-    elif alt_str[0] == '<' and alt_str[-1] == '>':
+    elif alt_str[0] == "<" and alt_str[-1] == ">":
         inner = alt_str[1:-1]
         return record.SymbolicAllele(inner)
     else:  # substitution
@@ -369,17 +398,18 @@ class HeaderParser:
         :raises: :py:class:`vcfpy.exceptions.InvalidHeaderException` if
             there was a problem parsing the file
         """
-        if not line or not line.startswith('##'):
+        if not line or not line.startswith("##"):
             raise exceptions.InvalidHeaderException(
-                'Invalid VCF header line (must start with "##") {}'.format(
-                    line))
-        if '=' not in line:
+                'Invalid VCF header line (must start with "##") {}'.format(line)
+            )
+        if "=" not in line:
             raise exceptions.InvalidHeaderException(
-                'Invalid VCF header line (must contain "=") {}'.format(line))
-        line = line[len('##'):].rstrip()  # trim '^##' and trailing whitespace
+                'Invalid VCF header line (must contain "=") {}'.format(line)
+            )
+        line = line[len("##") :].rstrip()  # trim '^##' and trailing whitespace
         # split key/value pair at "="
         key, value = split_mapping(line)
-        sub_parser = self.sub_parsers.get(key, self.sub_parsers['__default__'])
+        sub_parser = self.sub_parsers.get(key, self.sub_parsers["__default__"])
         return sub_parser.parse_key_value(key, value)
 
 
@@ -403,12 +433,12 @@ class RecordParser:
         # Cache of FILTER entries, also applied to FORMAT/FT
         self._filter_ids = set(self.header.filter_ids())
         # Helper for checking INFO fields
-        if 'INFO' in self.record_checks:
+        if "INFO" in self.record_checks:
             self._info_checker = InfoChecker(self.header)
         else:
             self._info_checker = NoopInfoChecker()
         # Helper for checking FORMAT fields
-        if 'FORMAT' in self.record_checks:
+        if "FORMAT" in self.record_checks:
             self._format_checker = FormatChecker(self.header)
         else:
             self._format_checker = NoopFormatChecker()
@@ -426,19 +456,19 @@ class RecordParser:
         # POS
         pos = int(arr[1])
         # IDS
-        if arr[2] == '.':
+        if arr[2] == ".":
             ids = []
         else:
-            ids = arr[2].split(';')
+            ids = arr[2].split(";")
         # REF
         ref = arr[3]
         # ALT
         alts = []
-        if arr[4] != '.':
-            for alt in arr[4].split(','):
+        if arr[4] != ".":
+            for alt in arr[4].split(","):
                 alts.append(process_alt(self.header, ref, alt))
         # QUAL
-        if arr[5] == '.':
+        if arr[5] == ".":
             qual = None
         else:
             try:
@@ -446,11 +476,11 @@ class RecordParser:
             except ValueError:  # try as float
                 qual = float(arr[5])
         # FILTER
-        if arr[6] == '.':
+        if arr[6] == ".":
             filt = []
         else:
-            filt = arr[6].split(';')
-        self._check_filters(filt, 'FILTER')
+            filt = arr[6].split(";")
+        self._check_filters(filt, "FILTER")
         # INFO
         info = self._parse_info(arr[7], len(alts))
         if len(arr) == 9:
@@ -460,28 +490,29 @@ class RecordParser:
             calls = None
         else:
             # FORMAT
-            format_ = arr[8].split(':')
+            format_ = arr[8].split(":")
             # sample/call columns
             calls = self._handle_calls(alts, format_, arr[8], arr)
         return record.Record(
-            chrom, pos, ids, ref, alts, qual, filt, info, format_, calls)
+            chrom, pos, ids, ref, alts, qual, filt, info, format_, calls
+        )
 
     def _handle_calls(self, alts, format_, format_str, arr):
         """Handle FORMAT and calls columns, factored out of parse_line"""
         if format_str not in self._format_cache:
-            self._format_cache[format_str] = list(map(
-                self.header.get_format_field_info,
-                format_))
+            self._format_cache[format_str] = list(
+                map(self.header.get_format_field_info, format_)
+            )
         # per-sample calls
         calls = []
         for sample, raw_data in zip(self.samples.names, arr[9:]):
             if self.samples.is_parsed(sample):
                 data = self._parse_calls_data(
-                    format_, self._format_cache[format_str], raw_data)
+                    format_, self._format_cache[format_str], raw_data
+                )
                 call = record.Call(sample, data)
                 self._format_checker.run(call, len(alts))
-                self._check_filters(
-                    call.data.get('FT'), 'FORMAT/FT', call.sample)
+                self._check_filters(call.data.get("FT"), "FORMAT/FT", call.sample)
                 calls.append(call)
             else:
                 calls.append(record.UnparsedCall(sample, raw_data))
@@ -495,45 +526,56 @@ class RecordParser:
 
     def _check_filter(self, f, source, sample):
         if f not in self._filter_ids:
-            if source == 'FILTER':
+            if source == "FILTER":
                 warnings.warn(
-                    ('Filter not found in header: {}; problem in FILTER '
-                     'column').format(f), UnknownFilter)
+                    (
+                        "Filter not found in header: {}; problem in FILTER " "column"
+                    ).format(f),
+                    UnknownFilter,
+                )
             else:
-                assert source == 'FORMAT/FT' and sample
+                assert source == "FORMAT/FT" and sample
                 warnings.warn(
-                    ('Filter not found in header: {}; problem in '
-                     'FORMAT/FT column of sample {}').format(f, sample),
-                    UnknownFilter)
+                    (
+                        "Filter not found in header: {}; problem in "
+                        "FORMAT/FT column of sample {}"
+                    ).format(f, sample),
+                    UnknownFilter,
+                )
 
     def _split_line(self, line_str):
         """Split line and check number of columns"""
-        arr = line_str.rstrip().split('\t')
+        arr = line_str.rstrip().split("\t")
         if len(arr) != self.expected_fields:
             raise exceptions.InvalidRecordException(
-                ('The line contains an invalid number of fields. Was '
-                 '{} but expected {}\n{}'.format(
-                     len(arr), 9 + len(self.samples.names),
-                     line_str)))
+                (
+                    "The line contains an invalid number of fields. Was "
+                    "{} but expected {}\n{}".format(
+                        len(arr), 9 + len(self.samples.names), line_str
+                    )
+                )
+            )
         return arr
 
     def _parse_info(self, info_str, num_alts):
         """Parse INFO column from string"""
         result = OrderedDict()
-        if info_str == '.':
+        if info_str == ".":
             return result
         # The standard is very nice to parsers, we can simply split at
         # semicolon characters, although I (Manuel) don't know how strict
         # programs follow this
-        for entry in info_str.split(';'):
-            if '=' not in entry:  # flag
+        for entry in info_str.split(";"):
+            if "=" not in entry:  # flag
                 key = entry
                 result[key] = parse_field_value(
-                    self.header.get_info_field_info(key), True)
+                    self.header.get_info_field_info(key), True
+                )
             else:
                 key, value = split_mapping(entry)
                 result[key] = parse_field_value(
-                    self.header.get_info_field_info(key), value)
+                    self.header.get_info_field_info(key), value
+                )
             self._info_checker.run(key, result[key], num_alts)
         return result
 
@@ -548,7 +590,7 @@ class RecordParser:
         # The standard is very nice to parsers, we can simply split at
         # colon characters, although I (Manuel) don't know how strict
         # programs follow this
-        for key, info, value in zip(format_, infos, gt_str.split(':')):
+        for key, info, value in zip(format_, infos, gt_str.split(":")):
             data[key] = parse_field_value(info, value)
         return data
 
@@ -573,14 +615,17 @@ class HeaderChecker:
         """
         if not header_lines:
             raise exceptions.InvalidHeaderException(
-                'The VCF file did not contain any header lines!')
+                "The VCF file did not contain any header lines!"
+            )
         first = header_lines[0]
-        if first.key != 'fileformat':
+        if first.key != "fileformat":
             raise exceptions.InvalidHeaderException(
-                'The VCF file did not start with ##fileformat')
+                "The VCF file did not start with ##fileformat"
+            )
         if first.value not in SUPPORTED_VCF_VERSIONS:
-            warnings.warn('Unknown VCF version {}'.format(first.value),
-                          UnknownVCFVersion)
+            warnings.warn(
+                "Unknown VCF version {}".format(first.value), UnknownVCFVersion
+            )
 
 
 @functools.lru_cache(maxsize=32)
@@ -622,17 +667,18 @@ class InfoChecker:
         if not isinstance(value, list):
             return
         TABLE = {
-            '.': len(value),
-            'A': num_alts,
-            'R': num_alts + 1,
-            'G': binomial(num_alts + 1, 2),  # diploid only at the moment
+            ".": len(value),
+            "A": num_alts,
+            "R": num_alts + 1,
+            "G": binomial(num_alts + 1, 2),  # diploid only at the moment
         }
         expected = TABLE.get(field_info.number, field_info.number)
         if len(value) != expected:
-            tpl = 'Number of elements for INFO field {} is {} instead of {}'
+            tpl = "Number of elements for INFO field {} is {} instead of {}"
             warnings.warn(
                 tpl.format(key, len(value), field_info.number),
-                exceptions.IncorrectListLength)
+                exceptions.IncorrectListLength,
+            )
 
 
 class NoopFormatChecker:
@@ -666,18 +712,21 @@ class FormatChecker:
             return
         num_alleles = len(call.gt_alleles or [])
         TABLE = {
-            '.': len(value),
-            'A': num_alts,
-            'R': num_alts + 1,
-            'G': binomial(num_alts + num_alleles, num_alleles),
+            ".": len(value),
+            "A": num_alts,
+            "R": num_alts + 1,
+            "G": binomial(num_alts + num_alleles, num_alleles),
         }
         expected = TABLE.get(field_info.number, field_info.number)
         if len(value) != expected:
-            tpl = ('Number of elements for FORMAT field {} is {} instead '
-                   'of {} (number specifier {})')
+            tpl = (
+                "Number of elements for FORMAT field {} is {} instead "
+                "of {} (number specifier {})"
+            )
             warnings.warn(
                 tpl.format(key, len(value), expected, field_info.number),
-                exceptions.IncorrectListLength)
+                exceptions.IncorrectListLength,
+            )
 
 
 class Parser:
@@ -726,7 +775,7 @@ class Parser:
         # parse header lines
         sub_parser = HeaderParser()
         header_lines = []
-        while self._line and self._line.startswith('##'):
+        while self._line and self._line.startswith("##"):
             header_lines.append(sub_parser.parse_line(self._line))
             self._read_next_line()
         # parse sample info line
@@ -737,37 +786,41 @@ class Parser:
         self._header_checker.run(self.header)
         # construct record parser
         self._record_parser = RecordParser(
-            self.header, self.samples, self.record_checks)
+            self.header, self.samples, self.record_checks
+        )
         # read next line, must not be header
         self._read_next_line()
-        if self._line and self._line.startswith('#'):
+        if self._line and self._line.startswith("#"):
             raise exceptions.IncorrectVCFFormat(
-                'Expecting non-header line or EOF after "#CHROM" line')
+                'Expecting non-header line or EOF after "#CHROM" line'
+            )
         return self.header
 
     def _handle_sample_line(self, parsed_samples=None):
         """"Check and interpret the "##CHROM" line and return samples"""
-        if not self._line or not self._line.startswith('#CHROM'):
-            raise exceptions.IncorrectVCFFormat(
-                'Missing line starting with "#CHROM"')
+        if not self._line or not self._line.startswith("#CHROM"):
+            raise exceptions.IncorrectVCFFormat('Missing line starting with "#CHROM"')
         # check for space before INFO
         line = self._line.rstrip()
-        pos = line.find('FORMAT') if ('FORMAT' in line) else line.find('INFO')
+        pos = line.find("FORMAT") if ("FORMAT" in line) else line.find("INFO")
         if pos == -1:
             raise exceptions.IncorrectVCFFormat(
-                'Ill-formatted line starting with "#CHROM"')
-        if ' ' in line[:pos]:
+                'Ill-formatted line starting with "#CHROM"'
+            )
+        if " " in line[:pos]:
             warnings.warn(
-                ('Found space in #CHROM line, splitting at whitespace '
-                 'instead of tab; this VCF file is ill-formatted'),
-                SpaceInChromLine)
+                (
+                    "Found space in #CHROM line, splitting at whitespace "
+                    "instead of tab; this VCF file is ill-formatted"
+                ),
+                SpaceInChromLine,
+            )
             arr = self._line.rstrip().split()
         else:
-            arr = self._line.rstrip().split('\t')
+            arr = self._line.rstrip().split("\t")
 
         self._check_samples_line(arr)
-        return header.SamplesInfos(
-            arr[len(REQUIRE_SAMPLE_HEADER):], parsed_samples)
+        return header.SamplesInfos(arr[len(REQUIRE_SAMPLE_HEADER) :], parsed_samples)
 
     @classmethod
     def _check_samples_line(klass, arr):
@@ -775,14 +828,16 @@ class Parser:
         if len(arr) <= len(REQUIRE_NO_SAMPLE_HEADER):
             if tuple(arr) != REQUIRE_NO_SAMPLE_HEADER:
                 raise exceptions.IncorrectVCFFormat(
-                    'Sample header line indicates no sample but does not '
-                    'equal required prefix {}'.format(
-                        '\t'.join(REQUIRE_NO_SAMPLE_HEADER)))
-        elif tuple(arr[:len(REQUIRE_SAMPLE_HEADER)]) != REQUIRE_SAMPLE_HEADER:
+                    "Sample header line indicates no sample but does not "
+                    "equal required prefix {}".format(
+                        "\t".join(REQUIRE_NO_SAMPLE_HEADER)
+                    )
+                )
+        elif tuple(arr[: len(REQUIRE_SAMPLE_HEADER)]) != REQUIRE_SAMPLE_HEADER:
             raise exceptions.IncorrectVCFFormat(
                 'Sample header line (starting with "#CHROM") does not '
-                'start with required prefix {}'.format(
-                    '\t'.join(REQUIRE_SAMPLE_HEADER)))
+                "start with required prefix {}".format("\t".join(REQUIRE_SAMPLE_HEADER))
+            )
 
     def parse_line(self, line):
         """Pare the given line without reading another one from the stream"""

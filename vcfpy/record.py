@@ -8,24 +8,24 @@ import re
 
 
 #: Code for single nucleotide variant allele
-SNV = 'SNV'
+SNV = "SNV"
 #: Code for a multi nucleotide variant allele
-MNV = 'MNV'
+MNV = "MNV"
 #: Code for "clean" deletion allele
-DEL = 'DEL'
+DEL = "DEL"
 #: Code for "clean" insertion allele
-INS = 'INS'
+INS = "INS"
 #: Code for indel allele, includes substitutions of unequal length
-INDEL = 'INDEL'
+INDEL = "INDEL"
 #: Code for structural variant allele
-SV = 'SV'
+SV = "SV"
 #: Code for break-end allele
-BND = 'BND'
+BND = "BND"
 #: Code for symbolic allele that is neither SV nor BND
-SYMBOLIC = 'SYMBOLIC'
+SYMBOLIC = "SYMBOLIC"
 
 #: Code for mixed variant type
-MIXED = 'MIXED'
+MIXED = "MIXED"
 
 #: Code for homozygous reference
 HOM_REF = 0
@@ -35,11 +35,17 @@ HET = 1
 HOM_ALT = 2
 
 #: Characters reserved in VCF, have to be escaped
-RESERVED_CHARS = ':;=%,\r\n\t'
+RESERVED_CHARS = ":;=%,\r\n\t"
 #: Mapping for escaping reserved characters
 ESCAPE_MAPPING = [
-    ('%', '%25'), (':', '%3A'), (';', '%3B'), ('=', '%3D'), (',', '%2C'),
-    ('\r', '%0D'), ('\n', '%0A'), ('\t', '%09')
+    ("%", "%25"),
+    (":", "%3A"),
+    (";", "%3B"),
+    ("=", "%3D"),
+    (",", "%2C"),
+    ("\r", "%0D"),
+    ("\n", "%0A"),
+    ("\t", "%09"),
 ]
 #: Mapping from escaped characters to reserved one
 UNESCAPE_MAPPING = [(v, k) for k, v in ESCAPE_MAPPING]
@@ -51,8 +57,9 @@ class Record:
     Record objects are iterators of their calls
     """
 
-    def __init__(self, CHROM, POS, ID, REF, ALT, QUAL, FILTER, INFO, FORMAT=None,
-                 calls=None):
+    def __init__(
+        self, CHROM, POS, ID, REF, ALT, QUAL, FILTER, INFO, FORMAT=None, calls=None
+    ):
         if bool(FORMAT) != bool(calls):
             raise ValueError("Either provide both FORMAT and calls or none.")
         #: A ``str`` with the chromosome name
@@ -89,7 +96,7 @@ class Record:
 
     def is_snv(self):
         """Return ``True`` if it is a SNV"""
-        return (len(self.REF) == 1 and all(a.type == 'SNV' for a in self.ALT))
+        return len(self.REF) == 1 and all(a.type == "SNV" for a in self.ALT)
 
     @property
     def affected_start(self):
@@ -106,7 +113,7 @@ class Record:
             # Only insertions, return 0-based position right of first base
             return self.POS  # right of first base
         else:  # Return 0-based start position of first REF base
-            return (self.POS - 1)  # left of first base
+            return self.POS - 1  # left of first base
 
     @property
     def affected_end(self):
@@ -130,8 +137,8 @@ class Record:
         present
         """
         if label not in self.FILTER:
-            if 'PASS' in self.FILTER:
-                self.FILTER = [f for f in self.FILTER if f != 'PASS']
+            if "PASS" in self.FILTER:
+                self.FILTER = [f for f in self.FILTER if f != "PASS"]
             self.FILTER.append(label)
 
     def add_format(self, key, value=None):
@@ -166,10 +173,20 @@ class Record:
         return hash(tuple(sorted(self.__dict__.items())))
 
     def __str__(self):
-        tpl = 'Record({})'
-        lst = [self.CHROM, self.POS, self.ID, self.REF, self.ALT, self.QUAL,
-               self.FILTER, self.INFO, self.FORMAT, self.calls]
-        return tpl.format(', '.join(map(repr, lst)))
+        tpl = "Record({})"
+        lst = [
+            self.CHROM,
+            self.POS,
+            self.ID,
+            self.REF,
+            self.ALT,
+            self.QUAL,
+            self.FILTER,
+            self.INFO,
+            self.FORMAT,
+            self.calls,
+        ]
+        return tpl.format(", ".join(map(repr, lst)))
 
     def __repr__(self):
         return str(self)
@@ -189,7 +206,7 @@ class UnparsedCall:
 
 
 #: Regular expression for splitting alleles
-ALLELE_DELIM = re.compile(r'[|/]')
+ALLELE_DELIM = re.compile(r"[|/]")
 
 
 class Call:
@@ -214,10 +231,10 @@ class Call:
         self.called = None
         #: the number of alleles in this sample's call
         self.plodity = None
-        if self.data.get('GT', None) is not None:
+        if self.data.get("GT", None) is not None:
             self.gt_alleles = []
-            for allele in ALLELE_DELIM.split(self.data['GT']):
-                if allele == '.':
+            for allele in ALLELE_DELIM.split(self.data["GT"]):
+                if allele == ".":
                     self.gt_alleles.append(None)
                 else:
                     self.gt_alleles.append(int(allele))
@@ -227,12 +244,12 @@ class Call:
     @property
     def is_phased(self):
         """Return boolean indicating whether this call is phased"""
-        return '|' in self.data.get('GT', '')
+        return "|" in self.data.get("GT", "")
 
     @property
     def gt_phase_char(self):
         """Return character to use for phasing"""
-        return '/' if not self.is_phased else '|'
+        return "/" if not self.is_phased else "|"
 
     @property
     def gt_bases(self):
@@ -271,10 +288,10 @@ class Call:
         :param iterable require: if set, the filters to require for returning
             ``True``
         """
-        ignore = ignore or ['PASS']
-        if 'FT' not in self.data or not self.data['FT']:
+        ignore = ignore or ["PASS"]
+        if "FT" not in self.data or not self.data["FT"]:
             return False
-        for ft in self.data['FT']:
+        for ft in self.data["FT"]:
             if ft in ignore:
                 continue  # skip
             if not require:
@@ -307,9 +324,9 @@ class Call:
         return hash(tuple(sorted(self.__dict__.items())))
 
     def __str__(self):
-        tpl = 'Call({})'
+        tpl = "Call({})"
         lst = [self.sample, self.data]
-        return tpl.format(', '.join(map(repr, lst)))
+        return tpl.format(", ".join(map(repr, lst)))
 
     def __repr__(self):
         return str(self)
@@ -342,8 +359,7 @@ class AltRecord:
 
     def serialize(self):
         """Return ``str`` with representation for VCF file"""
-        raise NotImplementedError(
-            'Abstract class, implemented in sub class')
+        raise NotImplementedError("Abstract class, implemented in sub class")
 
 
 class Substitution(AltRecord):
@@ -375,7 +391,7 @@ class Substitution(AltRecord):
         return hash(tuple(sorted(self.__dict__.items())))
 
     def __str__(self):
-        tpl = 'Substitution(type_={}, value={})'
+        tpl = "Substitution(type_={}, value={})"
         return tpl.format(*map(repr, [self.type, self.value]))
 
     def __repr__(self):
@@ -383,22 +399,29 @@ class Substitution(AltRecord):
 
 
 #: code for five prime orientation :py:class:`BreakEnd`
-FIVE_PRIME = '5'
+FIVE_PRIME = "5"
 #: code for three prime orientation :py:class:`BreakEnd`
-THREE_PRIME = '3'
+THREE_PRIME = "3"
 
 #: code for forward orientation
-FORWARD = '+'
+FORWARD = "+"
 #: code for reverse orientation
-REVERSE = '-'
+REVERSE = "-"
 
 
 class BreakEnd(AltRecord):
     """A placeholder for a breakend"""
 
-    def __init__(self, mate_chrom, mate_pos, orientation, mate_orientation,
-                 sequence, within_main_assembly):
-        super().__init__('BND')
+    def __init__(
+        self,
+        mate_chrom,
+        mate_pos,
+        orientation,
+        mate_orientation,
+        sequence,
+        within_main_assembly,
+    ):
+        super().__init__("BND")
         #: chromosome of the mate breakend
         self.mate_chrom = mate_chrom
         #: position of the mate breakend
@@ -416,14 +439,13 @@ class BreakEnd(AltRecord):
     def serialize(self):
         """Return string representation for VCF"""
         if self.mate_chrom is None:
-            remote_tag = '.'
+            remote_tag = "."
         else:
             if self.within_main_assembly:
                 mate_chrom = self.mate_chrom
             else:
-                mate_chrom = '<{}>'.format(self.mate_chrom)
-            tpl = {FORWARD: '[{}:{}[', REVERSE: ']{}:{}]'}[
-                self.mate_orientation]
+                mate_chrom = "<{}>".format(self.mate_chrom)
+            tpl = {FORWARD: "[{}:{}[", REVERSE: "]{}:{}]"}[self.mate_orientation]
             remote_tag = tpl.format(mate_chrom, self.mate_pos)
         if self.orientation == FORWARD:
             return remote_tag + self.sequence
@@ -444,11 +466,16 @@ class BreakEnd(AltRecord):
         return hash(tuple(sorted(self.__dict__.items())))
 
     def __str__(self):
-        tpl = 'BreakEnd({})'
+        tpl = "BreakEnd({})"
         vals = [
-            self.mate_chrom, self.mate_pos, self.orientation,
-            self.mate_orientation, self.sequence, self.within_main_assembly]
-        return tpl.format(', '.join(map(repr, vals)))
+            self.mate_chrom,
+            self.mate_pos,
+            self.orientation,
+            self.mate_orientation,
+            self.sequence,
+            self.within_main_assembly,
+        ]
+        return tpl.format(", ".join(map(repr, vals)))
 
     def __repr__(self):
         return str(self)
@@ -474,9 +501,9 @@ class SingleBreakEnd(BreakEnd):
         return hash(tuple(sorted(self.__dict__.items())))
 
     def __str__(self):
-        tpl = 'SingleBreakEnd({})'
+        tpl = "SingleBreakEnd({})"
         vals = [self.orientation, self.sequence]
-        return tpl.format(', '.join(map(repr, vals)))
+        return tpl.format(", ".join(map(repr, vals)))
 
 
 class SymbolicAllele(AltRecord):
@@ -493,7 +520,7 @@ class SymbolicAllele(AltRecord):
         self.value = value
 
     def serialize(self):
-        return '<{}>'.format(self.value)
+        return "<{}>".format(self.value)
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -509,7 +536,7 @@ class SymbolicAllele(AltRecord):
         return hash(tuple(sorted(self.__dict__.items())))
 
     def __str__(self):
-        return 'SymbolicAllele({})'.format(repr(self.value))
+        return "SymbolicAllele({})".format(repr(self.value))
 
     def __repr__(self):
         return str(self)

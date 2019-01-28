@@ -20,7 +20,6 @@ class FakeWriter:
 
 
 class BaseRunner:
-
     def __init__(self, args):
         self.args = args
 
@@ -32,32 +31,34 @@ class BaseRunner:
             it = itertools.islice(it, self.args.max_records)
         num = self.work(it)
         end = time.clock()
-        print('Read {} records in {} seconds'.format(num, (end - start)),
-              file=sys.stderr)
+        print(
+            "Read {} records in {} seconds".format(num, (end - start)), file=sys.stderr
+        )
 
     def work(self, it):
         num = 0
         for num, r in enumerate(it):
             if num % 10000 == 0:
-                print(num, ''.join(map(str, [r.CHROM, ':', r.POS])), sep='\t',
-                      file=sys.stderr)
+                print(
+                    num,
+                    "".join(map(str, [r.CHROM, ":", r.POS])),
+                    sep="\t",
+                    file=sys.stderr,
+                )
             self.writer.write_record(r)
         return num
 
 
 class VCFPyRunner(BaseRunner):
-
     def __init__(self, args):
         super().__init__(args)
         self.reader = vcfpy.Reader.from_path(args.input_vcf)
         self.writer = FakeWriter()
         if args.output_vcf:
-            self.writer = vcfpy.VCFWriter.from_path(
-                args.output_vcf, self.reader.header)
+            self.writer = vcfpy.VCFWriter.from_path(args.output_vcf, self.reader.header)
 
 
 class PyVCFRunner(BaseRunner):
-
     def __init__(self, args):
         super().__init__(args)
         self.reader = vcf.Reader(args.input_vcf)
@@ -75,35 +76,41 @@ def run_pyvcf(args):
     num = 0
     for num, r in enumerate(reader):
         if num % 10000 == 0:
-            print(num, ''.join(map(str, [r.CHROM, ':', r.POS])), sep='\t',
-                  file=sys.stderr)
+            print(
+                num, "".join(map(str, [r.CHROM, ":", r.POS])), sep="\t", file=sys.stderr
+            )
         if writer:
             writer.write_record(r)
         if args.max_records and num >= args.max_records:
             break
     end = time.clock()
-    print('Read {} records in {} seconds'.format(num, (end - start)),
-          file=sys.stderr)
+    print("Read {} records in {} seconds".format(num, (end - start)), file=sys.stderr)
 
 
 def main(argv=None):
     """Main program entry point for parsing command line arguments"""
-    parser = argparse.ArgumentParser(description='Benchmark driver')
+    parser = argparse.ArgumentParser(description="Benchmark driver")
 
-    parser.add_argument('--max-records', type=int, default=100 * 1000)
-    parser.add_argument('--engine', type=str, choices=('vcfpy', 'pyvcf'),
-                        default='vcfpy')
-    parser.add_argument('--input-vcf', type=str, required=True,
-                        help='Path to VCF file to read')
-    parser.add_argument('--output-vcf', type=str, required=False,
-                        help='Path to VCF file to write if given')
+    parser.add_argument("--max-records", type=int, default=100 * 1000)
+    parser.add_argument(
+        "--engine", type=str, choices=("vcfpy", "pyvcf"), default="vcfpy"
+    )
+    parser.add_argument(
+        "--input-vcf", type=str, required=True, help="Path to VCF file to read"
+    )
+    parser.add_argument(
+        "--output-vcf",
+        type=str,
+        required=False,
+        help="Path to VCF file to write if given",
+    )
 
     args = parser.parse_args(argv)
-    if args.engine == 'vcfpy':
+    if args.engine == "vcfpy":
         VCFPyRunner(args).run()
     else:
         PyVCFRunner(args).run()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

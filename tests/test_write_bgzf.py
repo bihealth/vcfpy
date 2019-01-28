@@ -13,7 +13,7 @@ from vcfpy import parser
 from vcfpy import writer
 from vcfpy import record
 
-__author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
+__author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"
 
 
 MEDIUM_HEADER = """
@@ -41,9 +41,9 @@ MEDIUM_HEADER = """
 """.lstrip()
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def header_samples():
-    p = parser.Parser(stream=io.StringIO(MEDIUM_HEADER), path='<builtin>')
+    p = parser.Parser(stream=io.StringIO(MEDIUM_HEADER), path="<builtin>")
     p.parse_header()
     return (p.header, p.samples)
 
@@ -51,13 +51,13 @@ def header_samples():
 def check_file(path, line):
     """Test whether the file is the expected ``.vcf.gz`` file
     """
-    raw = path.read(mode='rb')
-    assert raw[0] == 0x1f
-    assert raw[1] == 0x8b
+    raw = path.read(mode="rb")
+    assert raw[0] == 0x1F
+    assert raw[1] == 0x8B
     # compare actual result with expected
     inflated = gzip.decompress(raw)
     RESULT = codecs.latin_1_decode(inflated)[0]
-    LINE = '20\t100\t.\tC\tT\t.\t.\t.\tGT\t0/1\t0/0\t1/1\n'
+    LINE = "20\t100\t.\tC\tT\t.\t.\t.\tGT\t0/1\t0/0\t1/1\n"
     EXPECTED = MEDIUM_HEADER + LINE
     assert EXPECTED == RESULT
 
@@ -65,71 +65,95 @@ def check_file(path, line):
 def test_write_minimal_record_writer_from_path(header_samples, tmpdir_factory):
     O = vcfpy.OrderedDict
     # open temporary file and setup the Writer with header
-    path = tmpdir_factory.mktemp('write_header').join('out.vcf.gz')
+    path = tmpdir_factory.mktemp("write_header").join("out.vcf.gz")
     header, _ = header_samples
     w = writer.Writer.from_path(path, header)
     # construct record to write out from scratch
     r = record.Record(
-        '20', 100, [], 'C', [record.Substitution(record.SNV, 'T')],
-        None, [], O(), ['GT'],
+        "20",
+        100,
+        [],
+        "C",
+        [record.Substitution(record.SNV, "T")],
+        None,
+        [],
+        O(),
+        ["GT"],
         [
-            record.Call('NA00001', O(GT='0/1')),
-            record.Call('NA00002', O(GT='0/0')),
-            record.Call('NA00003', O(GT='1/1')),
-        ])
+            record.Call("NA00001", O(GT="0/1")),
+            record.Call("NA00002", O(GT="0/0")),
+            record.Call("NA00003", O(GT="1/1")),
+        ],
+    )
     # write out the record, close file to ensure flushing to disk
     w.write_record(r)
     w.close()
     # check the resulting record
-    LINE = '20\t100\t.\tC\tT\t.\t.\t.\tGT\t0/1\t0/0\t1/1\n'
+    LINE = "20\t100\t.\tC\tT\t.\t.\t.\tGT\t0/1\t0/0\t1/1\n"
     check_file(path, LINE)
 
 
-def test_write_minimal_record_writer_from_stream_path(
-        header_samples, tmpdir_factory):
+def test_write_minimal_record_writer_from_stream_path(header_samples, tmpdir_factory):
     O = vcfpy.OrderedDict
     # open temporary file and setup the Writer with header
-    path = tmpdir_factory.mktemp('write_header').join('out.vcf.gz')
+    path = tmpdir_factory.mktemp("write_header").join("out.vcf.gz")
     header, _ = header_samples
-    with open(str(path), 'wb') as f:
+    with open(str(path), "wb") as f:
         w = writer.Writer.from_stream(f, header, path=str(path))
         # construct record to write out from scratch
         r = record.Record(
-            '20', 100, [], 'C', [record.Substitution(record.SNV, 'T')],
-            None, [], O(), ['GT'],
+            "20",
+            100,
+            [],
+            "C",
+            [record.Substitution(record.SNV, "T")],
+            None,
+            [],
+            O(),
+            ["GT"],
             [
-                record.Call('NA00001', O(GT='0/1')),
-                record.Call('NA00002', O(GT='0/0')),
-                record.Call('NA00003', O(GT='1/1')),
-            ])
+                record.Call("NA00001", O(GT="0/1")),
+                record.Call("NA00002", O(GT="0/0")),
+                record.Call("NA00003", O(GT="1/1")),
+            ],
+        )
         # write out the record, close file to ensure flushing to disk
         w.write_record(r)
         w.close()
     # check the resulting record
-    LINE = '20\t100\t.\tC\tT\t.\t.\t.\tGT\t0/1\t0/0\t1/1\n'
+    LINE = "20\t100\t.\tC\tT\t.\t.\t.\tGT\t0/1\t0/0\t1/1\n"
     check_file(path, LINE)
 
 
 def test_write_minimal_record_writer_from_stream_use_bgzf(
-        header_samples, tmpdir_factory):
+    header_samples, tmpdir_factory
+):
     O = vcfpy.OrderedDict
     # open temporary file and setup the Writer with header
-    path = tmpdir_factory.mktemp('write_header').join('out.vcf.gz')
+    path = tmpdir_factory.mktemp("write_header").join("out.vcf.gz")
     header, samples = header_samples
-    with open(str(path), 'wb') as f:
+    with open(str(path), "wb") as f:
         w = writer.Writer.from_stream(f, header, samples, use_bgzf=True)
         # construct record to write out from scratch
         r = record.Record(
-            '20', 100, [], 'C', [record.Substitution(record.SNV, 'T')],
-            None, [], O(), ['GT'],
+            "20",
+            100,
+            [],
+            "C",
+            [record.Substitution(record.SNV, "T")],
+            None,
+            [],
+            O(),
+            ["GT"],
             [
-                record.Call('NA00001', O(GT='0/1')),
-                record.Call('NA00002', O(GT='0/0')),
-                record.Call('NA00003', O(GT='1/1')),
-            ])
+                record.Call("NA00001", O(GT="0/1")),
+                record.Call("NA00002", O(GT="0/0")),
+                record.Call("NA00003", O(GT="1/1")),
+            ],
+        )
         # write out the record, close file to ensure flushing to disk
         w.write_record(r)
         w.close()
     # check the resulting record
-    LINE = '20\t100\t.\tC\tT\t.\t.\t.\tGT\t0/1\t0/0\t1/1\n'
+    LINE = "20\t100\t.\tC\tT\t.\t.\t.\tGT\t0/1\t0/0\t1/1\n"
     check_file(path, LINE)

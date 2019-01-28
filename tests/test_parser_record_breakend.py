@@ -6,7 +6,7 @@ import io
 
 from vcfpy import parser
 
-__author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
+__author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"
 
 
 MEDIUM_HEADER = """
@@ -37,12 +37,14 @@ MEDIUM_HEADER = """
 
 
 def vcf_parser(lines):
-    return parser.Parser(io.StringIO(MEDIUM_HEADER + lines), '<builtin>')
+    return parser.Parser(io.StringIO(MEDIUM_HEADER + lines), "<builtin>")
 
 
 def test_parse_simple_breakend():
     # Setup parser with stock header and lines to parse
-    LINES = '2\t321681\tbnd_W\tG\tG]17:198982]\t6\tPASS\tSVTYPE=BND\tGT\t0/1\t0/0\t0/0\n'
+    LINES = (
+        "2\t321681\tbnd_W\tG\tG]17:198982]\t6\tPASS\tSVTYPE=BND\tGT\t0/1\t0/0\t0/0\n"
+    )
     p = vcf_parser(LINES)
     p.parse_header()
     # Perform the actual test
@@ -52,15 +54,16 @@ def test_parse_simple_breakend():
         """['PASS'], OrderedDict([('SVTYPE', 'BND')]), ['GT'], """
         """[Call('NA00001', OrderedDict([('GT', '0/1')])), """
         """Call('NA00002', OrderedDict([('GT', '0/0')])), """
-        """Call('NA00003', OrderedDict([('GT', '0/0')]))])""")
+        """Call('NA00003', OrderedDict([('GT', '0/0')]))])"""
+    )
     RESULT = p.parse_next_record()
     assert str(RESULT) == EXPECTED
-    assert RESULT.ALT[0].serialize() == 'G]17:198982]'
+    assert RESULT.ALT[0].serialize() == "G]17:198982]"
 
 
 def test_parse_breakend_with_seq():
     # Setup parser with stock header and lines to parse
-    LINES = '2\t321681\tbnd_V\tT\t]13:123456]AGTNNNNNCAT\t6\tPASS\tSVTYPE=BND\tGT\t0/1\t0/0\t0/0\n'
+    LINES = "2\t321681\tbnd_V\tT\t]13:123456]AGTNNNNNCAT\t6\tPASS\tSVTYPE=BND\tGT\t0/1\t0/0\t0/0\n"
     p = vcf_parser(LINES)
     p.parse_header()
     # Perform the actual test
@@ -70,15 +73,18 @@ def test_parse_breakend_with_seq():
         """['PASS'], OrderedDict([('SVTYPE', 'BND')]), ['GT'], """
         """[Call('NA00001', OrderedDict([('GT', '0/1')])), """
         """Call('NA00002', OrderedDict([('GT', '0/0')])), """
-        """Call('NA00003', OrderedDict([('GT', '0/0')]))])""")
+        """Call('NA00003', OrderedDict([('GT', '0/0')]))])"""
+    )
     RESULT = p.parse_next_record()
     assert str(RESULT) == EXPECTED
-    assert RESULT.ALT[0].serialize() == ']13:123456]AGTNNNNNCAT'
+    assert RESULT.ALT[0].serialize() == "]13:123456]AGTNNNNNCAT"
 
 
 def test_parse_breakend_telomere():
     # Setup parser with stock header and lines to parse
-    LINES = '2\t321681\tbnd_V\tN\t.[13:123457[\t6\tPASS\tSVTYPE=BND\tGT\t0/1\t0/0\t0/0\n'
+    LINES = (
+        "2\t321681\tbnd_V\tN\t.[13:123457[\t6\tPASS\tSVTYPE=BND\tGT\t0/1\t0/0\t0/0\n"
+    )
     p = vcf_parser(LINES)
     p.parse_header()
     # Perform the actual test
@@ -88,15 +94,16 @@ def test_parse_breakend_telomere():
         """['PASS'], OrderedDict([('SVTYPE', 'BND')]), ['GT'], """
         """[Call('NA00001', OrderedDict([('GT', '0/1')])), """
         """Call('NA00002', OrderedDict([('GT', '0/0')])), """
-        """Call('NA00003', OrderedDict([('GT', '0/0')]))])""")
+        """Call('NA00003', OrderedDict([('GT', '0/0')]))])"""
+    )
     RESULT = p.parse_next_record()
     assert str(RESULT) == EXPECTED
-    assert RESULT.ALT[0].serialize() == '.[13:123457['
+    assert RESULT.ALT[0].serialize() == ".[13:123457["
 
 
 def test_parse_breakend_multi_mate():
     # Setup parser with stock header and lines to parse
-    LINES = '2\t321681\tbnd_U\tT\tC[2:321682[,C[17:198983\t6\tPASS\tSVTYPE=BND\tGT\t0/1\t0/0\t0/0\n'
+    LINES = "2\t321681\tbnd_U\tT\tC[2:321682[,C[17:198983\t6\tPASS\tSVTYPE=BND\tGT\t0/1\t0/0\t0/0\n"
     p = vcf_parser(LINES)
     p.parse_header()
     # Perform the actual test
@@ -107,16 +114,17 @@ def test_parse_breakend_multi_mate():
         """OrderedDict([('SVTYPE', 'BND')]), ['GT'], """
         """[Call('NA00001', OrderedDict([('GT', '0/1')])), """
         """Call('NA00002', OrderedDict([('GT', '0/0')])), """
-        """Call('NA00003', OrderedDict([('GT', '0/0')]))])""")
+        """Call('NA00003', OrderedDict([('GT', '0/0')]))])"""
+    )
     RESULT = p.parse_next_record()
     assert str(RESULT) == EXPECTED
-    assert RESULT.ALT[0].serialize() == 'C[2:321682['
-    assert RESULT.ALT[1].serialize() == 'C[17:198983['
+    assert RESULT.ALT[0].serialize() == "C[2:321682["
+    assert RESULT.ALT[1].serialize() == "C[17:198983["
 
 
 def test_parse_breakend_single_breakend_fwd():
     # Setup parser with stock header and lines to parse
-    LINES = '13\t123457\tbnd_X\tA\t.A\t6\tPASS\tSVTYPE=BND\tGT\t0/1\t0/0\t0/0\n'
+    LINES = "13\t123457\tbnd_X\tA\t.A\t6\tPASS\tSVTYPE=BND\tGT\t0/1\t0/0\t0/0\n"
     p = vcf_parser(LINES)
     p.parse_header()
     # Perform the actual test
@@ -125,15 +133,16 @@ def test_parse_breakend_single_breakend_fwd():
         """6, ['PASS'], OrderedDict([('SVTYPE', 'BND')]), ['GT'], """
         """[Call('NA00001', OrderedDict([('GT', '0/1')])), """
         """Call('NA00002', OrderedDict([('GT', '0/0')])), """
-        """Call('NA00003', OrderedDict([('GT', '0/0')]))])""")
+        """Call('NA00003', OrderedDict([('GT', '0/0')]))])"""
+    )
     RESULT = p.parse_next_record()
     assert str(RESULT) == EXPECTED
-    assert RESULT.ALT[0].serialize() == '.A'
+    assert RESULT.ALT[0].serialize() == ".A"
 
 
 def test_parse_breakend_single_breakend_rev():
     # Setup parser with stock header and lines to parse
-    LINES = '13\t123457\tbnd_X\tA\tA.\t6\tPASS\tSVTYPE=BND\tGT\t0/1\t0/0\t0/0\n'
+    LINES = "13\t123457\tbnd_X\tA\tA.\t6\tPASS\tSVTYPE=BND\tGT\t0/1\t0/0\t0/0\n"
     p = vcf_parser(LINES)
     p.parse_header()
     # Perform the actual test
@@ -142,7 +151,8 @@ def test_parse_breakend_single_breakend_rev():
         """6, ['PASS'], OrderedDict([('SVTYPE', 'BND')]), ['GT'], """
         """[Call('NA00001', OrderedDict([('GT', '0/1')])), """
         """Call('NA00002', OrderedDict([('GT', '0/0')])), """
-        """Call('NA00003', OrderedDict([('GT', '0/0')]))])""")
+        """Call('NA00003', OrderedDict([('GT', '0/0')]))])"""
+    )
     RESULT = p.parse_next_record()
     assert str(RESULT) == EXPECTED
-    assert RESULT.ALT[0].serialize() == 'A.'
+    assert RESULT.ALT[0].serialize() == "A."
