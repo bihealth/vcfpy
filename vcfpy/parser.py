@@ -453,10 +453,16 @@ class RecordParser:
         self._check_filters(filt, 'FILTER')
         # INFO
         info = self._parse_info(arr[7], len(alts))
-        # FORMAT
-        format_ = arr[8].split(':')
-        # sample/call columns
-        calls = self._handle_calls(alts, format_, arr[8], arr)
+        if len(arr) == 9:
+            raise IncorrectVCFFormat("Expected 8 or 10+ columns, got 9!")
+        elif len(arr) == 8:
+            format_ = None
+            calls = None
+        else:
+            # FORMAT
+            format_ = arr[8].split(':')
+            # sample/call columns
+            calls = self._handle_calls(alts, format_, arr[8], arr)
         return record.Record(
             chrom, pos, ids, ref, alts, qual, filt, info, format_, calls)
 

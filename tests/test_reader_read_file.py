@@ -35,3 +35,17 @@ def test_read_bgzip():
     for record in r:
         records.append(record)
     assert len(records) == 5
+
+
+def test_read_text_no_samples():
+    path = os.path.join(os.path.dirname(__file__), 'vcfs/full_vcf43_no_samples.vcf')
+    r = reader.Reader.from_path(path)
+    assert r.parser
+    assert r.header
+    assert len(r.header.lines) == 18
+    assert r.header.samples
+    assert r.header.samples.names == []
+    records = []
+    for record in r:
+        records.append(record)
+    assert len(records) == 5

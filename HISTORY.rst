@@ -5,7 +5,8 @@ History
 HEAD (unreleased)
 -----------------
 
-* Adding support for headers and records without ``FORMAT`` and any sample columns.
+* Adding support for reading VCF without ``FORMAT`` or any sample column.
+* Adding support for writing headers and records without ``FORMAT`` and any sample columns.
 
 v0.11.2 (2018-04-16)
 --------------------
