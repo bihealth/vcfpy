@@ -3,6 +3,7 @@
 """
 
 import io
+import sys
 
 from vcfpy import parser
 
@@ -42,20 +43,22 @@ def vcf_parser(lines):
 
 def test_parse_simple_breakend():
     # Setup parser with stock header and lines to parse
-    LINES = (
-        "2\t321681\tbnd_W\tG\tG]17:198982]\t6\tPASS\tSVTYPE=BND\tGT\t0/1\t0/0\t0/0\n"
-    )
+    LINES = "2\t321681\tbnd_W\tG\tG]17:198982]\t6\tPASS\tSVTYPE=BND\tGT\t0/1\t0/0\t0/0\n"
     p = vcf_parser(LINES)
     p.parse_header()
     # Perform the actual test
-    EXPECTED = (
-        """Record('2', 321681, ['bnd_W'], 'G', """
-        """[BreakEnd('17', 198982, '-', '-', 'G', True)], 6, """
-        """['PASS'], OrderedDict([('SVTYPE', 'BND')]), ['GT'], """
-        """[Call('NA00001', OrderedDict([('GT', '0/1')])), """
-        """Call('NA00002', OrderedDict([('GT', '0/0')])), """
-        """Call('NA00003', OrderedDict([('GT', '0/0')]))])"""
-    )
+    if sys.version_info < (3, 6):
+        EXPECTED = (
+            "Record('2', 321681, ['bnd_W'], 'G', [BreakEnd('17', 198982, '-', '-', 'G', True)], 6, ['PASS'], "
+            "OrderedDict([('SVTYPE', 'BND')]), ['GT'], [Call('NA00001', OrderedDict([('GT', '0/1')])), "
+            "Call('NA00002', OrderedDict([('GT', '0/0')])), Call('NA00003', OrderedDict([('GT', '0/0')]))])"
+        )
+    else:
+        EXPECTED = (
+            "Record('2', 321681, ['bnd_W'], 'G', [BreakEnd('17', 198982, '-', '-', 'G', True)], 6, ['PASS'], "
+            "{'SVTYPE': 'BND'}, ['GT'], [Call('NA00001', {'GT': '0/1'}), "
+            "Call('NA00002', {'GT': '0/0'}), Call('NA00003', {'GT': '0/0'})])"
+        )
     RESULT = p.parse_next_record()
     assert str(RESULT) == EXPECTED
     assert RESULT.ALT[0].serialize() == "G]17:198982]"
@@ -67,14 +70,18 @@ def test_parse_breakend_with_seq():
     p = vcf_parser(LINES)
     p.parse_header()
     # Perform the actual test
-    EXPECTED = (
-        """Record('2', 321681, ['bnd_V'], 'T', """
-        """[BreakEnd('13', 123456, '+', '-', 'AGTNNNNNCAT', True)], 6, """
-        """['PASS'], OrderedDict([('SVTYPE', 'BND')]), ['GT'], """
-        """[Call('NA00001', OrderedDict([('GT', '0/1')])), """
-        """Call('NA00002', OrderedDict([('GT', '0/0')])), """
-        """Call('NA00003', OrderedDict([('GT', '0/0')]))])"""
-    )
+    if sys.version_info < (3, 6):
+        EXPECTED = (
+            "Record('2', 321681, ['bnd_V'], 'T', [BreakEnd('13', 123456, '+', '-', 'AGTNNNNNCAT', True)], 6, "
+            "['PASS'], OrderedDict([('SVTYPE', 'BND')]), ['GT'], [Call('NA00001', OrderedDict([('GT', '0/1')])), "
+            "Call('NA00002', OrderedDict([('GT', '0/0')])), Call('NA00003', OrderedDict([('GT', '0/0')]))])"
+        )
+    else:
+        EXPECTED = (
+            "Record('2', 321681, ['bnd_V'], 'T', [BreakEnd('13', 123456, '+', '-', 'AGTNNNNNCAT', True)], 6, "
+            "['PASS'], {'SVTYPE': 'BND'}, ['GT'], [Call('NA00001', {'GT': '0/1'}), "
+            "Call('NA00002', {'GT': '0/0'}), Call('NA00003', {'GT': '0/0'})])"
+        )
     RESULT = p.parse_next_record()
     assert str(RESULT) == EXPECTED
     assert RESULT.ALT[0].serialize() == "]13:123456]AGTNNNNNCAT"
@@ -82,20 +89,22 @@ def test_parse_breakend_with_seq():
 
 def test_parse_breakend_telomere():
     # Setup parser with stock header and lines to parse
-    LINES = (
-        "2\t321681\tbnd_V\tN\t.[13:123457[\t6\tPASS\tSVTYPE=BND\tGT\t0/1\t0/0\t0/0\n"
-    )
+    LINES = "2\t321681\tbnd_V\tN\t.[13:123457[\t6\tPASS\tSVTYPE=BND\tGT\t0/1\t0/0\t0/0\n"
     p = vcf_parser(LINES)
     p.parse_header()
     # Perform the actual test
-    EXPECTED = (
-        """Record('2', 321681, ['bnd_V'], 'N', """
-        """[BreakEnd('13', 123457, '-', '+', '.', True)], 6, """
-        """['PASS'], OrderedDict([('SVTYPE', 'BND')]), ['GT'], """
-        """[Call('NA00001', OrderedDict([('GT', '0/1')])), """
-        """Call('NA00002', OrderedDict([('GT', '0/0')])), """
-        """Call('NA00003', OrderedDict([('GT', '0/0')]))])"""
-    )
+    if sys.version_info < (3, 6):
+        EXPECTED = (
+            "Record('2', 321681, ['bnd_V'], 'N', [BreakEnd('13', 123457, '-', '+', '.', True)], 6, ['PASS'], "
+            "OrderedDict([('SVTYPE', 'BND')]), ['GT'], [Call('NA00001', OrderedDict([('GT', '0/1')])), "
+            "Call('NA00002', OrderedDict([('GT', '0/0')])), Call('NA00003', OrderedDict([('GT', '0/0')]))])"
+        )
+    else:
+        EXPECTED = (
+            "Record('2', 321681, ['bnd_V'], 'N', [BreakEnd('13', 123457, '-', '+', '.', True)], 6, ['PASS'], "
+            "{'SVTYPE': 'BND'}, ['GT'], [Call('NA00001', {'GT': '0/1'}), "
+            "Call('NA00002', {'GT': '0/0'}), Call('NA00003', {'GT': '0/0'})])"
+        )
     RESULT = p.parse_next_record()
     assert str(RESULT) == EXPECTED
     assert RESULT.ALT[0].serialize() == ".[13:123457["
@@ -107,15 +116,19 @@ def test_parse_breakend_multi_mate():
     p = vcf_parser(LINES)
     p.parse_header()
     # Perform the actual test
-    EXPECTED = (
-        """Record('2', 321681, ['bnd_U'], 'T', """
-        """[BreakEnd('2', 321682, '-', '+', 'C', True), """
-        """BreakEnd('17', 198983, '-', '+', 'C', True)], 6, ['PASS'], """
-        """OrderedDict([('SVTYPE', 'BND')]), ['GT'], """
-        """[Call('NA00001', OrderedDict([('GT', '0/1')])), """
-        """Call('NA00002', OrderedDict([('GT', '0/0')])), """
-        """Call('NA00003', OrderedDict([('GT', '0/0')]))])"""
-    )
+    if sys.version_info < (3, 6):
+        EXPECTED = (
+            "Record('2', 321681, ['bnd_U'], 'T', [BreakEnd('2', 321682, '-', '+', 'C', True), "
+            "BreakEnd('17', 198983, '-', '+', 'C', True)], 6, ['PASS'], OrderedDict([('SVTYPE', 'BND')]), ['GT'], "
+            "[Call('NA00001', OrderedDict([('GT', '0/1')])), Call('NA00002', OrderedDict([('GT', '0/0')])), "
+            "Call('NA00003', OrderedDict([('GT', '0/0')]))])"
+        )
+    else:
+        EXPECTED = (
+            "Record('2', 321681, ['bnd_U'], 'T', [BreakEnd('2', 321682, '-', '+', 'C', True), "
+            "BreakEnd('17', 198983, '-', '+', 'C', True)], 6, ['PASS'], {'SVTYPE': 'BND'}, ['GT'], "
+            "[Call('NA00001', {'GT': '0/1'}), Call('NA00002', {'GT': '0/0'}), Call('NA00003', {'GT': '0/0'})])"
+        )
     RESULT = p.parse_next_record()
     assert str(RESULT) == EXPECTED
     assert RESULT.ALT[0].serialize() == "C[2:321682["
@@ -128,13 +141,18 @@ def test_parse_breakend_single_breakend_fwd():
     p = vcf_parser(LINES)
     p.parse_header()
     # Perform the actual test
-    EXPECTED = (
-        """Record('13', 123457, ['bnd_X'], 'A', [SingleBreakEnd('+', 'A')], """
-        """6, ['PASS'], OrderedDict([('SVTYPE', 'BND')]), ['GT'], """
-        """[Call('NA00001', OrderedDict([('GT', '0/1')])), """
-        """Call('NA00002', OrderedDict([('GT', '0/0')])), """
-        """Call('NA00003', OrderedDict([('GT', '0/0')]))])"""
-    )
+    if sys.version_info < (3, 6):
+        EXPECTED = (
+            "Record('13', 123457, ['bnd_X'], 'A', [SingleBreakEnd('+', 'A')], 6, ['PASS'], "
+            "OrderedDict([('SVTYPE', 'BND')]), ['GT'], [Call('NA00001', OrderedDict([('GT', '0/1')])), "
+            "Call('NA00002', OrderedDict([('GT', '0/0')])), Call('NA00003', OrderedDict([('GT', '0/0')]))])"
+        )
+    else:
+        EXPECTED = (
+            "Record('13', 123457, ['bnd_X'], 'A', [SingleBreakEnd('+', 'A')], 6, ['PASS'], "
+            "{'SVTYPE': 'BND'}, ['GT'], [Call('NA00001', {'GT': '0/1'}), Call('NA00002', {'GT': '0/0'}), "
+            "Call('NA00003', {'GT': '0/0'})])"
+        )
     RESULT = p.parse_next_record()
     assert str(RESULT) == EXPECTED
     assert RESULT.ALT[0].serialize() == ".A"
@@ -146,13 +164,19 @@ def test_parse_breakend_single_breakend_rev():
     p = vcf_parser(LINES)
     p.parse_header()
     # Perform the actual test
-    EXPECTED = (
-        """Record('13', 123457, ['bnd_X'], 'A', [SingleBreakEnd('-', 'A')], """
-        """6, ['PASS'], OrderedDict([('SVTYPE', 'BND')]), ['GT'], """
-        """[Call('NA00001', OrderedDict([('GT', '0/1')])), """
-        """Call('NA00002', OrderedDict([('GT', '0/0')])), """
-        """Call('NA00003', OrderedDict([('GT', '0/0')]))])"""
-    )
+    if sys.version_info < (3, 6):
+        EXPECTED = (
+            "Record('13', 123457, ['bnd_X'], 'A', [SingleBreakEnd('-', 'A')], 6, ['PASS'], "
+            "OrderedDict([('SVTYPE', 'BND')]), ['GT'], [Call('NA00001', OrderedDict([('GT', '0/1')])), "
+            "Call('NA00002', OrderedDict([('GT', '0/0')])), "
+            "Call('NA00003', OrderedDict([('GT', '0/0')]))])"
+        )
+    else:
+        EXPECTED = (
+            "Record('13', 123457, ['bnd_X'], 'A', [SingleBreakEnd('-', 'A')], 6, ['PASS'], "
+            "{'SVTYPE': 'BND'}, ['GT'], [Call('NA00001', {'GT': '0/1'}), Call('NA00002', {'GT': '0/0'}), "
+            "Call('NA00003', {'GT': '0/0'})])"
+        )
     RESULT = p.parse_next_record()
     assert str(RESULT) == EXPECTED
     assert RESULT.ALT[0].serialize() == "A."

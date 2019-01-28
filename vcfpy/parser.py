@@ -26,28 +26,9 @@ __author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"
 
 
 # expected "#CHROM" header prefix when there are samples
-REQUIRE_SAMPLE_HEADER = (
-    "#CHROM",
-    "POS",
-    "ID",
-    "REF",
-    "ALT",
-    "QUAL",
-    "FILTER",
-    "INFO",
-    "FORMAT",
-)
+REQUIRE_SAMPLE_HEADER = ("#CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO", "FORMAT")
 # expected "#CHROM" header prefix when there are no samples
-REQUIRE_NO_SAMPLE_HEADER = (
-    "#CHROM",
-    "POS",
-    "ID",
-    "REF",
-    "ALT",
-    "QUAL",
-    "FILTER",
-    "INFO",
-)
+REQUIRE_NO_SAMPLE_HEADER = ("#CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO")
 
 #: Supported VCF versions, a warning will be issued otherwise
 SUPPORTED_VCF_VERSIONS = ("VCFv4.0", "VCFv4.1", "VCFv4.2", "VCFv4.3")
@@ -268,9 +249,7 @@ def convert_field_value(type_, value):
             return _CONVERTERS[type_](value)
         except ValueError:
             warnings.warn(
-                ("{} cannot be converted to {}, keeping as " "string.").format(
-                    value, type_
-                ),
+                ("{} cannot be converted to {}, keeping as " "string.").format(value, type_),
                 CannotConvertValue,
             )
             return value
@@ -315,14 +294,7 @@ def parse_breakend(alt_str):
         sequence = arr[2]
     else:
         sequence = arr[0]
-    return (
-        mate_chrom,
-        mate_pos,
-        orientation,
-        mate_orientation,
-        sequence,
-        within_main_assembly,
-    )
+    return (mate_chrom, mate_pos, orientation, mate_orientation, sequence, within_main_assembly)
 
 
 def process_sub_grow(ref, alt_str):
@@ -493,23 +465,17 @@ class RecordParser:
             format_ = arr[8].split(":")
             # sample/call columns
             calls = self._handle_calls(alts, format_, arr[8], arr)
-        return record.Record(
-            chrom, pos, ids, ref, alts, qual, filt, info, format_, calls
-        )
+        return record.Record(chrom, pos, ids, ref, alts, qual, filt, info, format_, calls)
 
     def _handle_calls(self, alts, format_, format_str, arr):
         """Handle FORMAT and calls columns, factored out of parse_line"""
         if format_str not in self._format_cache:
-            self._format_cache[format_str] = list(
-                map(self.header.get_format_field_info, format_)
-            )
+            self._format_cache[format_str] = list(map(self.header.get_format_field_info, format_))
         # per-sample calls
         calls = []
         for sample, raw_data in zip(self.samples.names, arr[9:]):
             if self.samples.is_parsed(sample):
-                data = self._parse_calls_data(
-                    format_, self._format_cache[format_str], raw_data
-                )
+                data = self._parse_calls_data(format_, self._format_cache[format_str], raw_data)
                 call = record.Call(sample, data)
                 self._format_checker.run(call, len(alts))
                 self._check_filters(call.data.get("FT"), "FORMAT/FT", call.sample)
@@ -528,9 +494,7 @@ class RecordParser:
         if f not in self._filter_ids:
             if source == "FILTER":
                 warnings.warn(
-                    (
-                        "Filter not found in header: {}; problem in FILTER " "column"
-                    ).format(f),
+                    ("Filter not found in header: {}; problem in FILTER " "column").format(f),
                     UnknownFilter,
                 )
             else:
@@ -550,9 +514,7 @@ class RecordParser:
             raise exceptions.InvalidRecordException(
                 (
                     "The line contains an invalid number of fields. Was "
-                    "{} but expected {}\n{}".format(
-                        len(arr), 9 + len(self.samples.names), line_str
-                    )
+                    "{} but expected {}\n{}".format(len(arr), 9 + len(self.samples.names), line_str)
                 )
             )
         return arr
@@ -568,14 +530,10 @@ class RecordParser:
         for entry in info_str.split(";"):
             if "=" not in entry:  # flag
                 key = entry
-                result[key] = parse_field_value(
-                    self.header.get_info_field_info(key), True
-                )
+                result[key] = parse_field_value(self.header.get_info_field_info(key), True)
             else:
                 key, value = split_mapping(entry)
-                result[key] = parse_field_value(
-                    self.header.get_info_field_info(key), value
-                )
+                result[key] = parse_field_value(self.header.get_info_field_info(key), value)
             self._info_checker.run(key, result[key], num_alts)
         return result
 
@@ -619,13 +577,9 @@ class HeaderChecker:
             )
         first = header_lines[0]
         if first.key != "fileformat":
-            raise exceptions.InvalidHeaderException(
-                "The VCF file did not start with ##fileformat"
-            )
+            raise exceptions.InvalidHeaderException("The VCF file did not start with ##fileformat")
         if first.value not in SUPPORTED_VCF_VERSIONS:
-            warnings.warn(
-                "Unknown VCF version {}".format(first.value), UnknownVCFVersion
-            )
+            warnings.warn("Unknown VCF version {}".format(first.value), UnknownVCFVersion)
 
 
 @functools.lru_cache(maxsize=32)
@@ -676,8 +630,7 @@ class InfoChecker:
         if len(value) != expected:
             tpl = "Number of elements for INFO field {} is {} instead of {}"
             warnings.warn(
-                tpl.format(key, len(value), field_info.number),
-                exceptions.IncorrectListLength,
+                tpl.format(key, len(value), field_info.number), exceptions.IncorrectListLength
             )
 
 
@@ -785,9 +738,7 @@ class Parser:
         # check header for consistency
         self._header_checker.run(self.header)
         # construct record parser
-        self._record_parser = RecordParser(
-            self.header, self.samples, self.record_checks
-        )
+        self._record_parser = RecordParser(self.header, self.samples, self.record_checks)
         # read next line, must not be header
         self._read_next_line()
         if self._line and self._line.startswith("#"):
@@ -804,9 +755,7 @@ class Parser:
         line = self._line.rstrip()
         pos = line.find("FORMAT") if ("FORMAT" in line) else line.find("INFO")
         if pos == -1:
-            raise exceptions.IncorrectVCFFormat(
-                'Ill-formatted line starting with "#CHROM"'
-            )
+            raise exceptions.IncorrectVCFFormat('Ill-formatted line starting with "#CHROM"')
         if " " in line[:pos]:
             warnings.warn(
                 (
@@ -829,9 +778,7 @@ class Parser:
             if tuple(arr) != REQUIRE_NO_SAMPLE_HEADER:
                 raise exceptions.IncorrectVCFFormat(
                     "Sample header line indicates no sample but does not "
-                    "equal required prefix {}".format(
-                        "\t".join(REQUIRE_NO_SAMPLE_HEADER)
-                    )
+                    "equal required prefix {}".format("\t".join(REQUIRE_NO_SAMPLE_HEADER))
                 )
         elif tuple(arr[: len(REQUIRE_SAMPLE_HEADER)]) != REQUIRE_SAMPLE_HEADER:
             raise exceptions.IncorrectVCFFormat(

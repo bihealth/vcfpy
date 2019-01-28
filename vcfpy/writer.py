@@ -114,9 +114,7 @@ class Writer:
             print(line.serialize(), file=self.stream)
         if self.header.samples.names:
             print(
-                "\t".join(
-                    list(parser.REQUIRE_SAMPLE_HEADER) + self.header.samples.names
-                ),
+                "\t".join(list(parser.REQUIRE_SAMPLE_HEADER) + self.header.samples.names),
                 file=self.stream,
             )
         else:
@@ -169,9 +167,7 @@ class Writer:
             return call.unparsed_data
         else:
             result = [
-                format_value(
-                    self.header.get_format_field_info(key), call.data.get(key), "FORMAT"
-                )
+                format_value(self.header.get_format_field_info(key), call.data.get(key), "FORMAT")
                 for key in format_
             ]
             return ":".join(result)

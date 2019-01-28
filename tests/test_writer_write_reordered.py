@@ -5,9 +5,7 @@
 from vcfpy import Reader, Writer, Header, SamplesInfos
 
 
-def test_reading_and_write_reordered(
-    tmpdir, multisample_vcf_file, multisample_vcf_reordered
-):
+def test_reading_and_write_reordered(tmpdir, multisample_vcf_file, multisample_vcf_reordered):
     # Perform record-wise copying, saving results in records, not writing
     # out for some samples
     records = []

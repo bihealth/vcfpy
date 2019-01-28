@@ -38,12 +38,7 @@ class Reader:
 
     @classmethod
     def from_stream(
-        klass,
-        stream,
-        path=None,
-        tabix_path=None,
-        record_checks=None,
-        parsed_samples=None,
+        klass, stream, path=None, tabix_path=None, record_checks=None, parsed_samples=None
     ):
         """Create new :py:class:`Reader` from file
 
@@ -71,9 +66,7 @@ class Reader:
         )
 
     @classmethod
-    def from_path(
-        klass, path, tabix_path=None, record_checks=None, parsed_samples=None
-    ):
+    def from_path(klass, path, tabix_path=None, record_checks=None, parsed_samples=None):
         """Create new :py:class:`Reader` from path
 
         .. note::
@@ -106,14 +99,7 @@ class Reader:
             parsed_samples=parsed_samples,
         )
 
-    def __init__(
-        self,
-        stream,
-        path=None,
-        tabix_path=None,
-        record_checks=None,
-        parsed_samples=None,
-    ):
+    def __init__(self, stream, path=None, tabix_path=None, record_checks=None, parsed_samples=None):
         #: stream (``file``-like object) to read from
         self.stream = stream
         #: optional ``str`` with the path to the stream
@@ -156,9 +142,7 @@ class Reader:
         if begin is None:
             self.tabix_iter = self.tabix_file.fetch(region=chrom_or_region)
         else:
-            self.tabix_iter = self.tabix_file.fetch(
-                reference=chrom_or_region, start=begin, end=end
-            )
+            self.tabix_iter = self.tabix_file.fetch(reference=chrom_or_region, start=begin, end=end)
         return self
 
     def close(self):

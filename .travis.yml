@@ -1,38 +1,11 @@
-# This file will be regenerated if you run travis_pypi_setup.py
-
 language: python
-python: 3.5
 
-env:
-  - TOXENV=py35
-  - TOXENV=py34
+python:
+- "3.4"
+- "3.5"
+- "3.6"
+- "3.7"
 
-# command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
-install: pip install -U tox
+install: pip install -U tox-travis
 
-# command to run tests, e.g. python setup.py test
-script: tox -e ${TOXENV}
-
-# Automated deployment to PyPi
-deploy:
-  password:
-    secure: !!binary |
-      TGxBWGlrN0p5TVF0MjlyMmQxZDEwYmV6bGZPVkRCSjlIWURSVHdJb0JuK2xYWFV4Z0xNeUxvUC92
-      aGsrU0ZCM1graDg4U2Z4cm9JWEtxZW5kaCt6NnhKNHRWSUsyTHduKy9MTjFna043YkwwNk5icDBK
-      V0srUU5KSUdRK3hVVlhxd0FHdmFLaHpHMXhRc0JiOWtMYUp3UU5weFNmU2NmQmczSkdWRmZCVTFz
-      bld4cVVZVEJDdjZxdG9TSDVhSnRSY3c4YUNiWm9pNUVOR0tteStkaDNFYUx0QnY4L0hucGJ2MzM4
-      RTR0cmQvRGZqTS9sU1VEQ0x6eXVIMituRFZic3dsc3J1a01HVDNYVEFlUTNCSWhSa3R3aklqQXdr
-      dmdrQkNIdzVOeklmdTZ3Mkd0WUdNN1RycFQ0YUR3anN1Q0R2TTM5Q2owY0grNytacUZPQ0xtbVRj
-      UTk4OXVYaWRzOFFIMXRBOVJIQ3lmUVhJVnEvcHM4MFAxK2VYSUptVklsbFk4UTM4dnR5QVZnVzd6
-      VVJTRDIvbFZ2NG5ZNWNJbStNb3BkSmZPdUFSV3hOYUdhMVZxWEFhRzRyTFMxRTVrZm9BYnQwRWFk
-      OEtQa2hxcVZNNVhvTFJJTGdHUWhBeFdnTFdlUVlpNU9sYTFGMWtwSmsvU3AyWXRhUXltVVN2UTdC
-      NysxM1gwTkIxYTNQYmxSWmVMYVJPZnk5LzNNRFc0cFMyMUtRWURwSFB2b2RsWWYxNi9xVlkxQ2c2
-      eUIzcWZ1blRIL0t3U3B5NDhkQ2hoRTVIWkt2Uk1DYmRxTyticU4xWERrbzJoUUNDNG1QTWlQbGY2
-      TjJGY1Y5UStpY2piMjMvRmx2a1pzZCtLUU90eTY0SytGR3JMUWNKWnppaWZJMmJjR0JnL0l2Snc9
-  true:
-    condition: $TOXENV == py34
-    repo: bihealth/vcfpy
-    tags: true
-  user: Manuel.Holtgrewe
-  provider: pypi
-  distributions: sdist bdist_wheel
+script: tox

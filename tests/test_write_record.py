@@ -154,13 +154,10 @@ def test_write_record_no_samples(tmpdir_factory):
     O = vcfpy.OrderedDict
     # Create header without samples
     hdr = header.Header(
-        lines=[header.HeaderLine("fileformat", "VCFv4.0")],
-        samples=header.SamplesInfos([]),
+        lines=[header.HeaderLine("fileformat", "VCFv4.0")], samples=header.SamplesInfos([])
     )
     # construct record to write out from scratch
-    r = record.Record(
-        "20", 100, [], "C", [record.Substitution(record.SNV, "T")], None, [], O()
-    )
+    r = record.Record("20", 100, [], "C", [record.Substitution(record.SNV, "T")], None, [], O())
     # Write out header and record
     path = tmpdir_factory.mktemp("write_header").join("out.vcf")
     w = writer.Writer.from_path(path, hdr)

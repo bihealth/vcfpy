@@ -3,6 +3,7 @@
 """
 
 import io
+import sys
 
 import pytest
 
@@ -45,11 +46,17 @@ def test_parse_header(medium_header):
     assert len(header.lines) == 18
     EXPECTED = "HeaderLine('fileformat', 'VCFv4.3')"
     assert str(header.lines[0]) == EXPECTED
-    EXPECTED = (
-        "FormatHeaderLine('FORMAT', '<ID=HQ,Number=2,Type=Integer,"
-        "Description=\"Haplotype Quality\">', OrderedDict([('ID', 'HQ'), "
-        "('Number', 2), ('Type', 'Integer'), ('Description', "
-        "'Haplotype Quality')]))"
-    )
+    if sys.version_info < (3, 6):
+        EXPECTED = (
+            "FormatHeaderLine('FORMAT', '<ID=HQ,Number=2,Type=Integer,"
+            "Description=\"Haplotype Quality\">', OrderedDict([('ID', 'HQ'), "
+            "('Number', 2), ('Type', 'Integer'), ('Description', "
+            "'Haplotype Quality')]))"
+        )
+    else:
+        EXPECTED = (
+            "FormatHeaderLine('FORMAT', '<ID=HQ,Number=2,Type=Integer,Description=\"Haplotype Quality\">', "
+            "{'ID': 'HQ', 'Number': 2, 'Type': 'Integer', 'Description': 'Haplotype Quality'})"
+        )
     assert str(header.lines[-1]) == EXPECTED
     assert header.samples.names == ["NA00001", "NA00002", "NA00003"]

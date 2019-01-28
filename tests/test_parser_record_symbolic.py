@@ -3,6 +3,7 @@
 """
 
 import io
+import sys
 
 from vcfpy import parser
 
@@ -50,14 +51,19 @@ def test_parse_dup():
     p = vcf_parser(LINES)
     p.parse_header()
     # Perform the actual test
-    EXPECTED = (
-        """Record('2', 321681, [], 'N', [SymbolicAllele('DUP')], None, """
-        """['PASS'], OrderedDict([('SVTYPE', 'DUP'), ('END', 324681), """
-        """('SVLEN', 3000)]), ['GT'], """
-        """[Call('NA00001', OrderedDict([('GT', '0/1')])), """
-        """Call('NA00002', OrderedDict([('GT', '0/0')])), """
-        """Call('NA00003', OrderedDict([('GT', '0/0')]))])"""
-    )
+    if sys.version_info < (3, 6):
+        EXPECTED = (
+            "Record('2', 321681, [], 'N', [SymbolicAllele('DUP')], None, ['PASS'], "
+            "OrderedDict([('SVTYPE', 'DUP'), ('END', 324681), ('SVLEN', 3000)]), ['GT'], ["
+            "Call('NA00001', OrderedDict([('GT', '0/1')])), Call('NA00002', OrderedDict([('GT', '0/0')])),"
+            "Call('NA00003', OrderedDict([('GT', '0/0')]))])"
+        )
+    else:
+        EXPECTED = (
+            "Record('2', 321681, [], 'N', [SymbolicAllele('DUP')], None, ['PASS'], "
+            "{'SVTYPE': 'DUP', 'END': 324681, 'SVLEN': 3000}, ['GT'], ["
+            "Call('NA00001', {'GT': '0/1'}), Call('NA00002', {'GT': '0/0'}), Call('NA00003', {'GT': '0/0'})])"
+        )
     rec = p.parse_next_record()
     assert str(rec) == EXPECTED
     assert rec.ALT[0].serialize() == "<DUP>"
@@ -69,13 +75,17 @@ def test_parse_iupac():
     p = vcf_parser(LINES)
     p.parse_header()
     # Perform the actual test
-    EXPECTED = (
-        """Record('2', 321681, [], 'C', [SymbolicAllele('R')], None, """
-        """['PASS'], OrderedDict(), ['GT'], """
-        """[Call('NA00001', OrderedDict([('GT', '0/1')])), """
-        """Call('NA00002', OrderedDict([('GT', '0/0')])), """
-        """Call('NA00003', OrderedDict([('GT', '0/0')]))])"""
-    )
+    if sys.version_info < (3, 6):
+        EXPECTED = (
+            "Record('2', 321681, [], 'C', [SymbolicAllele('R')], None, ['PASS'], OrderedDict(), ['GT'], "
+            "[Call('NA00001', OrderedDict([('GT', '0/1')])), Call('NA00002', OrderedDict([('GT', '0/0')])), "
+            "Call('NA00003', OrderedDict([('GT', '0/0')]))])"
+        )
+    else:
+        EXPECTED = (
+            "Record('2', 321681, [], 'C', [SymbolicAllele('R')], None, ['PASS'], {}, ['GT'], "
+            "[Call('NA00001', {'GT': '0/1'}), Call('NA00002', {'GT': '0/0'}), Call('NA00003', {'GT': '0/0'})])"
+        )
     rec = p.parse_next_record()
     assert str(rec) == EXPECTED
     assert rec.ALT[0].serialize() == "<R>"

@@ -118,15 +118,9 @@ def test_header_alt_allele_header_line():
 
 
 def test_header_contig_header_line():
-    line1 = header.ContigHeaderLine.from_mapping(
-        vcfpy.OrderedDict([("ID", "1"), ("length", 234)])
-    )
-    line2 = header.ContigHeaderLine.from_mapping(
-        vcfpy.OrderedDict([("ID", "1"), ("length", 234)])
-    )
-    line3 = header.ContigHeaderLine.from_mapping(
-        vcfpy.OrderedDict([("ID", "2"), ("length", 123)])
-    )
+    line1 = header.ContigHeaderLine.from_mapping(vcfpy.OrderedDict([("ID", "1"), ("length", 234)]))
+    line2 = header.ContigHeaderLine.from_mapping(vcfpy.OrderedDict([("ID", "1"), ("length", 234)]))
+    line3 = header.ContigHeaderLine.from_mapping(vcfpy.OrderedDict([("ID", "2"), ("length", 123)]))
     assert line1 == line2
     assert line1 != line3
     assert str(line1) == (
@@ -176,9 +170,7 @@ def test_header_pedigree_header_line():
     line2 = header.PedigreeHeaderLine.from_mapping(
         vcfpy.OrderedDict([("ID", "child"), ("Father", "father")])
     )
-    line3 = header.PedigreeHeaderLine.from_mapping(
-        vcfpy.OrderedDict([("ID", "father")])
-    )
+    line3 = header.PedigreeHeaderLine.from_mapping(vcfpy.OrderedDict([("ID", "father")]))
     assert line1 == line2
     assert line1 != line3
     assert str(line1) == (
@@ -202,12 +194,10 @@ def test_header_sample_header_line():
     assert line1 == line2
     assert line1 != line3
     assert str(line1) == (
-        """SampleHeaderLine('SAMPLE', '<ID=sample1>', """
-        """OrderedDict([('ID', 'sample1')]))"""
+        """SampleHeaderLine('SAMPLE', '<ID=sample1>', """ """OrderedDict([('ID', 'sample1')]))"""
     )
     assert repr(line1) == (
-        """SampleHeaderLine('SAMPLE', '<ID=sample1>', """
-        """OrderedDict([('ID', 'sample1')]))"""
+        """SampleHeaderLine('SAMPLE', '<ID=sample1>', """ """OrderedDict([('ID', 'sample1')]))"""
     )
     assert line1.value == "<ID=sample1>"
     assert line1.serialize() == "##SAMPLE=<ID=sample1>"
@@ -278,9 +268,7 @@ def test_header_has_header_line_positive():
         header.FilterHeaderLine.from_mapping(
             vcfpy.OrderedDict([("ID", "PASS"), ("Description", "All filters passed")])
         ),
-        header.ContigHeaderLine.from_mapping(
-            vcfpy.OrderedDict([("ID", "1"), ("length", 234)])
-        ),
+        header.ContigHeaderLine.from_mapping(vcfpy.OrderedDict([("ID", "1"), ("length", 234)])),
     ]
     samples = header.SamplesInfos(["one", "two", "three"])
     hdr = header.Header(lines, samples)

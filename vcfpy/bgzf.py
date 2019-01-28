@@ -77,13 +77,9 @@ def make_virtual_offset(block_start_offset, within_block_offset):
     ValueError: Require 0 <= block_start_offset < 2**48, got 281474976710656
     """
     if within_block_offset < 0 or within_block_offset >= 65536:
-        raise ValueError(
-            "Require 0 <= within_block_offset < 2**16, got %i" % within_block_offset
-        )
+        raise ValueError("Require 0 <= within_block_offset < 2**16, got %i" % within_block_offset)
     if block_start_offset < 0 or block_start_offset >= 281474976710656:
-        raise ValueError(
-            "Require 0 <= block_start_offset < 2**48, got %i" % block_start_offset
-        )
+        raise ValueError("Require 0 <= block_start_offset < 2**48, got %i" % block_start_offset)
     return (block_start_offset << 16) | within_block_offset
 
 
@@ -109,14 +105,10 @@ class BgzfWriter(object):
         assert len(block) <= 65536
         # Giving a negative window bits means no gzip/zlib headers,
         # -15 used in samtools
-        c = zlib.compressobj(
-            self.compresslevel, zlib.DEFLATED, -15, zlib.DEF_MEM_LEVEL, 0
-        )
+        c = zlib.compressobj(self.compresslevel, zlib.DEFLATED, -15, zlib.DEF_MEM_LEVEL, 0)
         compressed = c.compress(block) + c.flush()
         del c
-        assert (
-            len(compressed) < 65536
-        ), "TODO - Didn't compress enough, try less data in this block"
+        assert len(compressed) < 65536, "TODO - Didn't compress enough, try less data in this block"
         crc = zlib.crc32(block)
         # Should cope with a mix of Python platforms...
         if crc < 0:

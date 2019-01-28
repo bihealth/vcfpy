@@ -57,9 +57,7 @@ class Record:
     Record objects are iterators of their calls
     """
 
-    def __init__(
-        self, CHROM, POS, ID, REF, ALT, QUAL, FILTER, INFO, FORMAT=None, calls=None
-    ):
+    def __init__(self, CHROM, POS, ID, REF, ALT, QUAL, FILTER, INFO, FORMAT=None, calls=None):
         if bool(FORMAT) != bool(calls):
             raise ValueError("Either provide both FORMAT and calls or none.")
         #: A ``str`` with the chromosome name
@@ -413,13 +411,7 @@ class BreakEnd(AltRecord):
     """A placeholder for a breakend"""
 
     def __init__(
-        self,
-        mate_chrom,
-        mate_pos,
-        orientation,
-        mate_orientation,
-        sequence,
-        within_main_assembly,
+        self, mate_chrom, mate_pos, orientation, mate_orientation, sequence, within_main_assembly
     ):
         super().__init__("BND")
         #: chromosome of the mate breakend

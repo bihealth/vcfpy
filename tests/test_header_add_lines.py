@@ -142,9 +142,7 @@ def test_add_filter_line(vcf_header):
     # add header line
     VALUE = '<ID=q10a,Description="Quality below 10">'
     line = header.FilterHeaderLine(
-        "FILTER",
-        VALUE,
-        vcfpy.OrderedDict([("ID", "q10a"), ("Description", "Quality below 10")]),
+        "FILTER", VALUE, vcfpy.OrderedDict([("ID", "q10a"), ("Description", "Quality below 10")])
     )
     vcf_header.add_line(line)
 
@@ -193,12 +191,7 @@ def test_add_format_line(vcf_header):
         "FORMAT",
         VALUE,
         vcfpy.OrderedDict(
-            [
-                ("ID", "GTa"),
-                ("Number", 1),
-                ("Type", "String"),
-                ("Description", "Genotype"),
-            ]
+            [("ID", "GTa"), ("Number", 1), ("Type", "String"), ("Description", "Genotype")]
         ),
     )
     vcf_header.add_line(line)
@@ -254,12 +247,7 @@ def test_add_info_line(vcf_header):
         "INFO",
         VALUE,
         vcfpy.OrderedDict(
-            [
-                ("ID", "DPa"),
-                ("Number", 1),
-                ("Type", "Integer"),
-                ("Description", "Total Depth"),
-            ]
+            [("ID", "DPa"), ("Number", 1), ("Type", "Integer"), ("Description", "Total Depth")]
         ),
     )
     vcf_header.add_line(line)
@@ -287,12 +275,7 @@ def test_add_info_line_shortcut(vcf_header):
     # add header line
     VALUE = '<ID=DPa,Number=1,Type=Integer,Description="Total Depth">'
     mapping = vcfpy.OrderedDict(
-        [
-            ("ID", "DPa"),
-            ("Number", 1),
-            ("Type", "Integer"),
-            ("Description", "Total Depth"),
-        ]
+        [("ID", "DPa"), ("Number", 1), ("Type", "Integer"), ("Description", "Total Depth")]
     )
     vcf_header.add_info_line(mapping)
     assert len(vcf_header.lines) == 19

@@ -55,9 +55,7 @@ def run(args):
                 print(r, file=sys.stderr)
         times.append(time.clock() - begin)
     print(
-        "Took {:.3} seconds (stdev {:.3})".format(
-            statistics.mean(times), statistics.stdev(times)
-        ),
+        "Took {:.3} seconds (stdev {:.3})".format(statistics.mean(times), statistics.stdev(times)),
         file=sys.stderr,
     )
 
@@ -66,15 +64,9 @@ def main(argv=None):
     """Main program entry point for parsing command line arguments"""
     parser = argparse.ArgumentParser(description="Parser benchmark")
 
-    parser.add_argument(
-        "--debug", default=False, action="store_true", help="Enable debugging"
-    )
-    parser.add_argument(
-        "--repetitions", type=int, default=10, help="Number of repetitions"
-    )
-    parser.add_argument(
-        "--line-count", type=int, default=5000, help="Number of lines to parse"
-    )
+    parser.add_argument("--debug", default=False, action="store_true", help="Enable debugging")
+    parser.add_argument("--repetitions", type=int, default=10, help="Number of repetitions")
+    parser.add_argument("--line-count", type=int, default=5000, help="Number of lines to parse")
 
     args = parser.parse_args(argv)
     run(args)
