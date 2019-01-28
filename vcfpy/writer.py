@@ -114,8 +114,8 @@ class Writer:
             print(line.serialize(), file=self.stream)
         if self.header.samples.names:
             print('\t'.join(
-                list(parser.REQUIRE_SAMPLE_HEADER) +
-                self.header.samples.names),
+                list(parser.REQUIRE_SAMPLE_HEADER)
+                + self.header.samples.names),
                 file=self.stream)
         else:
             print('\t'.join(

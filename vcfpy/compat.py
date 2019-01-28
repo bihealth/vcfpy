@@ -18,4 +18,4 @@ else:
     try:
         from cyordereddict import OrderedDict
     except ImportError:
-        from collections import OrderedDict
+        from collections import OrderedDict  # noqa: ignore=F401

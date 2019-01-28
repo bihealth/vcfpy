@@ -268,7 +268,7 @@ def parse_field_value(field_info, value):
 
 
 # Regular expression for break-end
-BREAKEND_PATTERN = re.compile('[\[\]]')
+BREAKEND_PATTERN = re.compile('[\\[\\]]')
 
 
 def parse_breakend(alt_str):
@@ -454,7 +454,7 @@ class RecordParser:
         # INFO
         info = self._parse_info(arr[7], len(alts))
         if len(arr) == 9:
-            raise IncorrectVCFFormat("Expected 8 or 10+ columns, got 9!")
+            raise exceptions.IncorrectVCFFormat("Expected 8 or 10+ columns, got 9!")
         elif len(arr) == 8:
             format_ = None
             calls = None
@@ -632,7 +632,7 @@ class InfoChecker:
             tpl = 'Number of elements for INFO field {} is {} instead of {}'
             warnings.warn(
                 tpl.format(key, len(value), field_info.number),
-                IncorrectListLength)
+                exceptions.IncorrectListLength)
 
 
 class NoopFormatChecker:
@@ -677,7 +677,7 @@ class FormatChecker:
                    'of {} (number specifier {})')
             warnings.warn(
                 tpl.format(key, len(value), expected, field_info.number),
-                IncorrectListLength)
+                exceptions.IncorrectListLength)
 
 
 class Parser:

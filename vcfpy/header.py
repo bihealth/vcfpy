@@ -6,7 +6,6 @@ The VCF header class structure is modeled after HTSJDK
 
 import json
 import pprint
-import sys
 import warnings
 
 from . import exceptions

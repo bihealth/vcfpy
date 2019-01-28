@@ -5,6 +5,8 @@ History
 HEAD (unreleased)
 -----------------
 
+* Replacing Makefile with more minimal one.
+* Removing some linting errors from flake8.
 * Adding support for reading VCF without ``FORMAT`` or any sample column.
 * Adding support for writing headers and records without ``FORMAT`` and any sample columns.
 
