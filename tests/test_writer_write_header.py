@@ -3,11 +3,11 @@
 """
 
 import io
+import textwrap
 
 import pytest
 
-from vcfpy import parser
-from vcfpy import writer
+from vcfpy import header, parser, writer
 
 __author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
 
@@ -52,4 +52,20 @@ def test_write_header(header_samples, tmpdir_factory):
     w.close()
     RESULT = path.read()
     EXPECTED = MEDIUM_HEADER
+    assert RESULT == EXPECTED
+
+
+def test_write_header_no_samples(tmpdir_factory):
+    # Create header to write out from scratch
+    hdr = header.Header(lines=[header.HeaderLine('fileformat', 'VCFv4.0')], samples=header.SamplesInfos([]))
+    # Write out header
+    path = tmpdir_factory.mktemp('write_header').join('out.vcf')
+    w = writer.Writer.from_path(path, hdr)
+    w.close()
+    # Compare result
+    RESULT = path.read()
+    EXPECTED = textwrap.dedent(r"""
+    ##fileformat=VCFv4.0
+    #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+    """).lstrip()
     assert RESULT == EXPECTED

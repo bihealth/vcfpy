@@ -3,13 +3,12 @@
 """
 
 import io
+import textwrap
 
 import pytest
 
 import vcfpy
-from vcfpy import parser
-from vcfpy import writer
-from vcfpy import record
+from vcfpy import parser, writer, header, record
 
 __author__ = 'Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>'
 
@@ -137,3 +136,27 @@ def test_write_record_with_escaping(header_samples, tmpdir_factory):
             '%2525\tGT:FT\t0/1:%2525;FOO\t0/0:.\t1/1:.\n')
     EXPECTED = MEDIUM_HEADER + LINE
     assert EXPECTED == RESULT
+
+
+def test_write_record_no_samples(tmpdir_factory):
+    O = vcfpy.OrderedDict
+    # Create header without samples
+    hdr = header.Header(lines=[header.HeaderLine('fileformat', 'VCFv4.0')], samples=header.SamplesInfos([]))
+    # construct record to write out from scratch
+    r = record.Record(
+        '20', 100, [], 'C', [record.Substitution(record.SNV, 'T')],
+        None, [],
+        O())
+    # Write out header and record
+    path = tmpdir_factory.mktemp('write_header').join('out.vcf')
+    w = writer.Writer.from_path(path, hdr)
+    w.write_record(r)
+    w.close()
+    # Compare result
+    RESULT = path.read()
+    EXPECTED = textwrap.dedent("""
+    ##fileformat=VCFv4.0
+    #CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO
+    20\t100\t.\tC\tT\t.\t.\t.
+    """).lstrip()
+    assert RESULT == EXPECTED

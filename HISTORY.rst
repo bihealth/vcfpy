@@ -2,6 +2,11 @@
 History
 =======
 
+HEAD (unreleased)
+-----------------
+
+* Adding support for headers and records without ``FORMAT`` and any sample columns.
+
 v0.11.2 (2018-04-16)
 --------------------
 

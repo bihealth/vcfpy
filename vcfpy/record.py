@@ -51,8 +51,10 @@ class Record:
     Record objects are iterators of their calls
     """
 
-    def __init__(self, CHROM, POS, ID, REF, ALT, QUAL, FILTER, INFO, FORMAT,
-                 calls):
+    def __init__(self, CHROM, POS, ID, REF, ALT, QUAL, FILTER, INFO, FORMAT=None,
+                 calls=None):
+        if bool(FORMAT) != bool(calls):
+            raise ValueError("Either provide both FORMAT and calls or none.")
         #: A ``str`` with the chromosome name
         self.CHROM = CHROM
         #: An ``int`` with a 1-based begin position
@@ -74,13 +76,15 @@ class Record:
         #: An OrderedDict giving the values of the INFO column, flags are
         #: mapped to ``True``
         self.INFO = INFO
-        #: A list of strings for the FORMAT column
-        self.FORMAT = FORMAT
-        #: A list of genotype :py:class:`Call` objects
-        self.calls = list(calls)
+        #: A list of strings for the FORMAT column.  Optional, must be given if
+        #: and only if ``calls`` is also given.
+        self.FORMAT = FORMAT or ()
+        #: A list of genotype :py:class:`Call` objects.  Optional, must be given if
+        #: and only if ``FORMAT`` is also given.
+        self.calls = list(calls or ())
         for call in self.calls:
             call.site = self
-        #: A mapping from sample name to entry in self.calls
+        #: A mapping from sample name to entry in self.calls.
         self.call_for_sample = {call.sample: call for call in self.calls}
 
     def is_snv(self):
