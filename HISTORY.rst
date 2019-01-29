@@ -2,8 +2,8 @@
 History
 =======
 
-HEAD (unreleased)
------------------
+v0.12.0 (2019-01-29)
+--------------------
 
 * Fixing tests for Python >=3.6
 * Fixing CI, improving tox integration.
