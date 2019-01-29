@@ -22,3 +22,6 @@ pytz >=2016.10
 requests >=2.13.0
 six >=1.10.0
 snowballstemmer >=1.2.1
+
+# Twine for uploading to PyPi
+twine >=1.12.1
