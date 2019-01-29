@@ -6,6 +6,9 @@ VCFPy
 .. image:: https://img.shields.io/pypi/v/vcfpy.svg
         :target: https://pypi.python.org/pypi/vcfpy
 
+.. image:: https://img.shields.io/conda/dn/bioconda/vcfpy.svg?label=Bioconda
+        :target: https://bioconda.github.io/recipes/vcfpy/README.html
+
 .. image:: https://img.shields.io/travis/bihealth/vcfpy.svg
         :target: https://travis-ci.org/bihealth/vcfpy
 
@@ -20,10 +23,6 @@ VCFPy
 .. image:: https://api.codacy.com/project/badge/Coverage/cfe741307ec34e8fb90dfe37e84a2519
         :alt: Codacy Coverage
         :target: https://www.codacy.com/app/manuel-holtgrewe/vcfpy?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=bihealth/vcfpy&amp;utm_campaign=Badge_Coverage
-
-.. image:: https://landscape.io/github/bihealth/vcfpy/master/landscape.svg?style=flat
-        :alt: Landscape Health
-        :target: https://landscape.io/github/bihealth/vcfpy
 
 .. image:: http://joss.theoj.org/papers/edae85d90ea8a49843dbaaa109e47cba/status.svg
         :alt: Publication in The Journal of Open Source Software
