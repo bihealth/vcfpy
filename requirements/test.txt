@@ -11,10 +11,9 @@ py >=1.4.32
 pytest >=3.0.6
 pytest-cache >=1.0
 pytest-cov >=2.4.0
+
+# Coverage report
 codacy-coverage >=1.3.6
 
 # Flake8 for linting
 flake8 >=3.6.0
-
-# Black for formatting
-black ==18.9b0

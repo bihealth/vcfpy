@@ -143,7 +143,7 @@ def test_mapping_vcf_header_parser_parse_line_info():
     INPUT = "##INFO=" "<ID=NS,Number=1,Type=Integer,Description=" '"Number of Samples With Data">\n'
     if sys.version_info < (3, 6):
         EXPECTED = (
-            "InfoHeaderLine('INFO', '<ID=NS,Number=1,Type=Integer, Description=\"Number of Samples With Data\">', "
+            "InfoHeaderLine('INFO', '<ID=NS,Number=1,Type=Integer,Description=\"Number of Samples With Data\">', "
             "OrderedDict([('ID', 'NS'), ('Number', 1), ('Type', 'Integer'), ('Description', "
             "'Number of Samples With Data')]))"
         )

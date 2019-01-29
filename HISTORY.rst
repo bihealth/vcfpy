@@ -5,6 +5,8 @@ History
 HEAD (unreleased)
 -----------------
 
+* Fixing tests for Python >=3.6
+* Fixing CI, improving tox integration.
 * Applying ``black`` formatting.
 * Replacing Makefile with more minimal one.
 * Removing some linting errors from flake8.

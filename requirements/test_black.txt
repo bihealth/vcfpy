@@ -1,0 +1,7 @@
+# Requirements including black for code formatting/checking.
+
+# Include base requirements
+-r base.txt
+
+# Black for formatting
+black ==18.9b0

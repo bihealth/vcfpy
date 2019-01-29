@@ -55,7 +55,7 @@ def test_parse_dup():
         EXPECTED = (
             "Record('2', 321681, [], 'N', [SymbolicAllele('DUP')], None, ['PASS'], "
             "OrderedDict([('SVTYPE', 'DUP'), ('END', 324681), ('SVLEN', 3000)]), ['GT'], ["
-            "Call('NA00001', OrderedDict([('GT', '0/1')])), Call('NA00002', OrderedDict([('GT', '0/0')])),"
+            "Call('NA00001', OrderedDict([('GT', '0/1')])), Call('NA00002', OrderedDict([('GT', '0/0')])), "
             "Call('NA00003', OrderedDict([('GT', '0/0')]))])"
         )
     else:
