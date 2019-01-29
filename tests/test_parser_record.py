@@ -27,6 +27,7 @@ MEDIUM_HEADER = """
 ##FILTER=<ID=q10,Description="Quality below 10">
 ##FILTER=<ID=s50,Description="Less than 50% of samples have data">
 ##FILTER=<ID=FOO,Description="A test filter">
+##FILTER=<ID=BAZ,Description="A second test filter">
 ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
 ##FORMAT=<ID=GQ,Number=1,Type=Integer,Description="Genotype Quality">
 ##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read Depth">
@@ -128,6 +129,29 @@ def test_parse_record_with_filter_warning():
             "Record('20', 1, [], 'C', [Substitution(type_='SNV', value='G')], None, ['REX'], {}, "
             "['GT', 'FT'], [Call('NA00001', {'GT': '0/1', 'FT': []}),"
             " Call('NA00002', {'GT': '0/2', 'FT': ['BAR']}), Call('NA00003', {'GT': None, 'FT': []})])"
+        )
+    RESULT = p.parse_next_record()
+    assert str(RESULT) == EXPECTED
+
+
+def test_parse_record_with_filter_no_warning():
+    # Setup parser with stock header and lines to parse
+    LINES = "20\t1\t.\tC\tG\t.\tREX\t.\tGT:FT\t0/1:.\t0/2:FOO;BAZ\t.:.\n"
+    p = vcf_parser(LINES)
+    p.parse_header()
+    # Perform the actual test
+    if sys.version_info < (3, 6):
+        EXPECTED = (
+            "Record('20', 1, [], 'C', [Substitution(type_='SNV', value='G')], None, ['REX'], OrderedDict(), "
+            "['GT', 'FT'], [Call('NA00001', OrderedDict([('GT', '0/1'), ('FT', [])])),"
+            " Call('NA00002', OrderedDict([('GT', '0/2'), ('FT', ['FOO', 'BAZ'])])),"
+            " Call('NA00003', OrderedDict([('GT', None), ('FT', [])]))])"
+        )
+    else:
+        EXPECTED = (
+            "Record('20', 1, [], 'C', [Substitution(type_='SNV', value='G')], None, ['REX'], {}, "
+            "['GT', 'FT'], [Call('NA00001', {'GT': '0/1', 'FT': []}),"
+            " Call('NA00002', {'GT': '0/2', 'FT': ['FOO', 'BAZ']}), Call('NA00003', {'GT': None, 'FT': []})])"
         )
     RESULT = p.parse_next_record()
     assert str(RESULT) == EXPECTED
