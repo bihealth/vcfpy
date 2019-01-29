@@ -339,7 +339,7 @@ def test_header_has_header_line_positive():
     assert hdr.has_header_line("contig", "1")
 
 
-def test_header_has_header_line_positive():
+def test_header_has_header_line_positive_no_samples():
     lines = []
     samples = header.SamplesInfos(["one", "two", "three"])
     hdr = header.Header(lines, samples)
