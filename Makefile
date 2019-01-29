@@ -1,4 +1,4 @@
-.PHONY: default black flake8 test
+.PHONY: default black flake8 test test-v test-vv
 
 default: black flake8
 
