@@ -155,3 +155,26 @@ def test_parse_record_with_filter_no_warning():
         )
     RESULT = p.parse_next_record()
     assert str(RESULT) == EXPECTED
+
+
+def test_missing_pass(recwarn):
+    """Test parsing VCF file with missing ``PASS`` definition in header."""
+    # Setup parser with stock header and lines to parse
+    LINES = "20\t1\t.\tC\tG\t.\tPASS\t.\tGT\t0/1\t0/2\t.\n"
+    p = vcf_parser(LINES)
+    p.parse_header()
+    # Perform the actual test
+    if sys.version_info < (3, 6):
+        EXPECTED = (
+            "Record('20', 1, [], 'C', [Substitution(type_='SNV', value='G')], None, ['PASS'], OrderedDict(), ['GT'], "
+            "[Call('NA00001', OrderedDict([('GT', '0/1')])), Call('NA00002', OrderedDict([('GT', '0/2')])), "
+            "Call('NA00003', OrderedDict([('GT', None)]))])"
+        )
+    else:
+        EXPECTED = (
+            "Record('20', 1, [], 'C', [Substitution(type_='SNV', value='G')], None, ['PASS'], {}, ['GT'], "
+            "[Call('NA00001', {'GT': '0/1'}), Call('NA00002', {'GT': '0/2'}), Call('NA00003', {'GT': None})])"
+        )
+    RESULT = p.parse_next_record()
+    assert str(RESULT) == EXPECTED
+    assert list(recwarn) == []

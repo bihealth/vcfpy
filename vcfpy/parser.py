@@ -491,7 +491,9 @@ class RecordParser:
             self._check_filter(f, source, sample)
 
     def _check_filter(self, f, source, sample):
-        if f not in self._filter_ids:
+        if f == "PASS":
+            pass  # the PASS filter is implicitely defined
+        elif f not in self._filter_ids:
             if source == "FILTER":
                 warnings.warn(
                     ("Filter not found in header: {}; problem in FILTER " "column").format(f),

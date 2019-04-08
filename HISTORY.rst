@@ -2,6 +2,11 @@
 History
 =======
 
+HEAD (unreleased)
+-----------------
+
+* Not warning on ``PASS`` filter if not defined in header.
+
 v0.12.0 (2019-01-29)
 --------------------
 
