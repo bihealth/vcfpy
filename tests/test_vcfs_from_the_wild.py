@@ -57,3 +57,7 @@ FILENAMES = [
 def test_read_vcfs_from_the_wild(filename):
     path = os.path.join(os.path.dirname(__file__), "vcfs_from_the_wild", filename)
     r = reader.Reader.from_path(path)
+    # everything works up to this point
+    # the following causes the error
+    for record in r:
+        pass
