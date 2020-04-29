@@ -2,8 +2,8 @@
 History
 =======
 
-HEAD (unreleased)
------------------
+v0.12.2 (2020-04-29)
+--------------------
 
 * Fixing bug in case ``GT`` describes only one allele.
 
