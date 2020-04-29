@@ -231,7 +231,7 @@ class Call:
         self.plodity = None
         if self.data.get("GT", None) is not None:
             self.gt_alleles = []
-            for allele in ALLELE_DELIM.split(self.data["GT"]):
+            for allele in ALLELE_DELIM.split(str(self.data["GT"])):
                 if allele == ".":
                     self.gt_alleles.append(None)
                 else:
