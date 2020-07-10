@@ -2,8 +2,8 @@
 History
 =======
 
-HEAD (unreleased)
------------------
+v0.13.0 (2020-07-10)
+--------------------
 
 * Fixing bug in case ``GT`` describes only one allele.
 * Proper escaping of colon and semicolon (or the lack of escaping) in ``INFO`` and ``FORMAT``.
