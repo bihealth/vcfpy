@@ -34,8 +34,8 @@ HET = 1
 #: Code for homozygous alternative
 HOM_ALT = 2
 
-#: Characters reserved in VCF, have to be escaped
-RESERVED_CHARS = ":;=%,\r\n\t"
+#: Characters reserved in VCF, have to be escaped in INFO fields
+RESERVED_CHARS = {"INFO": ";%,\r\n\t", "FORMAT": ":=%,\r\n\t"}
 #: Mapping for escaping reserved characters
 ESCAPE_MAPPING = [
     ("%", "%25"),

@@ -6,6 +6,7 @@ HEAD (unreleased)
 -----------------
 
 * Fixing bug in case ``GT`` describes only one allele.
+* Proper escaping of colon and semicolon (or the lack of escaping) in ``INFO`` and ``FORMAT``.
 
 v0.12.1 (2019-03-08)
 --------------------
