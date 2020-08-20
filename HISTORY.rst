@@ -2,11 +2,17 @@
 History
 =======
 
-v0.12.3 (2020-08-20)
+v0.13.1 (2020-08-20)
 --------------------
 
 - Fixed ``Call.ploidy``.
 - Fixed ``Call.is_variant``.
+
+v0.13.0 (2020-07-10)
+--------------------
+
+* Fixing bug in case ``GT`` describes only one allele.
+* Proper escaping of colon and semicolon (or the lack of escaping) in ``INFO`` and ``FORMAT``.
 
 v0.12.2 (2020-04-29)
 --------------------
