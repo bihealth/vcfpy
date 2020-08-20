@@ -139,6 +139,31 @@ def test_is_variant_hom_alt():
     assert call.is_variant
 
 
+def test_is_variant_no_call():
+    call1 = record.Call("sample", vcfpy.OrderedDict([("GT", ".")]))
+    assert not call1.is_variant
+    call2 = record.Call("sample", vcfpy.OrderedDict([("GT", "./.")]))
+    assert not call2.is_variant
+
+
+# Call.ploidy ----------------------------------------------------------------
+
+
+def test_ploidy_nocall():
+    call = record.Call("sample", vcfpy.OrderedDict([("GT", ".")]))
+    assert call.ploidy == 1
+
+
+def test_ploidy_one():
+    call = record.Call("sample", vcfpy.OrderedDict([("GT", "1")]))
+    assert call.ploidy == 1
+
+
+def test_ploidy_two():
+    call = record.Call("sample", vcfpy.OrderedDict([("GT", "1/1")]))
+    assert call.ploidy == 2
+
+
 # Call.is_filtered() ----------------------------------------------------------
 
 

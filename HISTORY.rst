@@ -2,6 +2,12 @@
 History
 =======
 
+HEAD (unreleased)
+-----------------
+
+- Fixed ``Call.ploidy``.
+- Fixed ``Call.is_variant``.
+
 v0.12.2 (2020-04-29)
 --------------------
 

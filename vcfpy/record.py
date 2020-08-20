@@ -228,7 +228,7 @@ class Call:
         #: whether or not the variant is fully called
         self.called = None
         #: the number of alleles in this sample's call
-        self.plodity = None
+        self.ploidy = None
         if self.data.get("GT", None) is not None:
             self.gt_alleles = []
             for allele in ALLELE_DELIM.split(str(self.data["GT"])):
@@ -237,7 +237,7 @@ class Call:
                 else:
                     self.gt_alleles.append(int(allele))
             self.called = all([al is not None for al in self.gt_alleles])
-            self.ploidty = len(self.gt_alleles)
+            self.ploidy = len(self.gt_alleles)
 
     @property
     def is_phased(self):
@@ -306,7 +306,7 @@ class Call:
     @property
     def is_variant(self):
         """Return ``True`` for non-hom-ref calls"""
-        return self.gt_type != HOM_REF
+        return bool(self.gt_type)
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
