@@ -229,7 +229,22 @@ class Call:
         self.called = None
         #: the number of alleles in this sample's call
         self.ploidy = None
-        if self.data.get("GT", None) is not None:
+        self._genotype_updated()
+
+    def set_genotype(self, genotype):
+        """Set ``self.data["GT"]`` to ``genotype`` and properly update related
+        properties.
+        """
+        self.data["GT"] = genotype
+        self._genotype_updated()
+
+    def _genotype_updated(self):
+        """Update fields related to ``self.data["GT"]``."""
+        if self.data.get("GT", None) is None:
+            self.gt_alleles = None
+            self.called = None
+            self.ploidy = None
+        else:
             self.gt_alleles = []
             for allele in ALLELE_DELIM.split(str(self.data["GT"])):
                 if allele == ".":
