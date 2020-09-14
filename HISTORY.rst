@@ -2,8 +2,8 @@
 History
 =======
 
-HEAD
-----
+v0.13.3 (2020-09-14)
+--------------------
 
 - Adding ``Record.update_calls``.
 - Making ``Record.{format,calls}`` use list when empty
