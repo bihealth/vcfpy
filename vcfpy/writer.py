@@ -11,7 +11,7 @@ from . import bgzf
 __author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"
 
 
-def format_atomic(value):
+def format_atomic(value, section):
     """Format atomic value
 
     This function also takes care of escaping the value in case one of the
@@ -19,7 +19,7 @@ def format_atomic(value):
     """
     # Perform escaping
     if isinstance(value, str):
-        if any(r in value for r in record.RESERVED_CHARS):
+        if any(r in value for r in record.RESERVED_CHARS[section]):
             for k, v in record.ESCAPE_MAPPING:
                 value = value.replace(k, v)
     # String-format the given value
@@ -35,17 +35,17 @@ def format_value(field_info, value, section):
         if not value:
             return "."
         elif isinstance(value, list):
-            return ";".join(map(format_atomic, value))
+            return ";".join(map(lambda x: format_atomic(x, section), value))
     elif field_info.number == 1:
         if value is None:
             return "."
         else:
-            return format_atomic(value)
+            return format_atomic(value, section)
     else:
         if not value:
             return "."
         else:
-            return ",".join(map(format_atomic, value))
+            return ",".join(map(lambda x: format_atomic(x, section), value))
 
 
 class Writer:

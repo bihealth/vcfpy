@@ -34,8 +34,8 @@ HET = 1
 #: Code for homozygous alternative
 HOM_ALT = 2
 
-#: Characters reserved in VCF, have to be escaped
-RESERVED_CHARS = ":;=%,\r\n\t"
+#: Characters reserved in VCF, have to be escaped in INFO fields
+RESERVED_CHARS = {"INFO": ";%,\r\n\t", "FORMAT": ":=%,\r\n\t"}
 #: Mapping for escaping reserved characters
 ESCAPE_MAPPING = [
     ("%", "%25"),
@@ -83,10 +83,10 @@ class Record:
         self.INFO = INFO
         #: A list of strings for the FORMAT column.  Optional, must be given if
         #: and only if ``calls`` is also given.
-        self.FORMAT = FORMAT or ()
+        self.FORMAT = FORMAT or []
         #: A list of genotype :py:class:`Call` objects.  Optional, must be given if
         #: and only if ``FORMAT`` is also given.
-        self.calls = list(calls or ())
+        self.calls = list(calls or [])
         for call in self.calls:
             call.site = self
         #: A mapping from sample name to entry in self.calls.
@@ -229,7 +229,22 @@ class Call:
         self.called = None
         #: the number of alleles in this sample's call
         self.ploidy = None
-        if self.data.get("GT", None) is not None:
+        self._genotype_updated()
+
+    def set_genotype(self, genotype):
+        """Set ``self.data["GT"]`` to ``genotype`` and properly update related
+        properties.
+        """
+        self.data["GT"] = genotype
+        self._genotype_updated()
+
+    def _genotype_updated(self):
+        """Update fields related to ``self.data["GT"]``."""
+        if self.data.get("GT", None) is None:
+            self.gt_alleles = None
+            self.called = None
+            self.ploidy = None
+        else:
             self.gt_alleles = []
             for allele in ALLELE_DELIM.split(str(self.data["GT"])):
                 if allele == ".":
