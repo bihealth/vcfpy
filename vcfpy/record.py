@@ -86,11 +86,16 @@ class Record:
         self.FORMAT = FORMAT or []
         #: A list of genotype :py:class:`Call` objects.  Optional, must be given if
         #: and only if ``FORMAT`` is also given.
-        self.calls = list(calls or [])
-        for call in self.calls:
-            call.site = self
+        self.calls = calls or []
         #: A mapping from sample name to entry in self.calls.
-        self.call_for_sample = {call.sample: call for call in self.calls}
+        self.call_for_sample = {}
+        self.update_calls(self.calls)
+
+    def update_calls(self, calls):
+        """Update ``self.calls`` and other fields as necessary."""
+        for call in calls:
+            call.site = self
+        self.call_for_sample = {call.sample: call for call in calls}
 
     def is_snv(self):
         """Return ``True`` if it is a SNV"""

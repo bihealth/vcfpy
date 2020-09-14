@@ -67,3 +67,30 @@ def multisample_vcf_file(tmpdir, multisample_vcf):
     with open(str(p), "wt") as f:
         f.write(multisample_vcf)
     return str(p)
+
+
+@pytest.fixture
+def nosample_vcf():
+    """Return string VCF that has no samples and no FORMAT"""
+    return textwrap.dedent(
+        """
+        ##fileformat=VCFv4.3
+        ##contig=<ID=20,length=62435964,assembly=B36,md5=f126cdf8a6e0c7f379d618ff66beb2da,species="Homo sapiens",taxonomy=x>
+        ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+        #CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO
+        20\t14370\t.\tG\tA\t29\t.\t.
+        20\t17330\t.\tT\tA\t3\t.\t.
+        20\t1110696\t.\tA\tG,T\t67\t.\t.
+        20\t1230237\t.\tT\t.\t47\t.\t.
+        20\t1234567\t.\tGTC\tG,GTCT\t50\t.\t.
+        """
+    ).lstrip()
+
+
+@pytest.fixture
+def nosample_vcf_file(tmpdir, nosample_vcf):
+    """Return path to file without samples/FORMAT"""
+    p = tmpdir.mkdir("input").join("input.vcf")
+    with open(str(p), "wt") as f:
+        f.write(nosample_vcf)
+    return str(p)
