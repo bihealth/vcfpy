@@ -83,10 +83,10 @@ class Record:
         self.INFO = INFO
         #: A list of strings for the FORMAT column.  Optional, must be given if
         #: and only if ``calls`` is also given.
-        self.FORMAT = FORMAT or ()
+        self.FORMAT = FORMAT or []
         #: A list of genotype :py:class:`Call` objects.  Optional, must be given if
         #: and only if ``FORMAT`` is also given.
-        self.calls = list(calls or ())
+        self.calls = list(calls or [])
         for call in self.calls:
             call.site = self
         #: A mapping from sample name to entry in self.calls.

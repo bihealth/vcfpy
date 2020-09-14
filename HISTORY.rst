@@ -2,6 +2,11 @@
 History
 =======
 
+HEAD
+----
+
+- Making ``Record.{format,calls}`` use list when empty
+
 v0.13.2 (2020-08-20)
 --------------------
 
