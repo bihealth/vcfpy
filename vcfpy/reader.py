@@ -83,7 +83,7 @@ class Reader:
         """
         record_checks = record_checks or []
         path = str(path)
-        if path.endswith(".gz"):
+        if path.endswith(".gz") or path.endswith(".bgz"):
             f = gzip.open(path, "rt")
             if not tabix_path:
                 tabix_path = path + ".tbi"
