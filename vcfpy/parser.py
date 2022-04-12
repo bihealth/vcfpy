@@ -260,7 +260,7 @@ def parse_field_value(field_info, value):
     """
     if field_info.id == "FT":
         return [x for x in value.split(";") if x != "."]
-    elif field_info.type == "Flag":
+    elif isinstance(value, bool) or field_info.type == "Flag":
         return True
     elif field_info.number == 1:
         return convert_field_value(field_info.type, value)
