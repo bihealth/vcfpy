@@ -438,8 +438,7 @@ class Header:
 
 
 class HeaderLine:
-    """Base class for VCF header lines
-    """
+    """Base class for VCF header lines"""
 
     def __init__(self, key, value):
         #: ``str`` with key of header line
@@ -600,8 +599,7 @@ class ContigHeaderLine(SimpleHeaderLine):
 
 
 class FilterHeaderLine(SimpleHeaderLine):
-    """FILTER header line
-    """
+    """FILTER header line"""
 
     @classmethod
     def from_mapping(klass, mapping):
@@ -654,8 +652,7 @@ class MetaHeaderLine(SimpleHeaderLine):
 
 
 class PedigreeHeaderLine(SimpleHeaderLine):
-    """Header line for defining a pedigree entry
-    """
+    """Header line for defining a pedigree entry"""
 
     @classmethod
     def from_mapping(klass, mapping):
@@ -677,8 +674,7 @@ class PedigreeHeaderLine(SimpleHeaderLine):
 
 
 class SampleHeaderLine(SimpleHeaderLine):
-    """Header line for defining a SAMPLE entry
-    """
+    """Header line for defining a SAMPLE entry"""
 
     @classmethod
     def from_mapping(klass, mapping):
@@ -830,8 +826,7 @@ class InfoHeaderLine(CompoundHeaderLine):
 
 
 class FormatHeaderLine(CompoundHeaderLine):
-    """Header line for FORMAT fields
-    """
+    """Header line for FORMAT fields"""
 
     @classmethod
     def from_mapping(klass, mapping):
@@ -924,7 +919,7 @@ class SamplesInfos:
 
     def __str__(self):
         tpl = "SamplesInfos(names={}, name_to_idx={})"
-        return tpl.format(self.names, pprint.pformat(self.name_to_idx, width=10 ** 10))
+        return tpl.format(self.names, pprint.pformat(self.name_to_idx, width=10**10))
 
     def __repr__(self):
         return str(self)

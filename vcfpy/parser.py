@@ -256,8 +256,7 @@ def convert_field_value(type_, value):
 
 
 def parse_field_value(field_info, value):
-    """Parse ``value`` according to ``field_info``
-    """
+    """Parse ``value`` according to ``field_info``"""
     if field_info.id == "FT":
         return [x for x in value.split(";") if x != "."]
     elif isinstance(value, bool) or field_info.type == "Flag":
@@ -353,8 +352,7 @@ def process_alt(header, ref, alt_str):  # pylint: disable=W0613
 
 
 class HeaderParser:
-    """Helper class for parsing a VCF header
-    """
+    """Helper class for parsing a VCF header"""
 
     def __init__(self):
         #: Sub parsers to use for parsing the header lines
@@ -556,8 +554,7 @@ class RecordParser:
 
 
 class HeaderChecker:
-    """Helper class for checking a VCF header
-    """
+    """Helper class for checking a VCF header"""
 
     def run(self, header):
         """Check the header
@@ -571,8 +568,7 @@ class HeaderChecker:
         self._check_header_lines(header.lines)
 
     def _check_header_lines(self, header_lines):
-        """Check header lines, in particular for starting file "##fileformat"
-        """
+        """Check header lines, in particular for starting file "##fileformat" """
         if not header_lines:
             raise exceptions.InvalidHeaderException(
                 "The VCF file did not contain any header lines!"
@@ -750,7 +746,7 @@ class Parser:
         return self.header
 
     def _handle_sample_line(self, parsed_samples=None):
-        """"Check and interpret the "##CHROM" line and return samples"""
+        """ "Check and interpret the "##CHROM" line and return samples"""
         if not self._line or not self._line.startswith("#CHROM"):
             raise exceptions.IncorrectVCFFormat('Missing line starting with "#CHROM"')
         # check for space before INFO

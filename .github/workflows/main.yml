@@ -25,7 +25,7 @@ jobs:
 
       - name: Setup black environment
         run: |
-          conda create -c conda-forge -y -q --name black black
+          conda create -c conda-forge -y -q --name black black==22.3.0
       - name: Check formatting
         run: |
           export PATH="/usr/share/miniconda/bin:$PATH"

@@ -55,14 +55,16 @@ def test_read_text_no_samples():
 def test_read_info_flag():
     """Test reading INFO field flag with inconsistent header metadata."""
     # In the INFO field, `MH` is a flag but the header specifies it as a string.
-    string_buffer = io.StringIO(r"""##fileformat=VCFv4.2
+    string_buffer = io.StringIO(
+        r"""##fileformat=VCFv4.2
 ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
 ##INFO=<ID=MH,Number=1,Type=String,Description="Microhomology">
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	FOO	BAR
 1	4798729	.	CT	C	621	PASS	MH	GT	0/0:25	0/1:64
-""")
+"""
+    )
 
     # Verify that no TypeError is raised.
     with reader.Reader.from_stream(string_buffer) as r:
         line = next(r)
-        assert line.INFO['MH']
+        assert line.INFO["MH"]
