@@ -4,4 +4,4 @@
 -r base.txt
 
 # Black for formatting
-black ==18.9b0
+black ==22.3.0

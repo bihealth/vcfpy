@@ -49,8 +49,7 @@ def header_samples():
 
 
 def check_file(path, line):
-    """Test whether the file is the expected ``.vcf.gz`` file
-    """
+    """Test whether the file is the expected ``.vcf.gz`` file"""
     raw = path.read(mode="rb")
     assert raw[0] == 0x1F
     assert raw[1] == 0x8B

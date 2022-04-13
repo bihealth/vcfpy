@@ -55,8 +55,8 @@ source_suffix = ".rst"
 master_doc = "index"
 
 # General information about the project.
-project = u"vcfpy"
-copyright = u"2016, Manuel Holtgrewe"
+project = "vcfpy"
+copyright = "2016, Manuel Holtgrewe"
 
 # The version info for the project you're documenting, acts as replacement
 # for |version| and |release|, also used in various other places throughout
@@ -205,7 +205,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass
 # [howto/manual]).
-latex_documents = [("index", "vcfpy.tex", u"vcfpy Documentation", u"Manuel Holtgrewe", "manual")]
+latex_documents = [("index", "vcfpy.tex", "vcfpy Documentation", "Manuel Holtgrewe", "manual")]
 
 # The name of an image file (relative to this directory) to place at
 # the top of the title page.
@@ -232,7 +232,7 @@ latex_documents = [("index", "vcfpy.tex", u"vcfpy Documentation", u"Manuel Holtg
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [("index", "vcfpy", u"vcfpy Documentation", [u"Manuel Holtgrewe"], 1)]
+man_pages = [("index", "vcfpy", "vcfpy Documentation", ["Manuel Holtgrewe"], 1)]
 
 # If true, show URL addresses after external links.
 # man_show_urls = False
@@ -247,8 +247,8 @@ texinfo_documents = [
     (
         "index",
         "vcfpy",
-        u"vcfpy Documentation",
-        u"Manuel Holtgrewe",
+        "vcfpy Documentation",
+        "Manuel Holtgrewe",
         "vcfpy",
         "One line description of project.",
         "Miscellaneous",

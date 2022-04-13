@@ -196,8 +196,7 @@ class Record:
 
 
 class UnparsedCall:
-    """Placeholder for :py:class:`Call` when parsing only a subset of fields
-    """
+    """Placeholder for :py:class:`Call` when parsing only a subset of fields"""
 
     def __init__(self, sample, unparsed_data, site=None):
         #: the name of the sample for which the call was made
