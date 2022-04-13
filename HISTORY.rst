@@ -2,8 +2,8 @@
 History
 =======
 
-HEAD (unrelated)
-----------------
+v0.13.4 (2022-04-13)
+--------------------
 
 - Switching to Github Actions for CI
 - Fix INFO flag raises TypeError (#146)
