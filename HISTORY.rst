@@ -2,8 +2,8 @@
 History
 =======
 
-v0.13.6 (WIP)
--------------
+v0.13.6 (2022-11-28)
+--------------------
 
 - Fixing bug in ``setup.py`` that prevented ``pysam`` dependency to be loaded (#150).
 
