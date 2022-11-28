@@ -2,7 +2,12 @@
 History
 =======
 
-v0.13.5 (2022-11-04)
+v0.13.6 (WIP)
+-------------
+
+- Fixing bug in ``setup.py`` that prevented ``pysam`` dependency to be loaded (#150).
+
+v0.13.5 (2022-11-13)
 --------------------
 
 - Treat ``.bgz`` files the same as ``.gz`` (#145, #149)

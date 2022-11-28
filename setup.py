@@ -39,7 +39,7 @@ if sys.version_info[:2] < (3, 6):
 else:
     pre36_reqs = []
 
-requirements = chain(base_reqs, pre36_reqs)
+requirements = list(chain(base_reqs, pre36_reqs))
 
 test_requirements = parse_requirements("requirements/test.txt")
 
