@@ -23,10 +23,10 @@ def parse_requirements(path):
     return requirements
 
 
-with open("README.rst") as readme_file:
+with open("README.md") as readme_file:
     readme = readme_file.read()
 
-with open("HISTORY.rst") as history_file:
+with open("CHANGELOG.md") as history_file:
     history = history_file.read()
 
 base_reqs = parse_requirements("requirements.txt")
@@ -43,7 +43,7 @@ test_requirements = parse_requirements("requirements/test.txt")
 
 package_root = os.path.abspath(os.path.dirname(__file__))
 version = {}
-with open(os.path.join(package_root, "vcfpy/_version.py")) as fp:
+with open(os.path.join(package_root, "vcfpy/version.py")) as fp:
     exec(fp.read(), version)
 version = version["__version__"]
 
@@ -52,6 +52,7 @@ setup(
     version=version,
     description=("Python 3 VCF library with good support for both reading and writing"),
     long_description=readme + "\n\n" + history,
+    long_description_content_type="text/markdown",
     author="Manuel Holtgrewe",
     author_email="manuel.holtgrewe@bih-charite.de",
     url="https://github.com/bihealth/vcfpy",

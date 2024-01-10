@@ -47,4 +47,4 @@ from .reader import Reader
 
 from .writer import Writer
 
-from ._version import __version__
+from .version import __version__
