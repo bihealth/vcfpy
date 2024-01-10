@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.8](https://github.com/bihealth/vcfpy/compare/v0.13.7...v0.13.8) (2024-01-10)
+
+
+### Bug Fixes
+
+* install setuptools in release-please CI for Python 3.12+ ([#163](https://github.com/bihealth/vcfpy/issues/163)) ([7ddd2f6](https://github.com/bihealth/vcfpy/commit/7ddd2f6b5e31980ad29b3453e7c601b5ea26ec68))
+
 ## [0.13.7](https://github.com/bihealth/vcfpy/compare/v0.13.6...v0.13.7) (2024-01-10)
 
 
