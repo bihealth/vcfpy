@@ -20,7 +20,6 @@ def test_header_checker_missing_fileformat():
     lines = [header.HeaderLine("key", "value")]
     hdr = header.Header(lines=lines, samples=header.SamplesInfos(["NA001"]))
     # setup HeaderChecker
-    stream = io.StringIO()
     checker = parser.HeaderChecker()
     # execute
     with pytest.raises(exceptions.InvalidHeaderException):

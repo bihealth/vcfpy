@@ -4,7 +4,7 @@ samples
 """
 
 
-from vcfpy import Reader, Writer, Header, SamplesInfos, Call, UnparsedCall
+from vcfpy import Reader, Writer, Header, SamplesInfos
 
 
 def test_reading_and_write_subset_of_samples(

@@ -47,7 +47,7 @@ def header_samples():
 
 
 def test_write_minimal_record(header_samples, tmpdir_factory):
-    O = vcfpy.OrderedDict
+    OD = vcfpy.OrderedDict
     # open temporary file and setup the Writer with header
     path = tmpdir_factory.mktemp("write_header").join("out.vcf")
     header, _ = header_samples
@@ -61,12 +61,12 @@ def test_write_minimal_record(header_samples, tmpdir_factory):
         [record.Substitution(record.SNV, "T")],
         None,
         [],
-        O(),
+        OD(),
         ["GT"],
         [
-            record.Call("NA00001", O(GT="0/1")),
-            record.Call("NA00002", O(GT="0/0")),
-            record.Call("NA00003", O(GT="1/1")),
+            record.Call("NA00001", OD(GT="0/1")),
+            record.Call("NA00002", OD(GT="0/0")),
+            record.Call("NA00003", OD(GT="1/1")),
         ],
     )
     # write out the record, close file to ensure flushing to disk
@@ -80,8 +80,7 @@ def test_write_minimal_record(header_samples, tmpdir_factory):
 
 
 def test_write_annotated_record(header_samples, tmpdir_factory):
-    O = vcfpy.OrderedDict
-    S = record.Substitution
+    OD = vcfpy.OrderedDict
     # open temporary file and setup the Writer with header
     path = tmpdir_factory.mktemp("write_annotated_record").join("out.vcf")
     header, _ = header_samples
@@ -95,12 +94,12 @@ def test_write_annotated_record(header_samples, tmpdir_factory):
         [record.Substitution(record.SNV, "T"), record.Substitution(record.SNV, "G")],
         50,
         ["PASS"],
-        O([("DP", 93), ("AF", [0.3, 0.2]), ("DB", True)]),
+        OD([("DP", 93), ("AF", [0.3, 0.2]), ("DB", True)]),
         ["GT", "DP", "GQ", "HQ"],
         [
-            record.Call("NA00001", O(GT="0/1", DP=30, GQ=40, HQ=[1, 2])),
-            record.Call("NA00002", O(GT="0/2", DP=31, GQ=41, HQ=[3, 4])),
-            record.Call("NA00003", O(GT="1/2", DP=32, GQ=42, HQ=[5, 6])),
+            record.Call("NA00001", OD(GT="0/1", DP=30, GQ=40, HQ=[1, 2])),
+            record.Call("NA00002", OD(GT="0/2", DP=31, GQ=41, HQ=[3, 4])),
+            record.Call("NA00003", OD(GT="1/2", DP=32, GQ=42, HQ=[5, 6])),
         ],
     )
     # write out the record, close file to ensure flushing to disk
@@ -114,8 +113,7 @@ def test_write_annotated_record(header_samples, tmpdir_factory):
 
 
 def test_write_record_with_escaping(header_samples, tmpdir_factory):
-    O = vcfpy.OrderedDict
-    S = record.Substitution
+    OD = vcfpy.OrderedDict
     # open temporary file and setup the Writer with header
     path = tmpdir_factory.mktemp("write_header").join("out.vcf")
     header, _ = header_samples
@@ -129,12 +127,12 @@ def test_write_record_with_escaping(header_samples, tmpdir_factory):
         [record.Substitution(record.SNV, "T")],
         None,
         [],
-        O([("ANNO", ["Here,are%some chars", "%25"])]),
+        OD([("ANNO", ["Here,are%some chars", "%25"])]),
         ["GT", "FT"],
         [
-            record.Call("NA00001", O(GT="0/1", FT=["%25", "FOO"])),
-            record.Call("NA00002", O(GT="0/0", FT=[])),
-            record.Call("NA00003", O(GT="1/1", FT=[])),
+            record.Call("NA00001", OD(GT="0/1", FT=["%25", "FOO"])),
+            record.Call("NA00002", OD(GT="0/0", FT=[])),
+            record.Call("NA00003", OD(GT="1/1", FT=[])),
         ],
     )
     # write out the record, close file to ensure flushing to disk
@@ -151,13 +149,13 @@ def test_write_record_with_escaping(header_samples, tmpdir_factory):
 
 
 def test_write_record_no_samples(tmpdir_factory):
-    O = vcfpy.OrderedDict
+    OD = vcfpy.OrderedDict
     # Create header without samples
     hdr = header.Header(
         lines=[header.HeaderLine("fileformat", "VCFv4.0")], samples=header.SamplesInfos([])
     )
     # construct record to write out from scratch
-    r = record.Record("20", 100, [], "C", [record.Substitution(record.SNV, "T")], None, [], O())
+    r = record.Record("20", 100, [], "C", [record.Substitution(record.SNV, "T")], None, [], OD())
     # Write out header and record
     path = tmpdir_factory.mktemp("write_header").join("out.vcf")
     w = writer.Writer.from_path(path, hdr)

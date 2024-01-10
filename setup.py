@@ -7,8 +7,6 @@ import sys
 
 from setuptools import setup
 
-import versioneer
-
 
 def parse_requirements(path):
     """Parse ``requirements.txt`` at ``path``."""
@@ -43,14 +41,19 @@ requirements = list(chain(base_reqs, pre36_reqs))
 
 test_requirements = parse_requirements("requirements/test.txt")
 
+package_root = os.path.abspath(os.path.dirname(__file__))
+version = {}
+with open(os.path.join(package_root, "vcfpy/_version.py")) as fp:
+    exec(fp.read(), version)
+version = version["__version__"]
+
 setup(
     name="vcfpy",
-    version=versioneer.get_version(),
-    cmdclass=versioneer.get_cmdclass(),
+    version=version,
     description=("Python 3 VCF library with good support for both reading and writing"),
     long_description=readme + "\n\n" + history,
     author="Manuel Holtgrewe",
-    author_email="manuel.holtgrewe@bihealth.de",
+    author_email="manuel.holtgrewe@bih-charite.de",
     url="https://github.com/bihealth/vcfpy",
     packages=["vcfpy"],
     package_dir={"vcfpy": "vcfpy"},
@@ -65,11 +68,11 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Natural Language :: English",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
     ],
     test_suite="tests",
     tests_require=test_requirements,

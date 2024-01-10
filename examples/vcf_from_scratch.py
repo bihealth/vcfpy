@@ -2,10 +2,7 @@
 # -*- coding: utf-8 -*-
 """Create VCF from scratch using vcfpy."""
 
-import argparse
-import itertools
 import sys
-import time
 
 import vcfpy
 

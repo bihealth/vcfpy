@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 """Tests for reading with file without samples"""
 
-from io import StringIO
 import textwrap
 
 import vcfpy
 
 
-def test_reading_parse_nosample(tmpdir, nosample_vcf_file):
+def test_reading_parse_nosample_read_only(tmpdir, nosample_vcf_file):
     """Test reading of VCF file without any samples."""
     # Perform record-wise copying, saving results in records
     records = []
@@ -18,7 +17,7 @@ def test_reading_parse_nosample(tmpdir, nosample_vcf_file):
     assert len(records) == 5
 
 
-def test_reading_parse_nosample(tmpdir, nosample_vcf_file):
+def test_reading_parse_nosample_also_write(tmpdir, nosample_vcf_file):
     """Read VCF file without samples, write file with samples."""
     # Perform record-wise copying, saving results in records
     path_out = tmpdir.mkdir("output").join("output.vcf")
