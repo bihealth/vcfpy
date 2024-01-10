@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.8](https://github.com/bihealth/vcfpy/compare/v0.13.7...v0.13.8) (2024-01-10)
+
+
+### Bug Fixes
+
+* fixing manifest for changelog ([#169](https://github.com/bihealth/vcfpy/issues/169)) ([83c5b8e](https://github.com/bihealth/vcfpy/commit/83c5b8e6cd1199245673cc0d8deb2d6f3646d183))
+
 ## [0.13.7](https://github.com/bihealth/vcfpy/compare/v0.13.6...v0.13.7) (2024-01-10)
 
 
