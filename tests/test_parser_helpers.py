@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """Test for the helper routines in the vcfpy.parser module"""
 
-import pytest
-
 from vcfpy import parser
 
 __author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"

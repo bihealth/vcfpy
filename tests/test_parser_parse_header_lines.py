@@ -4,8 +4,6 @@
 
 import sys
 
-import pytest
-
 from vcfpy import header
 from vcfpy import parser
 
