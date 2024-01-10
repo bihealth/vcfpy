@@ -1,1 +1,1 @@
-.. include:: ../HISTORY.rst
+See ``README.md`` file.
