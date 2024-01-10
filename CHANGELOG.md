@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.7](https://github.com/bihealth/vcfpy/compare/v0.13.6...v0.13.7) (2024-01-10)
+
+
+### Bug Fixes
+
+* remove versioneer Python 3.12 compatibility ([#160](https://github.com/bihealth/vcfpy/issues/160)) ([5e2860e](https://github.com/bihealth/vcfpy/commit/5e2860e22042aa794304c8805ca716a39c88f24e))
+
 ## v0.13.6 (2022-11-28)
 
 -   Fixing bug in `setup.py` that prevented `pysam` dependency to be
