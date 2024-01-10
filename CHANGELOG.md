@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.9](https://github.com/bihealth/vcfpy/compare/v0.13.8...v0.13.9) (2024-01-10)
+
+
+### Bug Fixes
+
+* bump release-please in CI ([#165](https://github.com/bihealth/vcfpy/issues/165)) ([c22954c](https://github.com/bihealth/vcfpy/commit/c22954c2fb645ebd31fb2372ec0c5703a2573892))
+
 ## [0.13.8](https://github.com/bihealth/vcfpy/compare/v0.13.7...v0.13.8) (2024-01-10)
 
 
