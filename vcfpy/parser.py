@@ -514,7 +514,7 @@ class RecordParser:
             raise exceptions.InvalidRecordException(
                 (
                     "The line contains an invalid number of fields. Was "
-                    "{} but expected {}\n{}".format(len(arr), 9 + len(self.samples.names), line_str)
+                    "{} but expected {}\n{}".format(len(arr), self.expected_fields, line_str)
                 )
             )
         return arr
