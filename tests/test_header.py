@@ -348,3 +348,25 @@ def test_header_has_header_line_positive_no_samples():
     assert not hdr.has_header_line("INFO", "AD")
     assert not hdr.has_header_line("FILTER", "PASS")
     assert not hdr.has_header_line("contig", "1")
+
+
+def test_header_get_format_field_info():
+    lines = []
+    samples = header.SamplesInfos(["one", "two", "three"])
+    hdr = header.Header(lines, samples)
+    gt_field_info = hdr.get_format_field_info("GT")
+
+    expected = header.RESERVED_FORMAT["GT"]
+
+    assert gt_field_info is expected
+
+
+def test_header_get_info_format_field_info():
+    lines = []
+    samples = header.SamplesInfos(["one", "two", "three"])
+    hdr = header.Header(lines, samples)
+    gt_field_info = hdr.get_info_field_info("AA")
+
+    expected = header.RESERVED_INFO["AA"]
+
+    assert gt_field_info is expected
