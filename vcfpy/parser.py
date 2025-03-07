@@ -254,6 +254,22 @@ def convert_field_value(type_, value):
             )
             return value
 
+def parse_dbsnp_info(freq_str):
+    """
+    example form: KOREAN:0.9928,0.004112,0.003084|Siberian:0.5,0.5,.|dbGaP_PopFreq:1,.,0
+    "|" is delimiter for entries
+    each entry starts with the "<dbname>:" and is followed by frequencies
+    the frequenies are delimited by komma ","
+    missing values are dots "."
+    """
+    db_arr = freq_str.split("|")
+    res = []
+    for db in db_arr:
+        dbname, freqs = db.split(":")
+        freqs = [ freq if (freq != ".") else None for freq in freqs.split(",")]
+        res.append({dbname : freqs})
+    return res
+
 
 def parse_field_value(field_info, value):
     """Parse ``value`` according to ``field_info``"""
@@ -263,6 +279,8 @@ def parse_field_value(field_info, value):
         return True
     elif field_info.number == 1:
         return convert_field_value(field_info.type, value)
+    elif field_info.id == "FREQ":
+        return parse_dbsnp_info(value)    
     else:
         if value == ".":
             return []
