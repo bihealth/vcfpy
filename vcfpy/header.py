@@ -858,7 +858,7 @@ class SamplesInfos:
             self.parsed_samples = set(self.parsed_samples)
             assert self.parsed_samples <= set(self.names), "Must be subset!"
         #: mapping from sample name to index
-        self.name_to_idx = dict([(name, idx) for idx, name in enumerate(self.names)])
+        self.name_to_idx = {name: idx for idx, name in enumerate(self.names)}
 
     def copy(self):
         """Return a copy of the object"""

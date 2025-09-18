@@ -8,6 +8,7 @@ help:
 	@echo "  fix                    Format source code"
 	@echo "  check                  Run checks"
 	@echo "  test                   Format source code"
+	@echo "  sdist                  Build source distribution"
 
 .PHONY: fix
 fix:
@@ -20,4 +21,8 @@ check:
 
 .PHONY: test
 test:
-	uv run hatch run tests:run -- --record-mode=none
+	uv run hatch run tests:run
+
+.PHONY: sdist
+sdist:
+	uv run hatch run build:run

@@ -77,7 +77,7 @@ check = [
 ]
 format = [
   "black --preview vcfpy tests",
-  "ruff check --fix vcfpy tests",
+  "ruff check --fix --unsafe-fixes vcfpy tests",
   "check",
 ]
 # typecheck = [

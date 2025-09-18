@@ -254,7 +254,7 @@ class Call:
                     self.gt_alleles.append(None)
                 else:
                     self.gt_alleles.append(int(allele))
-            self.called = all([al is not None for al in self.gt_alleles])
+            self.called = all(al is not None for al in self.gt_alleles)
             self.ploidy = len(self.gt_alleles)
 
     @property

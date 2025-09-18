@@ -33,7 +33,7 @@ def format_value(field_info, value, section):
         if not value:
             return "."
         elif isinstance(value, list):
-            return ";".join(map(lambda x: format_atomic(x, section), value))
+            return ";".join((format_atomic(x, section) for x in value))
     elif field_info.number == 1:
         if value is None:
             return "."
@@ -43,7 +43,7 @@ def format_value(field_info, value, section):
         if not value:
             return "."
         else:
-            return ",".join(map(lambda x: format_atomic(x, section), value))
+            return ",".join((format_atomic(x, section) for x in value))
 
 
 class Writer:

@@ -12,9 +12,12 @@ Namely, defines the type ``OrderedDict``:
 import sys
 
 if sys.version_info[:2] >= (3, 6):
+    global OrderedDict
     OrderedDict = dict
 else:
     try:
         from cyordereddict import OrderedDict
     except ImportError:
         pass  # noqa: F401
+
+__all__ = ["OrderedDict"]
