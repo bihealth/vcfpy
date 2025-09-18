@@ -25,9 +25,13 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v5
 
-      - name: Check formatting
+      - name: Run Lint
         run: |
-          black --check --diff -l 100 .
+          uv run hatch run quality:check
+
+    #   - name: Run Type Checks
+    #     run: |
+    #       uv run hatch run quality:typecheck
 
       - name: Comment PR
         if: github.event_name == 'pull_request' && failure()
