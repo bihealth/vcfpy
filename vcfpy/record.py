@@ -34,7 +34,7 @@ HET = 1
 HOM_ALT = 2
 
 #: Characters reserved in VCF, have to be escaped in INFO fields
-RESERVED_CHARS = {"INFO": ";%,\r\n\t", "FORMAT": ":=%,\r\n\t"}
+RESERVED_CHARS = {"INFO": ";=%,\r\n\t", "FORMAT": ":=%,\r\n\t"}
 #: Mapping for escaping reserved characters
 ESCAPE_MAPPING = [
     ("%", "%25"),
