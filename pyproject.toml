@@ -50,6 +50,7 @@ dev = [
     "hatch~=1.13.0",
     "imagesize>=0.7.1",
     "py>=1.4.32",
+    "pyright>=1.1.394",
     "pytest-cache>=1.0",
     "pytest-cov",
     "pytest-cov>=2.4.0",
@@ -79,9 +80,12 @@ format = [
   "ruff check --fix --unsafe-fixes vcfpy tests",
   "check",
 ]
-# typecheck = [
-#   "pyright vcfpy",
-# ]
+typecheck = [
+  """
+  pyright --pythonpath="$(uv run --active hatch run quality:python -c 'import sys; print(sys.executable)')" \
+    {args:vcfpy/ tests/}
+  """
+]
 
 [tool.pyright]
 include = ["vcfpy"]
@@ -89,21 +93,33 @@ exclude = [
     "**/node_modules",
     "**/__pycache__",
 ]
-ignore = ["src/oldstuff"]
+ignore = []
 defineConstant = { DEBUG = true }
-stubPath = "src/stubs"
+stubPath = "stubs"
 
-reportMissingImports = "error"
-reportMissingTypeStubs = false
-
-# Sadly, the client generator creates some invalid code.
-reportReturnType = false
-reportOptionalMemberAccess = false
-reportArgumentType = false
-reportAttributeAccessIssue = false
-
-pythonVersion = "3.11"
+pythonVersion = "3.12"
 pythonPlatform = "Linux"
+
+# Missing type annotation reports
+reportMissingParameterType = "error"
+reportMissingReturnType = "error"
+reportUnknownParameterType = "error"
+reportUnknownVariableType = "error"
+reportUnknownMemberType = "error"
+reportUnknownArgumentType = "error"
+reportMissingTypeArgument = "error"
+
+# Other useful reports for type safety
+reportGeneralTypeIssues = "error"
+reportOptionalMemberAccess = "error"
+reportOptionalSubscript = "error"
+reportPrivateImportUsage = "error"
+
+# Stub files
+reportMissingTypeStubs = "error"
+reportImportCycles = "error"
+reportUnusedImport = "error"
+reportUnusedVariable = "error"
 
 [tool.ruff]
 lint.ignore = [
