@@ -11,11 +11,10 @@ Namely, defines the type ``OrderedDict``:
 
 import sys
 
-
 if sys.version_info[:2] >= (3, 6):
     OrderedDict = dict
 else:
     try:
         from cyordereddict import OrderedDict
     except ImportError:
-        from collections import OrderedDict  # noqa: ignore=F401
+        pass  # noqa: F401

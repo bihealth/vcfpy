@@ -4,9 +4,7 @@
 Currently, only writing to plain-text files is supported
 """
 
-from . import parser
-from . import record
-from . import bgzf
+from . import bgzf, parser, record
 
 __author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"
 
@@ -144,10 +142,7 @@ class Writer:
         row.append(f(self._serialize_info(record)))
         if record.FORMAT:
             row.append(":".join(record.FORMAT))
-        row += [
-            self._serialize_call(record.FORMAT, record.call_for_sample[s])
-            for s in self.header.samples.names
-        ]
+        row += [self._serialize_call(record.FORMAT, record.call_for_sample[s]) for s in self.header.samples.names]
         print(*row, sep="\t", file=self.stream)
 
     def _serialize_info(self, record):
@@ -167,8 +162,7 @@ class Writer:
             return call.unparsed_data
         else:
             result = [
-                format_value(self.header.get_format_field_info(key), call.data.get(key), "FORMAT")
-                for key in format_
+                format_value(self.header.get_format_field_info(key), call.data.get(key), "FORMAT") for key in format_
             ]
             return ":".join(result)
 

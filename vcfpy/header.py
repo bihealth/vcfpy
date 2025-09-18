@@ -13,8 +13,8 @@ from .compat import OrderedDict
 from .exceptions import (
     DuplicateHeaderLineWarning,
     FieldInfoNotFound,
-    FieldMissingNumber,
     FieldInvalidNumber,
+    FieldMissingNumber,
     HeaderInvalidType,
     HeaderMissingDescription,
 )
@@ -72,9 +72,7 @@ class FieldInfo:
         return hash(tuple(sorted(self.__dict__.items())))
 
     def __str__(self):
-        return "FieldInfo({}, {}, {}, {})".format(
-            *map(repr, [self.type, self.number, self.description, self.id])
-        )
+        return "FieldInfo({}, {}, {}, {})".format(*map(repr, [self.type, self.number, self.description, self.id]))
 
     def __repr__(self):
         return str(self)
@@ -89,7 +87,7 @@ RESERVED_INFO = {
     "AC": FieldInfo(
         "Integer",
         "A",
-        "Allele count in genotypes, for each ALT allele, in the " "same order as listed",
+        "Allele count in genotypes, for each ALT allele, in the same order as listed",
     ),
     "AD": FieldInfo("Integer", "R", "Total read depth for each allele"),
     "ADF": FieldInfo("Integer", "R", "Forward read depth for each allele"),
@@ -106,14 +104,13 @@ RESERVED_INFO = {
     "CIGAR": FieldInfo(
         "String",
         "A",
-        "CIGAR string describing how to align each ALT allele " "to the reference allele",
+        "CIGAR string describing how to align each ALT allele to the reference allele",
     ),
     "DB": FieldInfo("Flag", 0, "dbSNP membership"),
     "DP": FieldInfo(
         "Integer",
         1,
-        "Combined depth across samples for small variants and "
-        "Read Depth of segment containing breakend for SVs",
+        "Combined depth across samples for small variants and Read Depth of segment containing breakend for SVs",
     ),
     "H2": FieldInfo("Flag", 0, "Membership in HapMap 2"),
     "H3": FieldInfo("Flag", 0, "Membership in HapMap 3"),
@@ -121,9 +118,7 @@ RESERVED_INFO = {
     "MQ0": FieldInfo("Integer", 1, "Number of MAPQ == 0 reads covering this record"),
     "NS": FieldInfo("Integer", 1, "Number of samples with data"),
     "SB": FieldInfo("Integer", 4, "Strand bias at this position"),
-    "SOMATIC": FieldInfo(
-        "Flag", 0, "Indicates that the record is a somatic mutation, " "for cancer genomics"
-    ),
+    "SOMATIC": FieldInfo("Flag", 0, "Indicates that the record is a somatic mutation, for cancer genomics"),
     "VALIDATED": FieldInfo("Flag", 0, "Validated by follow-up experiment"),
     "1000G": FieldInfo("Flag", 0, "Membership in 1000 Genomes"),
     # VCF v4.3, Section 3
@@ -132,41 +127,29 @@ RESERVED_INFO = {
     "END": FieldInfo(
         "Integer",
         1,
-        "End position of the variant described in this record " "(for symbolic alleles)",
+        "End position of the variant described in this record (for symbolic alleles)",
     ),
     "SVTYPE": FieldInfo("String", 1, "Type of structural variant"),
     "SVLEN": FieldInfo("Integer", 1, "Difference in length between REF and ALT alleles"),
-    "CIPOS": FieldInfo("Integer", 2, "Confidence interval around POS for imprecise " "variants"),
-    "CIEND": FieldInfo("Integer", 2, "Confidence interval around END for imprecise " "variants"),
-    "HOMLEN": FieldInfo(
-        "Integer", ".", "Length of base pair identical micro-homology at " "event breakpoints"
-    ),
-    "HOMSEQ": FieldInfo(
-        "String", ".", "Sequence of base pair identical micro-homology at " "event breakpoints"
-    ),
-    "BKPTID": FieldInfo(
-        "String", ".", "ID of the assembled alternate allele in the " "assembly file"
-    ),
-    "MEINFO": FieldInfo("String", 4, "Mobile element info of the form " "NAME,START,END,POLARITY"),
-    "METRANS": FieldInfo(
-        "String", 4, "Mobile element transduction info of the form " "CHR,START,END,POLARITY"
-    ),
+    "CIPOS": FieldInfo("Integer", 2, "Confidence interval around POS for imprecise variants"),
+    "CIEND": FieldInfo("Integer", 2, "Confidence interval around END for imprecise variants"),
+    "HOMLEN": FieldInfo("Integer", ".", "Length of base pair identical micro-homology at event breakpoints"),
+    "HOMSEQ": FieldInfo("String", ".", "Sequence of base pair identical micro-homology at event breakpoints"),
+    "BKPTID": FieldInfo("String", ".", "ID of the assembled alternate allele in the assembly file"),
+    "MEINFO": FieldInfo("String", 4, "Mobile element info of the form NAME,START,END,POLARITY"),
+    "METRANS": FieldInfo("String", 4, "Mobile element transduction info of the form CHR,START,END,POLARITY"),
     "DGVID": FieldInfo("String", 1, "ID of this element in Database of Genomic Variation"),
     "DBVARID": FieldInfo("String", 1, "ID of this element in DBVAR"),
     "DBRIPID": FieldInfo("String", 1, "ID of this element in DBRIP"),
     "MATEID": FieldInfo("String", ".", "ID of mate breakends"),
     "PARID": FieldInfo("String", 1, "ID of partner breakend"),
     "EVENT": FieldInfo("String", 1, "ID of event associated to breakend"),
-    "CILEN": FieldInfo(
-        "Integer", 2, "Confidence interval around the inserted material " "between breakends"
-    ),
+    "CILEN": FieldInfo("Integer", 2, "Confidence interval around the inserted material between breakends"),
     "DPADJ": FieldInfo("Integer", ".", "Read Depth of adjacency"),
     "CN": FieldInfo("Integer", 1, "Copy number of segment containing breakend"),
     "CNADJ": FieldInfo("Integer", ".", "Copy number of adjacency"),
-    "CICN": FieldInfo("Integer", 2, "Confidence interval around copy number for the " "segment"),
-    "CICNADJ": FieldInfo(
-        "Integer", ".", "Confidence interval around copy number for the " "adjacency"
-    ),
+    "CICN": FieldInfo("Integer", 2, "Confidence interval around copy number for the segment"),
+    "CICNADJ": FieldInfo("Integer", ".", "Confidence interval around copy number for the adjacency"),
 }
 
 # Reserved FORMAT keys --------------------------------------------------------
@@ -177,9 +160,7 @@ RESERVED_FORMAT = {
     "ADF": FieldInfo("Integer", "R", "Forward-strand, per-sample read depth"),
     "ADR": FieldInfo("Integer", "R", "Reverse-strand, per-sample read depth"),
     "DP": FieldInfo("Integer", 1, "Read depth at this position for this sample"),
-    "EC": FieldInfo(
-        "Integer", "A", "Expected alternate allele counts for each alternate " "allele"
-    ),
+    "EC": FieldInfo("Integer", "A", "Expected alternate allele counts for each alternate allele"),
     "FT": FieldInfo("String", "1", "Filters applied for this sample", "FORMAT/FT"),
     "GQ": FieldInfo("Integer", "G", "Phred-scale, conditional genotype quality"),
     "GP": FieldInfo("Float", "G", "Genotype posterior probabilities"),
@@ -192,7 +173,7 @@ RESERVED_FORMAT = {
     "PS": FieldInfo(
         "Integer",
         1,
-        "Non-negative 32 bit integer giving phasing set " "for this sample and this chromosome",
+        "Non-negative 32 bit integer giving phasing set for this sample and this chromosome",
     ),
     # VCF v4.3, Section 4
     "CN": FieldInfo("Integer", 1, "Copy number genotype for imprecise events"),
@@ -282,7 +263,7 @@ class Header:
                 result.setdefault(line.key, OrderedDict())
                 if line.mapping["ID"] in result[line.key]:
                     warnings.warn(
-                        ("Seen {} header more than once: {}, using first" "occurence").format(
+                        ("Seen {} header more than once: {}, using firstoccurence").format(
                             line.key, line.mapping["ID"]
                         ),
                         DuplicateHeaderLineWarning,
@@ -383,10 +364,9 @@ class Header:
             return False  # no registration required
         if self.has_header_line(header_line.key, header_line.mapping["ID"]):
             warnings.warn(
-                (
-                    "Detected duplicate header line with type {} and ID {}. "
-                    "Ignoring this and subsequent one"
-                ).format(header_line.key, header_line.mapping["ID"]),
+                ("Detected duplicate header line with type {} and ID {}. Ignoring this and subsequent one").format(
+                    header_line.key, header_line.mapping["ID"]
+                ),
                 DuplicateHeaderLineWarning,
             )
             return False
@@ -503,9 +483,7 @@ class SimpleHeaderLine(HeaderLine):
         super().__init__(key, value)
         # check existence of key "ID"
         if "ID" not in mapping:
-            raise exceptions.InvalidHeaderException(
-                'Missing key "ID" in header line "{}={}"'.format(key, value)
-            )
+            raise exceptions.InvalidHeaderException('Missing key "ID" in header line "{}={}"'.format(key, value))
         #: ``collections.OrderedDict`` with key/value mapping of the attributes
         self.mapping = OrderedDict(mapping.items())
 
@@ -522,9 +500,7 @@ class SimpleHeaderLine(HeaderLine):
         return "".join(map(str, ["##", self.key, "=", self.value]))
 
     def __str__(self):
-        return "SimpleHeaderLine({}, {}, {})".format(
-            *map(repr, (self.key, self.value, self.mapping))
-        )
+        return "SimpleHeaderLine({}, {}, {})".format(*map(repr, (self.key, self.value, self.mapping)))
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -558,9 +534,7 @@ class AltAlleleHeaderLine(SimpleHeaderLine):
         raise TypeError("Unhashable type: AltAlleleHeaderLine")
 
     def __str__(self):
-        return "AltAlleleHeaderLine({}, {}, {})".format(
-            *map(repr, (self.key, self.value, self.mapping))
-        )
+        return "AltAlleleHeaderLine({}, {}, {})".format(*map(repr, (self.key, self.value, self.mapping)))
 
 
 class ContigHeaderLine(SimpleHeaderLine):
@@ -593,9 +567,7 @@ class ContigHeaderLine(SimpleHeaderLine):
         raise TypeError("Unhashable type: ContigHeaderLine")
 
     def __str__(self):
-        return "ContigHeaderLine({}, {}, {})".format(
-            *map(repr, (self.key, self.value, self.mapping))
-        )
+        return "ContigHeaderLine({}, {}, {})".format(*map(repr, (self.key, self.value, self.mapping)))
 
 
 class FilterHeaderLine(SimpleHeaderLine):
@@ -623,9 +595,7 @@ class FilterHeaderLine(SimpleHeaderLine):
         raise TypeError("Unhashable type: FilterHeaderLine")
 
     def __str__(self):
-        return "FilterHeaderLine({}, {}, {})".format(
-            *map(repr, (self.key, self.value, self.mapping))
-        )
+        return "FilterHeaderLine({}, {}, {})".format(*map(repr, (self.key, self.value, self.mapping)))
 
 
 class MetaHeaderLine(SimpleHeaderLine):
@@ -668,9 +638,7 @@ class PedigreeHeaderLine(SimpleHeaderLine):
         raise TypeError("Unhashable type: PedigreeHeaderLine")
 
     def __str__(self):
-        return "PedigreeHeaderLine({}, {}, {})".format(
-            *map(repr, (self.key, self.value, self.mapping))
-        )
+        return "PedigreeHeaderLine({}, {}, {})".format(*map(repr, (self.key, self.value, self.mapping)))
 
 
 class SampleHeaderLine(SimpleHeaderLine):
@@ -700,9 +668,7 @@ class SampleHeaderLine(SimpleHeaderLine):
         raise TypeError("Unhashable type: SampleHeaderLine")
 
     def __str__(self):
-        return "SampleHeaderLine({}, {}, {})".format(
-            *map(repr, (self.key, self.value, self.mapping))
-        )
+        return "SampleHeaderLine({}, {}, {})".format(*map(repr, (self.key, self.value, self.mapping)))
 
 
 class CompoundHeaderLine(HeaderLine):
@@ -719,17 +685,13 @@ class CompoundHeaderLine(HeaderLine):
         self.mapping = OrderedDict(mapping.items())
         # check that 'Number' is given and use "." otherwise
         if "Number" not in self.mapping:
-            warnings.warn(
-                '[vcfpy] WARNING: missing number, using unbounded/"." instead', FieldMissingNumber
-            )
+            warnings.warn('[vcfpy] WARNING: missing number, using unbounded/"." instead', FieldMissingNumber)
             self.mapping["Number"] = "."
         try:
             self.mapping["Number"] = self._parse_number(self.mapping["Number"])
         except ValueError:
             warnings.warn(
-                ("[vcfpy] WARNING: invalid number {}, using " 'unbounded/"." instead').format(
-                    self.mapping["Number"]
-                ),
+                ('[vcfpy] WARNING: invalid number {}, using unbounded/"." instead').format(self.mapping["Number"]),
                 FieldInvalidNumber,
             )
             self.mapping["Number"] = "."
@@ -762,9 +724,7 @@ class CompoundHeaderLine(HeaderLine):
         return "".join(map(str, ["##", self.key, "=", self.value]))
 
     def __str__(self):
-        return "CompoundHeaderLine({}, {}, {})".format(
-            *map(repr, (self.key, self.value, self.mapping))
-        )
+        return "CompoundHeaderLine({}, {}, {})".format(*map(repr, (self.key, self.value, self.mapping)))
 
 
 class InfoHeaderLine(CompoundHeaderLine):
@@ -789,17 +749,15 @@ class InfoHeaderLine(CompoundHeaderLine):
         type_ = self.mapping.get("Type")
         if "Type" not in self.mapping:
             warnings.warn(
-                ('Field "Type" not found in header line, using String ' "instead {}={}").format(
-                    key, value
-                ),
+                ('Field "Type" not found in header line, using String instead {}={}').format(key, value),
                 HeaderInvalidType,
             )
             type_ = "String"
         if "Type" in self.mapping and type_ not in INFO_TYPES:
             warnings.warn(
-                (
-                    "Invalid INFO value type {} in header line, using String " "instead, {}={}"
-                ).format(self.mapping["Type"], key, value),
+                ("Invalid INFO value type {} in header line, using String instead, {}={}").format(
+                    self.mapping["Type"], key, value
+                ),
                 HeaderInvalidType,
             )
             type_ = "String"
@@ -843,17 +801,15 @@ class FormatHeaderLine(CompoundHeaderLine):
         type_ = self.mapping.get("Type")
         if "Type" not in self.mapping:
             warnings.warn(
-                ('Field "Type" not found in header line, using String ' "instead {}={}").format(
-                    key, value
-                ),
+                ('Field "Type" not found in header line, using String instead {}={}').format(key, value),
                 HeaderInvalidType,
             )
             type_ = "String"
         if "Type" in self.mapping and type_ not in FORMAT_TYPES:
             warnings.warn(
-                (
-                    "Invalid FORMAT value type {} in header line, using String " "instead, {}={}"
-                ).format(self.mapping["Type"], key, value),
+                ("Invalid FORMAT value type {} in header line, using String instead, {}={}").format(
+                    self.mapping["Type"], key, value
+                ),
                 HeaderInvalidType,
             )
             type_ = "String"
@@ -876,9 +832,7 @@ class FormatHeaderLine(CompoundHeaderLine):
         raise TypeError("Unhashable type: FormatHeaderLine")
 
     def __str__(self):
-        return "FormatHeaderLine({}, {}, {})".format(
-            *map(repr, (self.key, self.value, self.mapping))
-        )
+        return "FormatHeaderLine({}, {}, {})".format(*map(repr, (self.key, self.value, self.mapping)))
 
 
 class SamplesInfos:

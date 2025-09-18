@@ -8,19 +8,15 @@ import math
 import re
 import warnings
 
-from . import header
-from . import record
-from . import exceptions
+from . import exceptions, header, record
+from .compat import OrderedDict
 from .exceptions import (
     CannotConvertValue,
     LeadingTrailingSpaceInKey,
+    SpaceInChromLine,
     UnknownFilter,
     UnknownVCFVersion,
-    SpaceInChromLine,
 )
-
-
-from .compat import OrderedDict
 
 __author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"
 
@@ -86,7 +82,7 @@ class QuotedStringSplitter:
         ends.append(len(s))
         assert len(begins) == len(ends)
         # Build resulting list
-        return [s[start:end] for start, end in zip(begins, ends)]
+        return [s[start:end] for start, end in zip(begins, ends, strict=False)]
 
     def _handle_normal(self, c, pos, begins, ends):  # pylint: disable=W0613
         if c == self.delim:
@@ -152,9 +148,7 @@ def parse_mapping(value):
         there was a problem parsing the file
     """
     if not value.startswith("<") or not value.endswith(">"):
-        raise exceptions.InvalidHeaderException(
-            "Header mapping value was not wrapped in angular brackets"
-        )
+        raise exceptions.InvalidHeaderException("Header mapping value was not wrapped in angular brackets")
     # split the comma-separated list into pairs, ignoring commas in quotes
     pairs = split_quoted_string(value[1:-1], delim=",", quote='"')
     # split these pairs into key/value pairs, converting flags to mappings
@@ -249,7 +243,7 @@ def convert_field_value(type_, value):
             return _CONVERTERS[type_](value)
         except ValueError:
             warnings.warn(
-                ("{} cannot be converted to {}, keeping as " "string.").format(value, type_),
+                ("{} cannot be converted to {}, keeping as string.").format(value, type_),
                 CannotConvertValue,
             )
             return value
@@ -369,13 +363,9 @@ class HeaderParser:
             there was a problem parsing the file
         """
         if not line or not line.startswith("##"):
-            raise exceptions.InvalidHeaderException(
-                'Invalid VCF header line (must start with "##") {}'.format(line)
-            )
+            raise exceptions.InvalidHeaderException('Invalid VCF header line (must start with "##") {}'.format(line))
         if "=" not in line:
-            raise exceptions.InvalidHeaderException(
-                'Invalid VCF header line (must contain "=") {}'.format(line)
-            )
+            raise exceptions.InvalidHeaderException('Invalid VCF header line (must contain "=") {}'.format(line))
         line = line[len("##") :].rstrip()  # trim '^##' and trailing whitespace
         # split key/value pair at "="
         key, value = split_mapping(line)
@@ -471,7 +461,7 @@ class RecordParser:
             self._format_cache[format_str] = list(map(self.header.get_format_field_info, format_))
         # per-sample calls
         calls = []
-        for sample, raw_data in zip(self.samples.names, arr[9:]):
+        for sample, raw_data in zip(self.samples.names, arr[9:], strict=False):
             if self.samples.is_parsed(sample):
                 data = self._parse_calls_data(format_, self._format_cache[format_str], raw_data)
                 call = record.Call(sample, data)
@@ -494,16 +484,13 @@ class RecordParser:
         elif f not in self._filter_ids:
             if source == "FILTER":
                 warnings.warn(
-                    ("Filter not found in header: {}; problem in FILTER " "column").format(f),
+                    ("Filter not found in header: {}; problem in FILTER column").format(f),
                     UnknownFilter,
                 )
             else:
                 assert source == "FORMAT/FT" and sample
                 warnings.warn(
-                    (
-                        "Filter not found in header: {}; problem in "
-                        "FORMAT/FT column of sample {}"
-                    ).format(f, sample),
+                    ("Filter not found in header: {}; problem in FORMAT/FT column of sample {}").format(f, sample),
                     UnknownFilter,
                 )
 
@@ -512,9 +499,8 @@ class RecordParser:
         arr = line_str.rstrip().split("\t")
         if len(arr) != self.expected_fields:
             raise exceptions.InvalidRecordException(
-                (
-                    "The line contains an invalid number of fields. Was "
-                    "{} but expected {}\n{}".format(len(arr), 9 + len(self.samples.names), line_str)
+                "The line contains an invalid number of fields. Was {} but expected {}\n{}".format(
+                    len(arr), 9 + len(self.samples.names), line_str
                 )
             )
         return arr
@@ -548,7 +534,7 @@ class RecordParser:
         # The standard is very nice to parsers, we can simply split at
         # colon characters, although I (Manuel) don't know how strict
         # programs follow this
-        for key, info, value in zip(format_, infos, gt_str.split(":")):
+        for key, info, value in zip(format_, infos, gt_str.split(":"), strict=False):
             data[key] = parse_field_value(info, value)
         return data
 
@@ -570,9 +556,7 @@ class HeaderChecker:
     def _check_header_lines(self, header_lines):
         """Check header lines, in particular for starting file "##fileformat" """
         if not header_lines:
-            raise exceptions.InvalidHeaderException(
-                "The VCF file did not contain any header lines!"
-            )
+            raise exceptions.InvalidHeaderException("The VCF file did not contain any header lines!")
         first = header_lines[0]
         if first.key != "fileformat":
             raise exceptions.InvalidHeaderException("The VCF file did not start with ##fileformat")
@@ -627,9 +611,7 @@ class InfoChecker:
         expected = TABLE.get(field_info.number, field_info.number)
         if len(value) != expected:
             tpl = "Number of elements for INFO field {} is {} instead of {}"
-            warnings.warn(
-                tpl.format(key, len(value), field_info.number), exceptions.IncorrectListLength
-            )
+            warnings.warn(tpl.format(key, len(value), field_info.number), exceptions.IncorrectListLength)
 
 
 class NoopFormatChecker:
@@ -670,10 +652,7 @@ class FormatChecker:
         }
         expected = TABLE.get(field_info.number, field_info.number)
         if len(value) != expected:
-            tpl = (
-                "Number of elements for FORMAT field {} is {} instead "
-                "of {} (number specifier {})"
-            )
+            tpl = "Number of elements for FORMAT field {} is {} instead of {} (number specifier {})"
             warnings.warn(
                 tpl.format(key, len(value), expected, field_info.number),
                 exceptions.IncorrectListLength,
@@ -740,9 +719,7 @@ class Parser:
         # read next line, must not be header
         self._read_next_line()
         if self._line and self._line.startswith("#"):
-            raise exceptions.IncorrectVCFFormat(
-                'Expecting non-header line or EOF after "#CHROM" line'
-            )
+            raise exceptions.IncorrectVCFFormat('Expecting non-header line or EOF after "#CHROM" line')
         return self.header
 
     def _handle_sample_line(self, parsed_samples=None):
@@ -756,10 +733,7 @@ class Parser:
             raise exceptions.IncorrectVCFFormat('Ill-formatted line starting with "#CHROM"')
         if " " in line[:pos]:
             warnings.warn(
-                (
-                    "Found space in #CHROM line, splitting at whitespace "
-                    "instead of tab; this VCF file is ill-formatted"
-                ),
+                "Found space in #CHROM line, splitting at whitespace instead of tab; this VCF file is ill-formatted",
                 SpaceInChromLine,
             )
             arr = self._line.rstrip().split()
@@ -775,13 +749,15 @@ class Parser:
         if len(arr) <= len(REQUIRE_NO_SAMPLE_HEADER):
             if tuple(arr) != REQUIRE_NO_SAMPLE_HEADER:
                 raise exceptions.IncorrectVCFFormat(
-                    "Sample header line indicates no sample but does not "
-                    "equal required prefix {}".format("\t".join(REQUIRE_NO_SAMPLE_HEADER))
+                    "Sample header line indicates no sample but does not equal required prefix {}".format(
+                        "\t".join(REQUIRE_NO_SAMPLE_HEADER)
+                    )
                 )
         elif tuple(arr[: len(REQUIRE_SAMPLE_HEADER)]) != REQUIRE_SAMPLE_HEADER:
             raise exceptions.IncorrectVCFFormat(
-                'Sample header line (starting with "#CHROM") does not '
-                "start with required prefix {}".format("\t".join(REQUIRE_SAMPLE_HEADER))
+                'Sample header line (starting with "#CHROM") does not start with required prefix {}'.format(
+                    "\t".join(REQUIRE_SAMPLE_HEADER)
+                )
             )
 
     def parse_line(self, line):

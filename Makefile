@@ -1,21 +1,23 @@
-.PHONY: default black flake8 test test-v test-vv
+.PHONY: default
+default: help
 
-default: black flake8
+.PHONY: help
+help:
+	@echo "Available targets:"
+	@echo "  help                   Show this help message"
+	@echo "  fix                    Format source code"
+	@echo "  check                  Run checks"
+	@echo "  test                   Format source code"
 
-black:
-	black -l 100 .
+.PHONY: fix
+fix:
+	uv run hatch run quality:format
 
-black-check:
-	black -l 100 --check .
+.PHONY: check
+check:
+	uv run hatch run quality:check
+# 	uv run hatch run quality:typecheck
 
-flake8:
-	flake8 .
-
+.PHONY: test
 test:
-	pytest
-
-test-v:
-	pytest -v
-
-test-vv:
-	pytest -vv
+	uv run hatch run tests:run -- --record-mode=none

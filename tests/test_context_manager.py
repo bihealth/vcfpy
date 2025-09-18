@@ -8,10 +8,7 @@ import os
 import pytest
 
 import vcfpy
-from vcfpy import reader
-from vcfpy import writer
-from vcfpy import parser
-from vcfpy import record
+from vcfpy import parser, reader, record, writer
 
 __author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"
 
@@ -57,7 +54,7 @@ def test_reader():
         assert r.stream
         assert not r.stream.closed
         # read records
-        records = [rec for rec in r]
+        records = list(r)
     # should be closed now
     assert r.stream
     assert r.stream.closed

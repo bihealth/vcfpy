@@ -7,10 +7,7 @@ import textwrap
 
 import pytest
 
-from vcfpy import exceptions
-from vcfpy import header
-from vcfpy import parser
-
+from vcfpy import exceptions, header, parser
 
 # HeaderChecker ---------------------------------------------------------------
 

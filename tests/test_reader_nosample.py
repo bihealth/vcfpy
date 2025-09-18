@@ -26,9 +26,7 @@ def test_reading_parse_nosample_also_write(tmpdir, nosample_vcf_file):
         header.samples = vcfpy.SamplesInfos(["NA00001", "NA00002", "NA00003"])
         with vcfpy.Writer.from_path(str(path_out), header) as writer:
             for record in reader:
-                record.update_calls(
-                    [vcfpy.Call(sample, {}) for sample in ("NA00001", "NA00002", "NA00003")]
-                )
+                record.update_calls([vcfpy.Call(sample, {}) for sample in ("NA00001", "NA00002", "NA00003")])
                 record.add_format("GT", "./.")
                 writer.write_record(record)
 
