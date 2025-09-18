@@ -12,6 +12,12 @@ from vcfpy import exceptions, parser
 __author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"
 
 
+SMALL_HEADER = """
+##fileformat=VCFv4.3
+#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tNA00001\tNA00002\tNA00003
+""".lstrip()
+
+
 MEDIUM_HEADER = """
 ##fileformat=VCFv4.3
 ##fileDate=20090805
@@ -190,3 +196,13 @@ def test_parse_line_invalid_number_of_fields():
         p.parse_next_record()
 
     assert EXPECTED in str(record_error.value)
+
+
+def test_parse_record_with_gt_data():
+    LINES = "20\t1\t.\tC\tG\t.\t.\tAA=G\tGT\t0|1\t1/1\t.\n"
+    p = parser.Parser(io.StringIO(SMALL_HEADER + LINES))
+    p.parse_header()
+    record = p.parse_next_record()
+    assert record.calls[0].data["GT"] == "0|1"
+    assert record.calls[1].data["GT"] == "1/1"
+    assert record.calls[2].data["GT"] is None
