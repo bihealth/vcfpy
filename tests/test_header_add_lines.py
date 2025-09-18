@@ -7,8 +7,7 @@ import io
 import pytest
 
 import vcfpy
-from vcfpy import parser
-from vcfpy import header
+from vcfpy import header, parser
 
 __author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"
 
@@ -58,9 +57,7 @@ def test_add_contig_line(vcf_header):
 
     # add header line
     VALUE = (
-        "<ID=20a,length=62435964,assembly=B36,"
-        "md5=f126cdf8a6e0c7f379d618ff66beb2da,"
-        'species="Homo sapiens",taxonomy=x>'
+        '<ID=20a,length=62435964,assembly=B36,md5=f126cdf8a6e0c7f379d618ff66beb2da,species="Homo sapiens",taxonomy=x>'
     )
     line = header.ContigHeaderLine(
         "contig",
@@ -121,9 +118,7 @@ def test_add_contig_line_shortcut(vcf_header):
     # Check resulting added header line
     assert vcf_header.lines[-1].key == "contig"
     VALUE = (
-        "<ID=20a,length=62435964,assembly=B36,"
-        "md5=f126cdf8a6e0c7f379d618ff66beb2da,"
-        'species="Homo sapiens",taxonomy=x>'
+        '<ID=20a,length=62435964,assembly=B36,md5=f126cdf8a6e0c7f379d618ff66beb2da,species="Homo sapiens",taxonomy=x>'
     )
     assert vcf_header.lines[-1].value == VALUE
     assert len(vcf_header.lines[-1].mapping) == 6
@@ -190,9 +185,7 @@ def test_add_format_line(vcf_header):
     line = header.FormatHeaderLine(
         "FORMAT",
         VALUE,
-        vcfpy.OrderedDict(
-            [("ID", "GTa"), ("Number", 1), ("Type", "String"), ("Description", "Genotype")]
-        ),
+        vcfpy.OrderedDict([("ID", "GTa"), ("Number", 1), ("Type", "String"), ("Description", "Genotype")]),
     )
     vcf_header.add_line(line)
 
@@ -216,9 +209,7 @@ def test_add_format_line_shortcut(vcf_header):
     assert len(vcf_header.lines) == 18
 
     # add header line
-    mapping = vcfpy.OrderedDict(
-        [("ID", "GTa"), ("Number", 1), ("Type", "String"), ("Description", "Genotype")]
-    )
+    mapping = vcfpy.OrderedDict([("ID", "GTa"), ("Number", 1), ("Type", "String"), ("Description", "Genotype")])
     vcf_header.add_format_line(mapping)
 
     # check header after adding
@@ -246,9 +237,7 @@ def test_add_info_line(vcf_header):
     line = header.FormatHeaderLine(
         "INFO",
         VALUE,
-        vcfpy.OrderedDict(
-            [("ID", "DPa"), ("Number", 1), ("Type", "Integer"), ("Description", "Total Depth")]
-        ),
+        vcfpy.OrderedDict([("ID", "DPa"), ("Number", 1), ("Type", "Integer"), ("Description", "Total Depth")]),
     )
     vcf_header.add_line(line)
     assert len(vcf_header.lines) == 19
@@ -274,9 +263,7 @@ def test_add_info_line_shortcut(vcf_header):
 
     # add header line
     VALUE = '<ID=DPa,Number=1,Type=Integer,Description="Total Depth">'
-    mapping = vcfpy.OrderedDict(
-        [("ID", "DPa"), ("Number", 1), ("Type", "Integer"), ("Description", "Total Depth")]
-    )
+    mapping = vcfpy.OrderedDict([("ID", "DPa"), ("Number", 1), ("Type", "Integer"), ("Description", "Total Depth")])
     vcf_header.add_info_line(mapping)
     assert len(vcf_header.lines) == 19
 

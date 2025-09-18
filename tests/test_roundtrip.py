@@ -4,8 +4,7 @@
 
 import os
 
-from vcfpy import reader
-from vcfpy import writer
+from vcfpy import reader, writer
 
 __author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"
 

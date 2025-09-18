@@ -1,0 +1,167 @@
+[build-system]
+build-backend = "hatchling.build"
+requires = ["hatchling"]
+
+[project]
+authors = [{name = "Manuel Holtgrewe"}]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+dependencies = [
+  "pysam>=0.10.0",  # fast tabix jumping
+]
+description = "Python 3 VCF library with good support for both reading and writing"
+keywords = []
+name = "vcfpy"
+version = "0.13.8"
+readme = "README.md"
+requires-python = ">=3.10"
+
+[project.urls]
+Documentation = "https://github.com/bihealth/vcfpy"
+Issues = "https://github.com/bihealth/vcfpy/issues"
+Source = "https://github.com/bihealth/vcfpy"
+
+[tool.hatch.version]
+path = "vcfpy/version.py"
+
+[dependency-groups]
+dev = [
+    "Babel>=2.3.4",
+    "Jinja2>=2.9.5",
+    "MarkupSafe>=0.23",
+    "Pygments>=2.2.0",
+    "Sphinx>=1.5.2",
+    "alabaster>=0.7.9",
+    "apipkg>=1.4",
+    "black ==22.3.0",
+    "coverage>=4.3.4",
+    "docutils>=0.13.1",
+    "execnet>=1.4.1",
+    "flake8>=3.6.0",
+    "hatch~=1.13.0",
+    "imagesize>=0.7.1",
+    "py>=1.4.32",
+    "pytest-cache>=1.0",
+    "pytest-cov",
+    "pytest-cov>=2.4.0",
+    "pytest-sugar>=0.8.0",
+    "pytest>=3.0.6",
+    "pytz>=2016.10",
+    "requests>=2.13.0",
+    "ruff~=0.8.2",
+    "six>=1.10.0",
+    "snowballstemmer>=1.2.1",
+    "termcolor>=1.1.0",
+]
+
+[tool.hatch.envs.quality]
+installer = "uv"
+feature = [
+  "dev",
+]
+
+[tool.hatch.envs.quality.scripts]
+check = [
+  "black --check --diff --preview vcfpy tests",
+  "ruff check vcfpy tests",
+]
+format = [
+  "black --preview vcfpy tests",
+  "ruff check --fix --unsafe-fixes vcfpy tests",
+  "check",
+]
+# typecheck = [
+#   "pyright vcfpy",
+# ]
+
+[tool.pyright]
+include = ["vcfpy"]
+exclude = [
+    "**/node_modules",
+    "**/__pycache__",
+]
+ignore = ["src/oldstuff"]
+defineConstant = { DEBUG = true }
+stubPath = "src/stubs"
+
+reportMissingImports = "error"
+reportMissingTypeStubs = false
+
+# Sadly, the client generator creates some invalid code.
+reportReturnType = false
+reportOptionalMemberAccess = false
+reportArgumentType = false
+reportAttributeAccessIssue = false
+
+pythonVersion = "3.11"
+pythonPlatform = "Linux"
+
+[tool.ruff]
+lint.ignore = [
+  "E501", # line too long, handled by black
+  "B008", # do not perform function calls in argument defaults
+  "C901", # too complex
+  # the following are known issues in generated code
+  "E721", # is vs. ==
+  "C409", # Unnecessary list literal
+  "B028", # No stacklevel in warnings.warn
+  "B904", # raise from e not used
+  "C405", # Unnecessary list literal (rewrite as set literal)
+  "C402", # inconvenient dictionary creation
+]
+lint.select = [
+  "E", # pycodestyle errors
+  "W", # pycodestyle warnings
+  "F", # pyflakes
+  "I", # isort
+  "C", # flake8-comprehensions
+  "B", # flake8-bugbear
+]
+
+[tool.black]
+line-length = 120
+
+[tool.ruff.lint.isort]
+known-first-party = ["vcfpy"]
+
+[tool.hatch.envs.tests]
+installer = "uv"
+feature = [
+  "dev",
+]
+
+[tool.hatch.envs.tests.scripts]
+run = "pytest --cov=vcfpy --cov-report=term-missing tests/ --durations 0 -s {args:tests}"
+
+[tool.hatch.envs.build]
+installer = "uv"
+feature = [
+  "dev",
+]
+
+[tool.hatch.envs.build.scripts]
+run = "hatch build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/vcfpy"]
+
+[tool.hatch.build.targets.sdist]
+packages = ["src/vcfpy"]
+exclude = [
+  "/.editorconfig",
+  "/Makefile",
+  "/.gitignore",
+  "/.github",
+  "/.vscode",
+  "/.gitignore",
+  "/tests",
+]

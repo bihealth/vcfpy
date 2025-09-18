@@ -6,7 +6,6 @@ The VCF record structure is modeled after the one of PyVCF
 
 import re
 
-
 #: Code for single nucleotide variant allele
 SNV = "SNV"
 #: Code for a multi nucleotide variant allele
@@ -255,7 +254,7 @@ class Call:
                     self.gt_alleles.append(None)
                 else:
                     self.gt_alleles.append(int(allele))
-            self.called = all([al is not None for al in self.gt_alleles])
+            self.called = all(al is not None for al in self.gt_alleles)
             self.ploidy = len(self.gt_alleles)
 
     @property
@@ -429,9 +428,7 @@ REVERSE = "-"
 class BreakEnd(AltRecord):
     """A placeholder for a breakend"""
 
-    def __init__(
-        self, mate_chrom, mate_pos, orientation, mate_orientation, sequence, within_main_assembly
-    ):
+    def __init__(self, mate_chrom, mate_pos, orientation, mate_orientation, sequence, within_main_assembly):
         super().__init__("BND")
         #: chromosome of the mate breakend
         self.mate_chrom = mate_chrom

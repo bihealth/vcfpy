@@ -8,10 +8,7 @@ import os
 import pytest
 
 import vcfpy
-from vcfpy import reader
-from vcfpy import writer
-from vcfpy import parser
-from vcfpy import record
+from vcfpy import parser, reader, record, writer
 
 __author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"
 
@@ -57,7 +54,7 @@ def test_reader():
         assert r.stream
         assert not r.stream.closed
         # read records
-        records = [rec for rec in r]
+        records = list(r)
     # should be closed now
     assert r.stream
     assert r.stream.closed
@@ -68,7 +65,7 @@ def test_reader():
 def test_reader_fetch():
     path = os.path.join(os.path.dirname(__file__), "vcfs", "multi_contig.vcf.gz")
     with reader.Reader.from_path(path) as r:
-        records = [vcf_rec for vcf_rec in r.fetch("20", 1110695, 1230236)]
+        records = list(r.fetch("20", 1110695, 1230236))
         assert r.stream
         assert not r.stream.closed
         assert r.tabix_file

@@ -4,8 +4,7 @@
 
 import pytest
 
-from vcfpy import header
-from vcfpy import parser
+from vcfpy import header, parser
 
 __author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"
 

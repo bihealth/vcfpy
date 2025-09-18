@@ -4,9 +4,7 @@
 Currently, only writing to plain-text files is supported
 """
 
-from . import parser
-from . import record
-from . import bgzf
+from . import bgzf, parser, record
 
 __author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"
 
@@ -35,7 +33,7 @@ def format_value(field_info, value, section):
         if not value:
             return "."
         elif isinstance(value, list):
-            return ";".join(map(lambda x: format_atomic(x, section), value))
+            return ";".join((format_atomic(x, section) for x in value))
     elif field_info.number == 1:
         if value is None:
             return "."
@@ -45,7 +43,7 @@ def format_value(field_info, value, section):
         if not value:
             return "."
         else:
-            return ",".join(map(lambda x: format_atomic(x, section), value))
+            return ",".join((format_atomic(x, section) for x in value))
 
 
 class Writer:
@@ -144,10 +142,7 @@ class Writer:
         row.append(f(self._serialize_info(record)))
         if record.FORMAT:
             row.append(":".join(record.FORMAT))
-        row += [
-            self._serialize_call(record.FORMAT, record.call_for_sample[s])
-            for s in self.header.samples.names
-        ]
+        row += [self._serialize_call(record.FORMAT, record.call_for_sample[s]) for s in self.header.samples.names]
         print(*row, sep="\t", file=self.stream)
 
     def _serialize_info(self, record):
@@ -167,8 +162,7 @@ class Writer:
             return call.unparsed_data
         else:
             result = [
-                format_value(self.header.get_format_field_info(key), call.data.get(key), "FORMAT")
-                for key in format_
+                format_value(self.header.get_format_field_info(key), call.data.get(key), "FORMAT") for key in format_
             ]
             return ":".join(result)
 

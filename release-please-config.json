@@ -1,0 +1,15 @@
+{
+  "release-type": "python",
+  "package-name": "vcfpy",
+  "bump-minor-pre-major": false,
+  "bump-patch-for-minor-pre-major": false,
+  "draft": false,
+  "prerelease": false,
+  "packages": {
+    ".": {
+      "package-name": "vcfpy",
+      "release-type": "python",
+      "version-file": "vcfpy/version.py"
+    }
+  }
+}

@@ -57,9 +57,7 @@ def test_write_header(header_samples, tmpdir_factory):
 
 def test_write_header_no_samples(tmpdir_factory):
     # Create header to write out from scratch
-    hdr = header.Header(
-        lines=[header.HeaderLine("fileformat", "VCFv4.0")], samples=header.SamplesInfos([])
-    )
+    hdr = header.Header(lines=[header.HeaderLine("fileformat", "VCFv4.0")], samples=header.SamplesInfos([]))
     # Write out header
     path = tmpdir_factory.mktemp("write_header").join("out.vcf")
     w = writer.Writer.from_path(path, hdr)

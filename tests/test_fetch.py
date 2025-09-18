@@ -16,7 +16,7 @@ def test_fetch_no_records_values():
     path = os.path.join(os.path.dirname(__file__), "vcfs", "multi_contig.vcf.gz")
     r = reader.Reader.from_path(path)
 
-    records = [vcf_rec for vcf_rec in r.fetch("20", 1110698, 1230236)]
+    records = list(r.fetch("20", 1110698, 1230236))
 
     assert len(records) == 0
 
@@ -25,7 +25,7 @@ def test_fetch_one_record_values():
     path = os.path.join(os.path.dirname(__file__), "vcfs", "multi_contig.vcf.gz")
     r = reader.Reader.from_path(path)
 
-    records = [vcf_rec for vcf_rec in r.fetch("20", 1110695, 1230236)]
+    records = list(r.fetch("20", 1110695, 1230236))
 
     assert len(records) == 1
 
@@ -37,7 +37,7 @@ def test_fetch_two_records_values():
     path = os.path.join(os.path.dirname(__file__), "vcfs", "multi_contig.vcf.gz")
     r = reader.Reader.from_path(path)
 
-    records = [vcf_rec for vcf_rec in r.fetch("20", 1110697, 1234568)]
+    records = list(r.fetch("20", 1110697, 1234568))
 
     assert len(records) == 2
 
@@ -55,7 +55,7 @@ def test_fetch_no_records_region():
     path = os.path.join(os.path.dirname(__file__), "vcfs", "multi_contig.vcf.gz")
     r = reader.Reader.from_path(path)
 
-    records = [vcf_rec for vcf_rec in r.fetch("20:1,110,699-1,230,236")]
+    records = list(r.fetch("20:1,110,699-1,230,236"))
 
     assert len(records) == 0
 
@@ -64,7 +64,7 @@ def test_fetch_one_record_region():
     path = os.path.join(os.path.dirname(__file__), "vcfs", "multi_contig.vcf.gz")
     r = reader.Reader.from_path(path)
 
-    records = [vcf_rec for vcf_rec in r.fetch("20:1,110,696-1,230,236")]
+    records = list(r.fetch("20:1,110,696-1,230,236"))
 
     assert len(records) == 1
 
@@ -76,7 +76,7 @@ def test_fetch_two_records_region():
     path = os.path.join(os.path.dirname(__file__), "vcfs", "multi_contig.vcf.gz")
     r = reader.Reader.from_path(path)
 
-    records = [vcf_rec for vcf_rec in r.fetch("20:1,110,698-1,234,568")]
+    records = list(r.fetch("20:1,110,698-1,234,568"))
 
     assert len(records) == 2
 

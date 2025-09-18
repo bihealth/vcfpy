@@ -37,9 +37,7 @@ class Reader:
     """
 
     @classmethod
-    def from_stream(
-        klass, stream, path=None, tabix_path=None, record_checks=None, parsed_samples=None
-    ):
+    def from_stream(klass, stream, path=None, tabix_path=None, record_checks=None, parsed_samples=None):
         """Create new :py:class:`Reader` from file
 
         .. note::

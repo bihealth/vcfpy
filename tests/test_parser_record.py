@@ -85,10 +85,7 @@ def test_parse_record_with_info():
 
 def test_parse_record_with_escaping():
     # Setup parser with stock header and lines to parse
-    LINES = (
-        "20\t100\t.\tC\tG\t.\t.\tANNO=Here%2Care%25some chars,"
-        "%2525\tGT:FT\t0/1:FOO\t0/0:.\t1/1:.\n"
-    )
+    LINES = "20\t100\t.\tC\tG\t.\t.\tANNO=Here%2Care%25some chars,%2525\tGT:FT\t0/1:FOO\t0/0:.\t1/1:.\n"
     p = vcf_parser(LINES)
     p.parse_header()
     # Perform the actual test
