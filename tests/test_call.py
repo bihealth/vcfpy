@@ -27,6 +27,19 @@ def build_rec(calls=None, format_extras=None):
     )
 
 
+# Call.__init__() ------------------------------------------------------------
+
+
+def test_call_init_with_gt():
+    call = record.Call("sample", vcfpy.OrderedDict([("GT", "0|1")]))
+    expected_length = 2
+    expected_allele_0 = 0
+    expected_allele_1 = 1
+    assert len(call.gt_alleles) == expected_length
+    assert call.gt_alleles[0] == expected_allele_0
+    assert call.gt_alleles[1] == expected_allele_1
+
+
 # Call.is_phased() ------------------------------------------------------------
 
 

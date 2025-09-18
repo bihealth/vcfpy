@@ -376,18 +376,18 @@ class Header:
 
     def get_info_field_info(self, key):
         """Return :py:class:`FieldInfo` for the given INFO field"""
-        return self._get_field_info("INFO", key)
+        return self._get_field_info("INFO", key, RESERVED_INFO)
 
     def get_format_field_info(self, key):
         """Return :py:class:`FieldInfo` for the given INFO field"""
-        return self._get_field_info("FORMAT", key)
+        return self._get_field_info("FORMAT", key, RESERVED_FORMAT)
 
-    def _get_field_info(self, type_, key):
+    def _get_field_info(self, type_, key, reserved):
         result = self._indices[type_].get(key)
         if result:
             return result
-        if key in RESERVED_INFO:
-            res = FieldInfo(RESERVED_INFO[key].type, RESERVED_INFO[key].number)
+        if key in reserved:
+            res = reserved[key]
         else:
             res = FieldInfo("String", HEADER_NUMBER_UNBOUNDED)
         warnings.warn(
