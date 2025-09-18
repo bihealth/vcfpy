@@ -59,10 +59,6 @@ jobs:
         with:
           python-version: "${{ matrix.python-version }}"
 
-      - name: Install dependencies
-        run: |
-            pip install -r requirements/test.txt
-            pip freeze
-
       - name: Run tests
-        run: pytest
+        run: |
+            uv run hatch run tests:run
