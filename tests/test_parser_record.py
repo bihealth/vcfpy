@@ -5,7 +5,9 @@
 import io
 import sys
 
-from vcfpy import parser
+import pytest
+
+from vcfpy import exceptions, parser
 
 __author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"
 
@@ -175,3 +177,16 @@ def test_missing_pass(recwarn):
     RESULT = p.parse_next_record()
     assert str(RESULT) == EXPECTED
     assert list(recwarn) == []
+
+
+def test_parse_line_invalid_number_of_fields():
+    """Test parsing VCF file exception message"""
+    HEADER = "##fileformat=VCFv4.2\n#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\n"
+    LINES = "20\t1\t.\tC\tG\t.\tPASS\t.\tGT\n"
+    EXPECTED = "The line contains an invalid number of fields. Was 9 but expected 8"
+    p = parser.Parser(io.StringIO(HEADER + LINES), "<builtin>")
+    p.parse_header()
+    with pytest.raises(exceptions.InvalidRecordException) as record_error:
+        p.parse_next_record()
+
+    assert EXPECTED in str(record_error.value)
