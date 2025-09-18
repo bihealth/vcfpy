@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref != 'refs/heads/main'
     steps:
-      - uses: khan/pull-request-workflow-cancel@1.0.0
+      - uses: khan/pull-request-workflow-cancel@1.0.1
         with:
           workflows: "main.yml"
         env:
@@ -21,10 +21,10 @@ jobs:
   formatting:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: "3.10"
 
@@ -39,7 +39,7 @@ jobs:
 
       - name: Comment PR
         if: github.event_name == 'pull_request' && failure()
-        uses: marocchino/sticky-pull-request-comment@v1.1.0
+        uses: marocchino/sticky-pull-request-comment@v2
         with:
           message: 'Please format your code with [black](https://black.readthedocs.io): `make black`.'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -49,16 +49,17 @@ jobs:
     strategy:
       matrix:
         python-version:
-          - '3.7'
-          - '3.8'
           - '3.9'
           - '3.10'
+          - '3.11'
+          - '3.12'
+          - '3.13'
     needs: formatting
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: "${{ matrix.python-version }}"
 
