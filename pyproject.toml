@@ -24,7 +24,7 @@ keywords = []
 name = "vcfpy"
 version = "0.13.8"
 readme = "README.md"
-requires-python = ">=3.10,<3.13"
+requires-python = ">=3.10"
 
 [project.urls]
 Documentation = "https://github.com/bihealth/vcfpy"
