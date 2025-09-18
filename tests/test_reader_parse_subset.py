@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Tests for reading with parsing only a subset of samples"""
 
-from vcfpy import Reader, Writer, Call, UnparsedCall
+from vcfpy import Call, Reader, UnparsedCall, Writer
 
 
 def test_reading_parse_subset(tmpdir, multisample_vcf_file):

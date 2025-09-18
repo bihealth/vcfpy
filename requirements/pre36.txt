@@ -1,4 +1,0 @@
--r base.txt
-
-# cyordereddict is a faster OrderedDict, only required for Python <3.6
-cyordereddict >=1.0.0

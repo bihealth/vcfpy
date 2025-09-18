@@ -4,12 +4,10 @@ samples
 """
 
 
-from vcfpy import Reader, Writer, Header, SamplesInfos
+from vcfpy import Header, Reader, SamplesInfos, Writer
 
 
-def test_reading_and_write_subset_of_samples(
-    tmpdir, multisample_vcf_file, multisample_vcf_only_NA00002
-):
+def test_reading_and_write_subset_of_samples(tmpdir, multisample_vcf_file, multisample_vcf_only_NA00002):
     # Perform record-wise copying, saving results in records, not writing
     # out for some samples
     records = []

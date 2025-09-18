@@ -21,12 +21,14 @@ def test_record_from_scratch():
     record.calls = [vcfpy.Call("sample-1", vcfpy.OrderedDict())]
     record.add_format("GT", "./.")
     if sys.version_info < (3, 6):
-        assert str(record) == (
-            "Record('chr1', 1234, [], 'A', [Substitution(type_='SNV', value='T')], None, "
+        assert (
+            str(record)
+            == "Record('chr1', 1234, [], 'A', [Substitution(type_='SNV', value='T')], None, "
             "[], OrderedDict(), ['GT'], [Call('sample-1', OrderedDict([('GT', './.')]))])"
         )
     else:
-        assert str(record) == (
-            "Record('chr1', 1234, [], 'A', [Substitution(type_='SNV', value='T')], None, "
+        assert (
+            str(record)
+            == "Record('chr1', 1234, [], 'A', [Substitution(type_='SNV', value='T')], None, "
             "[], {}, ['GT'], [Call('sample-1', {'GT': './.'})])"
         )

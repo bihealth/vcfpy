@@ -2,8 +2,7 @@
 """Test escaping on writing VCF records
 """
 
-from vcfpy import writer
-from vcfpy import header
+from vcfpy import header, writer
 
 # vcfpy.writer.format_atomic() ------------------------------------------------
 
@@ -43,7 +42,5 @@ def test_format_value_with_escape():
 
 def test_format_value_without_escape():
     EXPECTED = "This is a legal string,me too"
-    RESULT = writer.format_value(
-        header.FieldInfo("String", 2), ("This is a legal string", "me too"), "INFO"
-    )
+    RESULT = writer.format_value(header.FieldInfo("String", 2), ("This is a legal string", "me too"), "INFO")
     assert EXPECTED == RESULT

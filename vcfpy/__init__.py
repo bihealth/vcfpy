@@ -1,50 +1,107 @@
 # -*- coding: utf-8 -*-
 
 from .compat import OrderedDict
-
 from .exceptions import (
-    VCFPyException,
+    HeaderNotFound,
+    IncorrectVCFFormat,
     InvalidHeaderException,
     InvalidRecordException,
-    IncorrectVCFFormat,
-    HeaderNotFound,
+    VCFPyException,
 )
-
 from .header import (
+    AltAlleleHeaderLine,
+    CompoundHeaderLine,
+    ContigHeaderLine,
+    FieldInfo,
+    FilterHeaderLine,
+    FormatHeaderLine,
     Header,
     HeaderLine,
-    SimpleHeaderLine,
-    AltAlleleHeaderLine,
-    ContigHeaderLine,
-    FilterHeaderLine,
+    InfoHeaderLine,
     MetaHeaderLine,
     PedigreeHeaderLine,
     SampleHeaderLine,
-    CompoundHeaderLine,
-    InfoHeaderLine,
-    FormatHeaderLine,
     SamplesInfos,
-    FieldInfo,
+    SimpleHeaderLine,
     header_without_lines,
 )
-
-from .record import (
-    Record,
-    Call,
-    UnparsedCall,
-    AltRecord,
-    Substitution,
-    BreakEnd,
-    SingleBreakEnd,
-    SymbolicAllele,
-)
-
-from .record import SNV, MNV, DEL, INS, INDEL, SV, BND, SYMBOLIC, MIXED
-from .record import HOM_REF, HET, HOM_ALT
-from .record import FIVE_PRIME, THREE_PRIME, FORWARD, REVERSE
-
 from .reader import Reader
-
+from .record import (
+    BND,
+    DEL,
+    FIVE_PRIME,
+    FORWARD,
+    HET,
+    HOM_ALT,
+    HOM_REF,
+    INDEL,
+    INS,
+    MIXED,
+    MNV,
+    REVERSE,
+    SNV,
+    SV,
+    SYMBOLIC,
+    THREE_PRIME,
+    AltRecord,
+    BreakEnd,
+    Call,
+    Record,
+    SingleBreakEnd,
+    Substitution,
+    SymbolicAllele,
+    UnparsedCall,
+)
+from .version import __version__
 from .writer import Writer
 
-from .version import __version__
+__all__ = [
+    "VCFPyException",
+    "IncorrectVCFFormat",
+    "InvalidHeaderException",
+    "InvalidRecordException",
+    "HeaderNotFound",
+    "Header",
+    "MetaHeaderLine",
+    "SimpleHeaderLine",
+    "CompoundHeaderLine",
+    "InfoHeaderLine",
+    "FilterHeaderLine",
+    "FormatHeaderLine",
+    "ContigHeaderLine",
+    "AltAlleleHeaderLine",
+    "PedigreeHeaderLine",
+    "SampleHeaderLine",
+    "FieldInfo",
+    "SamplesInfos",
+    "header_without_lines",
+    "Reader",
+    "HeaderLine",
+    "Writer",
+    "Record",
+    "Call",
+    "UnparsedCall",
+    "AltRecord",
+    "Substitution",
+    "SymbolicAllele",
+    "BreakEnd",
+    "SingleBreakEnd",
+    "HOM_REF",
+    "HET",
+    "HOM_ALT",
+    "SNV",
+    "MNV",
+    "INDEL",
+    "INS",
+    "DEL",
+    "SV",
+    "BND",
+    "SYMBOLIC",
+    "MIXED",
+    "FORWARD",
+    "REVERSE",
+    "FIVE_PRIME",
+    "THREE_PRIME",
+    "__version__",
+    "OrderedDict",
+]

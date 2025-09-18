@@ -9,9 +9,7 @@ import io
 import pytest
 
 import vcfpy
-from vcfpy import parser
-from vcfpy import writer
-from vcfpy import record
+from vcfpy import parser, record, writer
 
 __author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"
 

@@ -8,7 +8,7 @@ import textwrap
 import pytest
 
 import vcfpy
-from vcfpy import parser, writer, header, record
+from vcfpy import header, parser, record, writer
 
 __author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"
 
@@ -140,10 +140,7 @@ def test_write_record_with_escaping(header_samples, tmpdir_factory):
     w.close()
     # compare actual result with expected
     RESULT = path.read()
-    LINE = (
-        "20\t100\t.\tC\tT\t.\t.\tANNO=Here%2Care%25some chars,"
-        "%2525\tGT:FT\t0/1:%2525;FOO\t0/0:.\t1/1:.\n"
-    )
+    LINE = "20\t100\t.\tC\tT\t.\t.\tANNO=Here%2Care%25some chars,%2525\tGT:FT\t0/1:%2525;FOO\t0/0:.\t1/1:.\n"
     EXPECTED = MEDIUM_HEADER + LINE
     assert EXPECTED == RESULT
 
@@ -151,9 +148,7 @@ def test_write_record_with_escaping(header_samples, tmpdir_factory):
 def test_write_record_no_samples(tmpdir_factory):
     OD = vcfpy.OrderedDict
     # Create header without samples
-    hdr = header.Header(
-        lines=[header.HeaderLine("fileformat", "VCFv4.0")], samples=header.SamplesInfos([])
-    )
+    hdr = header.Header(lines=[header.HeaderLine("fileformat", "VCFv4.0")], samples=header.SamplesInfos([]))
     # construct record to write out from scratch
     r = record.Record("20", 100, [], "C", [record.Substitution(record.SNV, "T")], None, [], OD())
     # Write out header and record

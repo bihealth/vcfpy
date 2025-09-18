@@ -4,8 +4,7 @@
 
 import sys
 
-from vcfpy import header
-from vcfpy import parser
+from vcfpy import header, parser
 
 __author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"
 
@@ -57,7 +56,7 @@ def test_mapping_vcf_header_line_parser_parse_key_value_format():
 
 def test_mapping_vcf_header_line_parser_parse_key_value_info():
     p = parser.MappingHeaderLineParser(header.InfoHeaderLine)
-    INPUT = ("INFO", "<ID=NS,Number=1,Type=Integer,Description=" '"Number of Samples With Data">')
+    INPUT = ("INFO", '<ID=NS,Number=1,Type=Integer,Description="Number of Samples With Data">')
     if sys.version_info < (3, 6):
         EXPECTED = (
             "InfoHeaderLine('INFO', '<ID=NS,Number=1,Type=Integer,Description=\"Number of Samples With Data\">', "
@@ -138,7 +137,7 @@ def test_mapping_vcf_header_parser_parse_line_format():
 
 def test_mapping_vcf_header_parser_parse_line_info():
     p = parser.HeaderParser()
-    INPUT = "##INFO=" "<ID=NS,Number=1,Type=Integer,Description=" '"Number of Samples With Data">\n'
+    INPUT = '##INFO=<ID=NS,Number=1,Type=Integer,Description="Number of Samples With Data">\n'
     if sys.version_info < (3, 6):
         EXPECTED = (
             "InfoHeaderLine('INFO', '<ID=NS,Number=1,Type=Integer,Description=\"Number of Samples With Data\">', "
@@ -177,7 +176,7 @@ def test_mapping_vcf_header_parser_parse_line_contig():
 
 def test_mapping_vcf_header_parser_parse_line_alt_allele():
     p = parser.HeaderParser()
-    INPUT = "##ALT=" '<ID=R,Description="IUPAC code R = A/G">\n'
+    INPUT = '##ALT=<ID=R,Description="IUPAC code R = A/G">\n'
     if sys.version_info < (3, 6):
         EXPECTED = (
             "AltAlleleHeaderLine('ALT', "
@@ -196,7 +195,7 @@ def test_mapping_vcf_header_parser_parse_line_alt_allele():
 
 def test_mapping_vcf_header_parser_parse_line_meta():
     p = parser.HeaderParser()
-    INPUT = "##META=" "<ID=Assay,Type=String,Number=.,Values=[WholeGenome, Exome]>\n"
+    INPUT = "##META=<ID=Assay,Type=String,Number=.,Values=[WholeGenome, Exome]>\n"
     if sys.version_info < (3, 6):
         EXPECTED = (
             "MetaHeaderLine('META', '<ID=Assay,Type=String,Number=.,"
@@ -214,7 +213,7 @@ def test_mapping_vcf_header_parser_parse_line_meta():
 
 def test_mapping_vcf_header_parser_parse_line_pedigree():
     p = parser.HeaderParser()
-    INPUT = "##PEDIGREE=" "<ID=TumourSample,Original=GermlineID>\n"
+    INPUT = "##PEDIGREE=<ID=TumourSample,Original=GermlineID>\n"
     if sys.version_info < (3, 6):
         EXPECTED = (
             "PedigreeHeaderLine('PEDIGREE', "
