@@ -6,7 +6,7 @@ The VCF record structure is modeled after the one of PyVCF
 
 import re
 import warnings
-from typing import Any, Iterator, Literal
+from typing import Any, Iterator, Literal, Sequence
 
 from vcfpy.exceptions import CannotModifyUnparsedCallWarning
 
@@ -71,7 +71,7 @@ class Record:
         FILTER: list[str],
         INFO: dict[str, Any],
         FORMAT: list[str] | None = None,
-        calls: list["Call | UnparsedCall"] | None = None,
+        calls: Sequence["Call | UnparsedCall"] | None = None,
     ):
         if bool(FORMAT) != bool(calls):
             raise ValueError("Either provide both FORMAT and calls or none.")
@@ -106,7 +106,7 @@ class Record:
         self.call_for_sample = {}
         self.update_calls(self.calls)
 
-    def update_calls(self, calls: list["Call | UnparsedCall"]):
+    def update_calls(self, calls: Sequence["Call | UnparsedCall"]):
         """Update ``self.calls`` and other fields as necessary."""
         for call in calls:
             call.site = self

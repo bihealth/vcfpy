@@ -6,12 +6,14 @@ import ast
 import functools
 import io
 import math
+import pathlib
 import re
 import warnings
 from typing import Any, Callable, Iterable, Literal, cast
 
 from vcfpy import exceptions, header, record
-from vcfpy.exceptions import (
+
+from .exceptions import (
     CannotConvertValue,
     LeadingTrailingSpaceInKey,
     SpaceInChromLine,
@@ -67,8 +69,8 @@ class QuotedStringSplitter:
         quoting inside of braces is not supported either.  This is just to
         support the example from VCF v4.3.
         """
-        begins: list[int] = []
-        ends: list[int] = [0]
+        begins: list[int] = [0]
+        ends: list[int] = []
         # transition table
         DISPATCH: dict[Literal[0, 1, 2, 3, 4], Callable[[str, int, list[int], list[int]], Literal[0, 1, 2, 3, 4]]] = {
             self.NORMAL: self._handle_normal,
@@ -719,11 +721,11 @@ class Parser:
     def __init__(
         self,
         stream: "io.TextIOWrapper",
-        path: str | None = None,
+        path: pathlib.Path | str | None = None,
         record_checks: Iterable[Literal["FORMAT", "INFO"]] | None = None,
     ):
         self.stream = stream
-        self.path = path
+        self.path = None if path is None else str(path)
         #: checks to perform, can contain 'INFO' and 'FORMAT'
         self.record_checks = tuple(record_checks or []) or None
         #: header, once it has been read

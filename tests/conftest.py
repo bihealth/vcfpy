@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 """Shared code for tests"""
 
+import pathlib
 import textwrap
 
 import pytest
 
 
 @pytest.fixture
-def multisample_vcf():
+def multisample_vcf() -> str:
     """Return string with multi-sample VCF"""
     return textwrap.dedent(
         """
@@ -25,7 +26,7 @@ def multisample_vcf():
 
 
 @pytest.fixture
-def multisample_vcf_only_NA00002():
+def multisample_vcf_only_NA00002() -> str:
     """Return string with multi-sample VCF limited to NA00002"""
     return textwrap.dedent(
         """
@@ -43,7 +44,7 @@ def multisample_vcf_only_NA00002():
 
 
 @pytest.fixture
-def multisample_vcf_reordered():
+def multisample_vcf_reordered() -> str:
     """Return string with re-ordered multi-sample VCF"""
     return textwrap.dedent(
         """
@@ -61,16 +62,17 @@ def multisample_vcf_reordered():
 
 
 @pytest.fixture
-def multisample_vcf_file(tmpdir, multisample_vcf):
+def multisample_vcf_file(tmpdir: pathlib.Path, multisample_vcf: str) -> str:
     """Return path to multi-sample VCF file"""
-    p = tmpdir.mkdir("input").join("input.vcf")
+    (tmpdir / "input").mkdir()
+    p = tmpdir / "input" / "input.vcf"
     with open(str(p), "wt") as f:
         f.write(multisample_vcf)
     return str(p)
 
 
 @pytest.fixture
-def nosample_vcf():
+def nosample_vcf() -> str:
     """Return string VCF that has no samples and no FORMAT"""
     return textwrap.dedent(
         """
@@ -88,9 +90,10 @@ def nosample_vcf():
 
 
 @pytest.fixture
-def nosample_vcf_file(tmpdir, nosample_vcf):
+def nosample_vcf_file(tmpdir: pathlib.Path, nosample_vcf: str) -> str:
     """Return path to file without samples/FORMAT"""
-    p = tmpdir.mkdir("input").join("input.vcf")
+    (tmpdir / "input").mkdir()
+    p = tmpdir / "input" / "input.vcf"
     with open(str(p), "wt") as f:
         f.write(nosample_vcf)
     return str(p)

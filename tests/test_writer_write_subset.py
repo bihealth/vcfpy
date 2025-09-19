@@ -4,40 +4,48 @@ samples
 """
 
 
+import pathlib
+
 from vcfpy import Header, Reader, SamplesInfos, Writer
+from vcfpy.record import Record
 
 
-def test_reading_and_write_subset_of_samples(tmpdir, multisample_vcf_file, multisample_vcf_only_NA00002):
+def test_reading_and_write_subset_of_samples(
+    tmpdir: pathlib.Path, multisample_vcf_file: str, multisample_vcf_only_NA00002: str
+):
     # Perform record-wise copying, saving results in records, not writing
     # out for some samples
-    records = []
-    out_path = str(tmpdir.mkdir("output").join("output.vcf"))
+    records: list[Record] = []
+    (tmpdir / "output").mkdir()
+    out_path = str(tmpdir / "output" / "output.vcf")
     with Reader.from_path(multisample_vcf_file) as reader:
         samples = SamplesInfos(["NA00002"])
         header = Header(reader.header.lines, samples)
         with Writer.from_path(out_path, header) as writer:
             for record in reader:
-                records.append(record)
-                writer.write_record(record)
+                if record:
+                    records.append(record)
+                    writer.write_record(record)
     # Check resulting file
     with open(out_path, "rt") as outf:
         assert multisample_vcf_only_NA00002 == outf.read()
 
 
 def test_reading_and_write_subset_of_samples_parse_different_subset(
-    tmpdir, multisample_vcf_file, multisample_vcf_only_NA00002
+    tmpdir: pathlib.Path, multisample_vcf_file: str, multisample_vcf_only_NA00002: str
 ):
     # Perform record-wise copying, saving results in records, not writing
     # out for some samples
-    records = []
-    out_path = str(tmpdir.mkdir("output").join("output.vcf"))
+    records: list[Record] = []
+    out_path = str(tmpdir / "output" / "output.vcf")
     with Reader.from_path(multisample_vcf_file, parsed_samples=["NA00001"]) as reader:
         samples = SamplesInfos(["NA00002"])
         header = Header(reader.header.lines, samples)
         with Writer.from_path(out_path, header) as writer:
             for record in reader:
-                records.append(record)
-                writer.write_record(record)
+                if record:
+                    records.append(record)
+                    writer.write_record(record)
     # Check resulting file
     with open(out_path, "rt") as outf:
         assert multisample_vcf_only_NA00002 == outf.read()

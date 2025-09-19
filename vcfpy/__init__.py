@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
 
+from vcfpy.exceptions import (
+    HeaderNotFound,
+    IncorrectVCFFormat,
+    InvalidHeaderException,
+    InvalidRecordException,
+    VCFPyException,
+)
 from vcfpy.header import (
     AltAlleleHeaderLine,
     CompoundHeaderLine,
@@ -46,14 +53,6 @@ from vcfpy.record import (
 )
 from vcfpy.version import __version__
 from vcfpy.writer import Writer
-
-from .exceptions import (
-    HeaderNotFound,
-    IncorrectVCFFormat,
-    InvalidHeaderException,
-    InvalidRecordException,
-    VCFPyException,
-)
 
 __all__ = [
     "VCFPyException",

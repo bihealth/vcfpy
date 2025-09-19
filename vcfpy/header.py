@@ -324,9 +324,11 @@ class Header:
         result: dict[str, dict[str, "HeaderLine"]] = {key: {} for key in LINES_WITH_ID}
         for line in self.lines:
             if line.key in LINES_WITH_ID:
-                if not isinstance(line, SimpleHeaderLine):
+                if not isinstance(line, (SimpleHeaderLine, CompoundHeaderLine)):
                     raise HeaderInvalidType(
-                        'Header line "{}={}" must be of type SimpleHeaderLine'.format(line.key, line.value)
+                        "Header line must be of type SimpleHeaderLine or CompoundHeaderLine but is {}".format(
+                            type(line)
+                        )
                     )
                 result.setdefault(line.key, {})
                 if line.mapping["ID"] in result[line.key]:

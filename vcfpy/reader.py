@@ -4,6 +4,7 @@
 
 import gzip
 import os
+import pathlib
 import typing
 from io import TextIOWrapper
 
@@ -42,8 +43,8 @@ class Reader:
     def from_stream(
         cls,
         stream: TextIOWrapper,
-        path: str | None = None,
-        tabix_path: str | None = None,
+        path: pathlib.Path | str | None = None,
+        tabix_path: pathlib.Path | str | None = None,
         record_checks: list[typing.Literal["INFO", "FORMAT"]] | None = None,
         parsed_samples: list[str] | None = None,
     ):
@@ -75,8 +76,8 @@ class Reader:
     @classmethod
     def from_path(
         cls,
-        path: str,
-        tabix_path: str | None = None,
+        path: pathlib.Path | str,
+        tabix_path: pathlib.Path | str | None = None,
         record_checks: list[typing.Literal["INFO", "FORMAT"]] | None = None,
         parsed_samples: list[str] | None = None,
     ):
@@ -115,17 +116,17 @@ class Reader:
     def __init__(
         self,
         stream: TextIOWrapper,
-        path: str | None = None,
-        tabix_path: str | None = None,
+        path: pathlib.Path | str | None = None,
+        tabix_path: pathlib.Path | str | None = None,
         record_checks: typing.Iterable[typing.Literal["FORMAT", "INFO"]] | None = None,
         parsed_samples: list[str] | None = None,
     ):
         #: stream (``file``-like object) to read from
         self.stream = stream
         #: optional ``str`` with the path to the stream
-        self.path = path
+        self.path = None if path is None else str(path)
         #: optional ``str`` with path to tabix file
-        self.tabix_path = tabix_path
+        self.tabix_path = None if tabix_path is None else str(tabix_path)
         #: checks to perform on records, can contain 'FORMAT' and 'INFO'
         self.record_checks = tuple(record_checks or [])
         #: if set, list of samples to parse for

@@ -5,6 +5,7 @@
 import codecs
 import gzip
 import io
+from typing import cast
 
 import pytest
 
@@ -41,7 +42,8 @@ MEDIUM_HEADER = """
 
 @pytest.fixture(scope="function")
 def header_samples():
-    p = parser.Parser(stream=io.StringIO(MEDIUM_HEADER), path="<builtin>")
+    cast_stream = cast(io.TextIOWrapper, io.StringIO(MEDIUM_HEADER))
+    p = parser.Parser(stream=cast_stream, path="<builtin>")
     p.parse_header()
     return (p.header, p.samples)
 

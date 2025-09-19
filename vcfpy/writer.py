@@ -4,6 +4,7 @@
 Currently, only writing to plain-text files is supported
 """
 
+import pathlib
 import typing
 from typing import IO, Any, Literal, cast
 
@@ -69,7 +70,11 @@ class Writer:
 
     @classmethod
     def from_stream(
-        cls, stream: IO[str] | IO[bytes], header: Header, path: str | None = None, use_bgzf: bool | None = None
+        cls,
+        stream: IO[str] | IO[bytes],
+        header: Header,
+        path: pathlib.Path | str | None = None,
+        use_bgzf: bool | None = None,
     ):
         """Create new :py:class:`Writer` from file
 
@@ -85,6 +90,7 @@ class Writer:
         :param use_bgzf: indicator whether to write bgzf to ``stream``
             if ``True``, prevent if ``False``, interpret ``path`` if ``None``
         """
+        path = str(path)
         if use_bgzf or (use_bgzf is None and path and path.endswith(".gz")):
             stream_b = cast(IO[bytes], stream)
             stream_: IO[str] = bgzf.BgzfWriter(fileobj=stream_b)
@@ -93,7 +99,7 @@ class Writer:
         return Writer(stream_, header, path)
 
     @classmethod
-    def from_path(cls, path: str, header: Header):
+    def from_path(cls, path: pathlib.Path | str, header: Header):
         """Create new :py:class:`Writer` from path
 
         :param path: the path to load from (converted to ``str`` for
@@ -108,14 +114,14 @@ class Writer:
             f = open(path, "wt")
         return cls.from_stream(f, header, path, use_bgzf=use_bgzf)
 
-    def __init__(self, stream: IO[str], header: Header, path: str | None = None):
+    def __init__(self, stream: IO[str], header: Header, path: pathlib.Path | str | None = None):
         #: stream (``file``-like object) to read from
         self.stream = stream
         #: the :py:class:~vcfpy.header.Header` to write out, will be
         #: deep-copied into the ``Writer`` on initialization
         self.header = header.copy()
         #: optional ``str`` with the path to the stream
-        self.path = path
+        self.path = None if path is None else str(path)
         # write out headers
         self._write_header()
 
