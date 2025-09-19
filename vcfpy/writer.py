@@ -7,9 +7,8 @@ Currently, only writing to plain-text files is supported
 import typing
 from typing import IO, Any, Literal, cast
 
+from vcfpy import bgzf, parser, record
 from vcfpy.header import FieldInfo, Header
-
-from . import bgzf, parser, record
 
 __author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"
 
@@ -32,7 +31,9 @@ def format_atomic(value: Any | None, section: Literal["INFO", "FORMAT"]) -> str:
         return str(value)
 
 
-def format_value(field_info: FieldInfo, value: str | list[Any] | None | int | bool | float, section: Literal["INFO", "FORMAT"]):
+def format_value(
+    field_info: FieldInfo, value: str | None | int | bool | float | list[Any], section: Literal["INFO", "FORMAT"]
+):
     """Format possibly compound value given the FieldInfo"""
     if section == "FORMAT" and field_info.id == "FT":
         if not value:
@@ -45,6 +46,8 @@ def format_value(field_info: FieldInfo, value: str | list[Any] | None | int | bo
         else:
             return format_atomic(value, section)
     else:
+        if type(value) is not list:
+            raise ValueError("Expected list value for field with Number != 1")
         if not value:
             return "."
         else:
@@ -65,7 +68,9 @@ class Writer:
     """
 
     @classmethod
-    def from_stream(cls, stream: IO[str] | IO[bytes], header: Header, path: str | None = None, use_bgzf: bool | None = None):
+    def from_stream(
+        cls, stream: IO[str] | IO[bytes], header: Header, path: str | None = None, use_bgzf: bool | None = None
+    ):
         """Create new :py:class:`Writer` from file
 
         Note that for getting bgzf support, you have to pass in a stream
@@ -118,7 +123,7 @@ class Writer:
         """Write out the header"""
         for line in self.header.lines:
             print(line.serialize(), file=self.stream)
-        if self.header.samples.names:
+        if self.header.samples and self.header.samples.names:
             print(
                 "\t".join(list(parser.REQUIRE_SAMPLE_HEADER) + self.header.samples.names),
                 file=self.stream,
@@ -130,15 +135,15 @@ class Writer:
         """Close underlying stream"""
         self.stream.close()
 
-    def write_record(self, record):
+    def write_record(self, record: record.Record):
         """Write out the given :py:class:`vcfpy.record.Record` to this
         Writer"""
         self._serialize_record(record)
 
-    def _serialize_record(self, record):
+    def _serialize_record(self, record: record.Record):
         """Serialize whole Record"""
         f = self._empty_to_dot
-        row = [record.CHROM, record.POS]
+        row: list[Any] = [record.CHROM, record.POS]
         row.append(f(";".join(record.ID)))
         row.append(f(record.REF))
         if not record.ALT:
@@ -150,12 +155,16 @@ class Writer:
         row.append(f(self._serialize_info(record)))
         if record.FORMAT:
             row.append(":".join(record.FORMAT))
-        row += [self._serialize_call(record.FORMAT, record.call_for_sample[s]) for s in self.header.samples.names]
+        if self.header.samples:
+            names = self.header.samples.names
+        else:
+            names = []
+        row += [self._serialize_call(record.FORMAT, record.call_for_sample[s]) for s in names]
         print(*row, sep="\t", file=self.stream)
 
-    def _serialize_info(self, record):
+    def _serialize_info(self, record: record.Record) -> str:
         """Return serialized version of record.INFO"""
-        result = []
+        result: list[str] = []
         for key, value in record.INFO.items():
             info = self.header.get_info_field_info(key)
             if info.type == "Flag":
@@ -164,15 +173,15 @@ class Writer:
                 result.append("{}={}".format(key, format_value(info, value, "INFO")))
         return ";".join(result)
 
-    def _serialize_call(self, format_: list[str], call: record.Call) -> str:
+    def _serialize_call(self, format_: list[str], call: record.Call | record.UnparsedCall) -> str:
         """Return serialized version of the Call using the record's FORMAT'"""
         if isinstance(call, record.UnparsedCall):
             return call.unparsed_data
         else:
-            result = [
+            result: list[str | None] = [
                 format_value(self.header.get_format_field_info(key), call.data.get(key), "FORMAT") for key in format_
             ]
-            return ":".join(result)
+            return ":".join([r for r in result if r is not None])
 
     @classmethod
     def _empty_to_dot(cls, val: Any) -> str:

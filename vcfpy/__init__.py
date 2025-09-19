@@ -1,13 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from .exceptions import (
-    HeaderNotFound,
-    IncorrectVCFFormat,
-    InvalidHeaderException,
-    InvalidRecordException,
-    VCFPyException,
-)
-from .header import (
+from vcfpy.header import (
     AltAlleleHeaderLine,
     CompoundHeaderLine,
     ContigHeaderLine,
@@ -24,8 +17,8 @@ from .header import (
     SimpleHeaderLine,
     header_without_lines,
 )
-from .reader import Reader
-from .record import (
+from vcfpy.reader import Reader
+from vcfpy.record import (
     BND,
     DEL,
     FIVE_PRIME,
@@ -51,8 +44,16 @@ from .record import (
     SymbolicAllele,
     UnparsedCall,
 )
-from .version import __version__
-from .writer import Writer
+from vcfpy.version import __version__
+from vcfpy.writer import Writer
+
+from .exceptions import (
+    HeaderNotFound,
+    IncorrectVCFFormat,
+    InvalidHeaderException,
+    InvalidRecordException,
+    VCFPyException,
+)
 
 __all__ = [
     "VCFPyException",

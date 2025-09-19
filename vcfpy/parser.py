@@ -10,8 +10,8 @@ import re
 import warnings
 from typing import Any, Callable, Iterable, Literal, cast
 
-from . import exceptions, header, record
-from .exceptions import (
+from vcfpy import exceptions, header, record
+from vcfpy.exceptions import (
     CannotConvertValue,
     LeadingTrailingSpaceInKey,
     SpaceInChromLine,

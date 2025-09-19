@@ -9,8 +9,8 @@ import pprint
 import warnings
 from typing import Any, Iterable, Literal
 
-from . import exceptions
-from .exceptions import (
+from vcfpy import exceptions
+from vcfpy.exceptions import (
     DuplicateHeaderLineWarning,
     FieldInfoNotFound,
     FieldInvalidNumber,
