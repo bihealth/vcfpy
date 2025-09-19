@@ -7,9 +7,9 @@ The VCF header class structure is modeled after HTSJDK
 import json
 import pprint
 import warnings
+from typing import Any, Iterable, Literal
 
 from . import exceptions
-from .compat import OrderedDict
 from .exceptions import (
     DuplicateHeaderLineWarning,
     FieldInfoNotFound,
@@ -48,22 +48,28 @@ class FieldInfo:
     """Core information for describing field type and number"""
 
     # TODO: always put in id?
-    def __init__(self, type_, number, description=None, id_=None):
+    def __init__(
+        self,
+        type_: Literal["Integer", "Float", "Flag", "Character", "String"],
+        number: int | str,
+        description: str | None = None,
+        id_: str | None = None,
+    ):
         #: The type, one of INFO_TYPES or FORMAT_TYPES
-        self.type = type_
+        self.type: Literal["Integer", "Float", "Flag", "Character", "String"] = type_
         #: Number description, either an int or constant
-        self.number = number
+        self.number: int | str = number
         #: Description for the header field, optional
-        self.description = description
+        self.description: str | None = description
         #: The id of the field, optional.
-        self.id = id_
+        self.id: str | None = id_
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return self.__dict__ == other.__dict__
         return NotImplemented
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return not self.__eq__(other)
         return NotImplemented
@@ -190,7 +196,7 @@ RESERVED_FORMAT = {
 QUOTE_FIELDS = ("Description", "Source", "Version")
 
 
-def serialize_for_header(key, value):
+def serialize_for_header(key: str, value: Any) -> str:
     """Serialize value for the given mapping key for a VCF header line"""
     if key in QUOTE_FIELDS:
         return json.dumps(value)
@@ -200,12 +206,12 @@ def serialize_for_header(key, value):
         else:
             return value
     elif isinstance(value, list):
-        return "[{}]".format(", ".join(value))
+        return "[{}]".format(", ".join(value))  # type: ignore
     else:
         return str(value)
 
 
-def header_without_lines(header, remove):
+def header_without_lines(header: "Header", remove: Iterable[tuple[str, str]]) -> "Header":
     """Return :py:class:`Header` without lines given in ``remove``
 
     ``remove`` is an iterable of pairs ``key``/``ID`` with the VCF header key
@@ -222,9 +228,13 @@ def header_without_lines(header, remove):
     """
     remove = set(remove)
     # Copy over lines that are not removed
-    lines = []
+    lines: list[HeaderLine] = []
     for line in header.lines:
         if hasattr(line, "mapping"):
+            if not isinstance(line, SimpleHeaderLine):
+                raise HeaderInvalidType(
+                    'Header line "{}={}" must be of type SimpleHeaderLine'.format(line.key, line.value)
+                )
             if (line.key, line.mapping.get("ID", None)) in remove:
                 continue  # filter out
         else:
@@ -232,6 +242,60 @@ def header_without_lines(header, remove):
                 continue  # filter out
         lines.append(line)
     return Header(lines, header.samples)
+
+
+class SamplesInfos:
+    """Helper class for handling the samples in VCF files
+
+    The purpose of this class is to decouple the sample name list somewhat
+    from :py:class:`Header`.  This encapsulates subsetting samples for which
+    the genotype should be parsed and reordering samples into output files.
+
+    Note that when subsetting is used and the records are to be written out
+    again then the ``FORMAT`` field must not be touched.
+    """
+
+    def __init__(self, sample_names: list[str], parsed_samples: list[str] | None = None):
+        #: list of sample that are read from/written to the VCF file at
+        #: hand in the given order
+        self.names = list(sample_names)
+        #: ``set`` with the samples for which the genotype call fields should
+        #: be read; can be used for partial parsing (speedup) and defaults
+        #: to the full list of samples, None if all are parsed
+        self.parsed_samples = parsed_samples
+        if self.parsed_samples:
+            self.parsed_samples = set(self.parsed_samples)
+            assert self.parsed_samples <= set(self.names), "Must be subset!"
+        #: mapping from sample name to index
+        self.name_to_idx = {name: idx for idx, name in enumerate(self.names)}
+
+    def copy(self):
+        """Return a copy of the object"""
+        return SamplesInfos(self.names)
+
+    def is_parsed(self, name: str) -> bool:
+        """Return whether the sample name is parsed"""
+        return (not self.parsed_samples) or name in self.parsed_samples
+
+    def __hash__(self):
+        raise TypeError("Unhashable type: SamplesInfos")
+
+    def __str__(self):
+        tpl = "SamplesInfos(names={}, name_to_idx={})"
+        return tpl.format(self.names, pprint.pformat(self.name_to_idx, width=10**10))
+
+    def __repr__(self):
+        return str(self)
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, self.__class__):
+            return self.names == other.names
+        return NotImplemented
+
+    def __ne__(self, other: object) -> bool:
+        if isinstance(other, self.__class__):
+            return self.names != other.names
+        return NotImplemented
 
 
 class Header:
@@ -247,7 +311,7 @@ class Header:
     a filtered list of header lines.
     """
 
-    def __init__(self, lines=None, samples=None):
+    def __init__(self, lines: list["HeaderLine"] | None = None, samples: SamplesInfos | None = None):
         #: ``list`` of :py:HeaderLine objects
         self.lines = lines or []
         #: :py:class:`SamplesInfo` object
@@ -255,15 +319,19 @@ class Header:
         # build indices for the different field types
         self._indices = self._build_indices()
 
-    def _build_indices(self):
+    def _build_indices(self) -> dict[str, dict["str", "HeaderLine"]]:
         """Build indices for the different field types"""
-        result = {key: OrderedDict() for key in LINES_WITH_ID}
+        result: dict[str, dict[str, "HeaderLine"]] = {key: {} for key in LINES_WITH_ID}
         for line in self.lines:
             if line.key in LINES_WITH_ID:
-                result.setdefault(line.key, OrderedDict())
+                if not isinstance(line, SimpleHeaderLine):
+                    raise HeaderInvalidType(
+                        'Header line "{}={}" must be of type SimpleHeaderLine'.format(line.key, line.value)
+                    )
+                result.setdefault(line.key, {})
                 if line.mapping["ID"] in result[line.key]:
                     warnings.warn(
-                        ("Seen {} header more than once: {}, using firstoccurence").format(
+                        ("Seen {} header more than once: {}, using first occurence").format(
                             line.key, line.mapping["ID"]
                         ),
                         DuplicateHeaderLineWarning,
@@ -271,15 +339,16 @@ class Header:
                 else:
                     result[line.key][line.mapping["ID"]] = line
             else:
-                result.setdefault(line.key, [])
-                result[line.key].append(line)
+                result.setdefault(line.key, {})
+                idx = f"{len(result[line.key])}"
+                result[line.key][idx] = line
         return result
 
     def copy(self):
         """Return a copy of this header"""
-        return Header([line.copy() for line in self.lines], self.samples.copy())
+        return Header([line.copy() for line in self.lines], None if self.samples is None else self.samples.copy())
 
-    def add_filter_line(self, mapping):
+    def add_filter_line(self, mapping: dict[str, Any]):
         """Add FILTER header line constructed from the given mapping
 
         :param mapping: ``OrderedDict`` with mapping to add.  It is
@@ -289,7 +358,7 @@ class Header:
         """
         return self.add_line(FilterHeaderLine.from_mapping(mapping))
 
-    def add_contig_line(self, mapping):
+    def add_contig_line(self, mapping: dict[str, Any]):
         """Add "contig" header line constructed from the given mapping
 
         :param mapping: ``OrderedDict`` with mapping to add.  It is
@@ -299,7 +368,7 @@ class Header:
         """
         return self.add_line(ContigHeaderLine.from_mapping(mapping))
 
-    def add_info_line(self, mapping):
+    def add_info_line(self, mapping: dict[str, Any]):
         """Add INFO header line constructed from the given mapping
 
         :param mapping: ``OrderedDict`` with mapping to add.  It is
@@ -309,7 +378,7 @@ class Header:
         """
         return self.add_line(InfoHeaderLine.from_mapping(mapping))
 
-    def add_format_line(self, mapping):
+    def add_format_line(self, mapping: dict[str, Any]):
         """Add FORMAT header line constructed from the given mapping
 
         :param mapping: ``OrderedDict`` with mapping to add.  It is
@@ -319,7 +388,7 @@ class Header:
         """
         return self.add_line(FormatHeaderLine.from_mapping(mapping))
 
-    def format_ids(self):
+    def format_ids(self) -> list[str]:
         """Return list of all format IDs"""
         return list(self._indices["FORMAT"].keys())
 
@@ -331,14 +400,14 @@ class Header:
         """Return list of all info IDs"""
         return list(self._indices["INFO"].keys())
 
-    def get_lines(self, key):
+    def get_lines(self, key: str) -> Iterable["HeaderLine"]:
         """Return header lines having the given ``key`` as their type"""
         if key in self._indices:
             return self._indices[key].values()
         else:
             return []
 
-    def has_header_line(self, key, id_):
+    def has_header_line(self, key: str, id_: str):
         """Return whether there is a header line with the given ID of the
         type given by ``key``
 
@@ -353,15 +422,19 @@ class Header:
         else:
             return id_ in self._indices[key]
 
-    def add_line(self, header_line):
+    def add_line(self, header_line: "HeaderLine"):
         """Add header line, updating any necessary support indices
 
         :return: ``False`` on conflicting line and ``True`` otherwise
         """
         self.lines.append(header_line)
-        self._indices.setdefault(header_line.key, OrderedDict())
+        self._indices.setdefault(header_line.key, {})
         if not hasattr(header_line, "mapping"):
             return False  # no registration required
+        if not isinstance(header_line, SimpleHeaderLine):
+            raise HeaderInvalidType(
+                'Header line "{}={}" must be of type SimpleHeaderLine'.format(header_line.key, header_line.value)
+            )
         if self.has_header_line(header_line.key, header_line.mapping["ID"]):
             warnings.warn(
                 ("Detected duplicate header line with type {} and ID {}. Ignoring this and subsequent one").format(
@@ -374,18 +447,23 @@ class Header:
             self._indices[header_line.key][header_line.mapping["ID"]] = header_line
             return True
 
-    def get_info_field_info(self, key):
+    def get_info_field_info(self, key: str) -> FieldInfo:
         """Return :py:class:`FieldInfo` for the given INFO field"""
         return self._get_field_info("INFO", key, RESERVED_INFO)
 
-    def get_format_field_info(self, key):
-        """Return :py:class:`FieldInfo` for the given INFO field"""
+    def get_format_field_info(self, key: str) -> FieldInfo:
+        """Return :py:class:`FieldInfo` for the given FORMAT field"""
         return self._get_field_info("FORMAT", key, RESERVED_FORMAT)
 
-    def _get_field_info(self, type_, key, reserved):
+    def _get_field_info(self, type_: str, key: str, reserved: dict[str, FieldInfo]) -> FieldInfo:
         result = self._indices[type_].get(key)
-        if result:
-            return result
+        if result and isinstance(result, SimpleHeaderLine):
+            return FieldInfo(
+                result.mapping["Type"],
+                result.mapping["Number"],
+                result.mapping.get("Description"),
+                result.mapping["ID"],
+            )
         if key in reserved:
             res = reserved[key]
         else:
@@ -396,12 +474,12 @@ class Header:
         )
         return res
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return (self.lines, self.samples) == (other.lines, other.samples)
         return NotImplemented
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return (self.lines, self.samples) != (other.lines, other.samples)
         return NotImplemented
@@ -420,7 +498,7 @@ class Header:
 class HeaderLine:
     """Base class for VCF header lines"""
 
-    def __init__(self, key, value):
+    def __init__(self, key: str, value: str):
         #: ``str`` with key of header line
         self.key = key
         # ``str`` with raw value of header line
@@ -438,12 +516,12 @@ class HeaderLine:
         """Return VCF-serialized version of this header line"""
         return "".join(("##", self.key, "=", self.value))
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return (self.key, self.value) == (other.key, other.value)
         return NotImplemented
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return (self.key, self.value) != (other.key, other.value)
         return NotImplemented
@@ -458,7 +536,7 @@ class HeaderLine:
         return str(self)
 
 
-def mapping_to_str(mapping):
+def mapping_to_str(mapping: dict[str, str]) -> str:
     """Convert mapping to string"""
     result = ["<"]
     for i, (key, value) in enumerate(mapping.items()):
@@ -479,17 +557,17 @@ class SimpleHeaderLine(HeaderLine):
         the case of missing key ``"ID"``
     """
 
-    def __init__(self, key, value, mapping):
+    def __init__(self, key: str, value: str, mapping: dict[str, Any]):
         super().__init__(key, value)
         # check existence of key "ID"
         if "ID" not in mapping:
             raise exceptions.InvalidHeaderException('Missing key "ID" in header line "{}={}"'.format(key, value))
         #: ``collections.OrderedDict`` with key/value mapping of the attributes
-        self.mapping = OrderedDict(mapping.items())
+        self.mapping = dict(mapping)
 
     def copy(self):
         """Return a copy"""
-        mapping = OrderedDict(self.mapping.items())
+        mapping = dict(self.mapping)
         return self.__class__(self.key, self.value, mapping)
 
     @property
@@ -502,12 +580,12 @@ class SimpleHeaderLine(HeaderLine):
     def __str__(self):
         return "SimpleHeaderLine({}, {}, {})".format(*map(repr, (self.key, self.value, self.mapping)))
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return (self.key, self.value, self.mapping) == (other.key, other.value, other.mapping)
         return NotImplemented
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return (self.key, self.value, self.mapping) != (other.key, other.value, other.mapping)
         return NotImplemented
@@ -521,11 +599,11 @@ class AltAlleleHeaderLine(SimpleHeaderLine):
     """
 
     @classmethod
-    def from_mapping(klass, mapping):
+    def from_mapping(cls, mapping: dict[str, Any]) -> "AltAlleleHeaderLine":
         """Construct from mapping, not requiring the string value"""
         return AltAlleleHeaderLine("ALT", mapping_to_str(mapping), mapping)
 
-    def __init__(self, key, value, mapping):
+    def __init__(self, key: str, value: str, mapping: dict[str, Any]):
         super().__init__(key, value, mapping)
         #: name of the alternative allele
         self.id = self.mapping["ID"]
@@ -544,11 +622,11 @@ class ContigHeaderLine(SimpleHeaderLine):
     """
 
     @classmethod
-    def from_mapping(klass, mapping):
+    def from_mapping(cls, mapping: dict[str, Any]) -> "ContigHeaderLine":
         """Construct from mapping, not requiring the string value"""
         return ContigHeaderLine("contig", mapping_to_str(mapping), mapping)
 
-    def __init__(self, key, value, mapping):
+    def __init__(self, key: str, value: str, mapping: dict[str, Any]):
         super().__init__(key, value, mapping)
         # convert 'length' entry to integer if possible
         if "length" in self.mapping:
@@ -574,11 +652,11 @@ class FilterHeaderLine(SimpleHeaderLine):
     """FILTER header line"""
 
     @classmethod
-    def from_mapping(klass, mapping):
+    def from_mapping(cls, mapping: dict[str, Any]) -> "FilterHeaderLine":
         """Construct from mapping, not requiring the string value"""
         return FilterHeaderLine("FILTER", mapping_to_str(mapping), mapping)
 
-    def __init__(self, key, value, mapping):
+    def __init__(self, key: str, value: str, mapping: dict[str, Any]):
         super().__init__(key, value, mapping)
         # check for "Description" key
         if "Description" not in self.mapping:
@@ -605,11 +683,11 @@ class MetaHeaderLine(SimpleHeaderLine):
     """
 
     @classmethod
-    def from_mapping(klass, mapping):
+    def from_mapping(cls, mapping: dict[str, Any]) -> "MetaHeaderLine":
         """Construct from mapping, not requiring the string value"""
         return MetaHeaderLine("META", mapping_to_str(mapping), mapping)
 
-    def __init__(self, key, value, mapping):
+    def __init__(self, key: str, value: str, mapping: dict[str, Any]):
         super().__init__(key, value, mapping)
         #: name of the alternative allele
         self.id = self.mapping["ID"]
@@ -625,11 +703,11 @@ class PedigreeHeaderLine(SimpleHeaderLine):
     """Header line for defining a pedigree entry"""
 
     @classmethod
-    def from_mapping(klass, mapping):
+    def from_mapping(cls, mapping: dict[str, Any]) -> "PedigreeHeaderLine":
         """Construct from mapping, not requiring the string value"""
         return PedigreeHeaderLine("PEDIGREE", mapping_to_str(mapping), mapping)
 
-    def __init__(self, key, value, mapping):
+    def __init__(self, key: str, value: str, mapping: dict[str, Any]):
         super().__init__(key, value, mapping)
         #: name of the alternative allele
         self.id = self.mapping["ID"]
@@ -645,21 +723,21 @@ class SampleHeaderLine(SimpleHeaderLine):
     """Header line for defining a SAMPLE entry"""
 
     @classmethod
-    def from_mapping(klass, mapping):
+    def from_mapping(cls, mapping: dict[str, Any]) -> "SampleHeaderLine":
         """Construct from mapping, not requiring the string value"""
         return SampleHeaderLine("SAMPLE", mapping_to_str(mapping), mapping)
 
-    def __init__(self, key, value, mapping):
+    def __init__(self, key: str, value: str, mapping: dict[str, Any]):
         super().__init__(key, value, mapping)
         #: name of the alternative allele
         self.id = self.mapping["ID"]
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return (self.key, self.value, self.mapping) == (other.key, other.value, other.mapping)
         return NotImplemented
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return (self.key, self.value, self.mapping) != (other.key, other.value, other.mapping)
         return NotImplemented
@@ -679,10 +757,10 @@ class CompoundHeaderLine(HeaderLine):
     Don't use this class directly but rather the sub classes.
     """
 
-    def __init__(self, key, value, mapping):
+    def __init__(self, key: str, value: str, mapping: dict[str, Any]):
         super().__init__(key, value)
         #: OrderedDict with key/value mapping
-        self.mapping = OrderedDict(mapping.items())
+        self.mapping = dict(mapping)
         # check that 'Number' is given and use "." otherwise
         if "Number" not in self.mapping:
             warnings.warn('[vcfpy] WARNING: missing number, using unbounded/"." instead', FieldMissingNumber)
@@ -698,11 +776,10 @@ class CompoundHeaderLine(HeaderLine):
 
     def copy(self):
         """Return a copy"""
-        mapping = OrderedDict(self.mapping.items())
-        return self.__class__(self.key, self.value, mapping)
+        return self.__class__(self.key, self.value, dict(self.mapping))
 
     @classmethod
-    def _parse_number(klass, number):
+    def _parse_number(cls, number: str | int | float) -> int | Literal["A", "R", "G", "."]:
         """Parse ``number`` into an ``int`` or return ``number`` if a valid
         expression for a INFO/FORMAT "Number".
 
@@ -735,11 +812,11 @@ class InfoHeaderLine(CompoundHeaderLine):
     """
 
     @classmethod
-    def from_mapping(klass, mapping):
+    def from_mapping(cls, mapping: dict[str, Any]) -> "InfoHeaderLine":
         """Construct from mapping, not requiring the string value"""
         return InfoHeaderLine("INFO", mapping_to_str(mapping), mapping)
 
-    def __init__(self, key, value, mapping):
+    def __init__(self, key: str, value: str, mapping: dict[str, Any]):
         super().__init__(key, value, mapping)
         #: key in the INFO field
         self.id = self.mapping["ID"]
@@ -787,11 +864,11 @@ class FormatHeaderLine(CompoundHeaderLine):
     """Header line for FORMAT fields"""
 
     @classmethod
-    def from_mapping(klass, mapping):
+    def from_mapping(cls, mapping: dict[str, Any]) -> "FormatHeaderLine":
         """Construct from mapping, not requiring the string value"""
         return FormatHeaderLine("FORMAT", mapping_to_str(mapping), mapping)
 
-    def __init__(self, key, value, mapping):
+    def __init__(self, key: str, value: str, mapping: dict[str, Any]):
         super().__init__(key, value, mapping)
         #: key in the INFO field
         self.id = self.mapping["ID"]
@@ -833,57 +910,3 @@ class FormatHeaderLine(CompoundHeaderLine):
 
     def __str__(self):
         return "FormatHeaderLine({}, {}, {})".format(*map(repr, (self.key, self.value, self.mapping)))
-
-
-class SamplesInfos:
-    """Helper class for handling the samples in VCF files
-
-    The purpose of this class is to decouple the sample name list somewhat
-    from :py:class:`Header`.  This encapsulates subsetting samples for which
-    the genotype should be parsed and reordering samples into output files.
-
-    Note that when subsetting is used and the records are to be written out
-    again then the ``FORMAT`` field must not be touched.
-    """
-
-    def __init__(self, sample_names, parsed_samples=None):
-        #: list of sample that are read from/written to the VCF file at
-        #: hand in the given order
-        self.names = list(sample_names)
-        #: ``set`` with the samples for which the genotype call fields should
-        #: be read; can be used for partial parsing (speedup) and defaults
-        #: to the full list of samples, None if all are parsed
-        self.parsed_samples = parsed_samples
-        if self.parsed_samples:
-            self.parsed_samples = set(self.parsed_samples)
-            assert self.parsed_samples <= set(self.names), "Must be subset!"
-        #: mapping from sample name to index
-        self.name_to_idx = {name: idx for idx, name in enumerate(self.names)}
-
-    def copy(self):
-        """Return a copy of the object"""
-        return SamplesInfos(self.names)
-
-    def is_parsed(self, name):
-        """Return whether the sample name is parsed"""
-        return (not self.parsed_samples) or name in self.parsed_samples
-
-    def __hash__(self):
-        raise TypeError("Unhashable type: SamplesInfos")
-
-    def __str__(self):
-        tpl = "SamplesInfos(names={}, name_to_idx={})"
-        return tpl.format(self.names, pprint.pformat(self.name_to_idx, width=10**10))
-
-    def __repr__(self):
-        return str(self)
-
-    def __eq__(self, other):
-        if isinstance(other, self.__class__):
-            return self.names == other.names
-        return NotImplemented
-
-    def __ne__(self, other):
-        if isinstance(other, self.__class__):
-            return self.names != other.names
-        return NotImplemented

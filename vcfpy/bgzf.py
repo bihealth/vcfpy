@@ -26,6 +26,7 @@ Shamelessly taken from Biopython
 
 import codecs
 import struct
+import typing
 import zlib
 
 # For Python 2 can just use: _bgzf_magic = '\x1f\x8b\x08\x04'
@@ -38,7 +39,7 @@ _bgzf_eof = (
 _bytes_BC = b"BC"
 
 
-def make_virtual_offset(block_start_offset, within_block_offset):
+def make_virtual_offset(block_start_offset: int, within_block_offset: int) -> int:
     """Compute a BGZF virtual offset from block start and within block offsets.
     The BAM indexing scheme records read positions using a 64 bit
     'virtual offset', comprising in C terms:
@@ -82,23 +83,31 @@ def make_virtual_offset(block_start_offset, within_block_offset):
 
 
 class BgzfWriter(object):
-    def __init__(self, filename=None, mode="w", fileobj=None, compresslevel=6):
+    def __init__(
+        self,
+        filename: str | None = None,
+        mode: str = "w",
+        fileobj: typing.IO[bytes] | None = None,
+        compresslevel: int = 6,
+    ):
         if fileobj:
             assert filename is None
             handle = fileobj
         else:
             if "w" not in mode.lower() and "a" not in mode.lower():
                 raise ValueError("Must use write or append mode, not %r" % mode)
+            if filename is None:
+                raise ValueError("Must give a filename if not passing a file handle")
             if "a" in mode.lower():
                 handle = open(filename, "ab")
             else:
                 handle = open(filename, "wb")
-        self._text = "b" not in mode.lower()
-        self._handle = handle
-        self._buffer = b""
-        self.compresslevel = compresslevel
+        self._text: bool = "b" not in mode.lower()
+        self._handle: typing.IO[bytes] = handle
+        self._buffer: bytes = b""
+        self.compresslevel: int = compresslevel
 
-    def _write_block(self, block):
+    def _write_block(self, block: bytes):
         # print("Saving %i bytes" % len(block))
         assert len(block) <= 65536
         # Giving a negative window bits means no gzip/zlib headers,
@@ -127,7 +136,7 @@ class BgzfWriter(object):
         data = _bgzf_header + bsize + compressed + crc + uncompressed_length
         self._handle.write(data)
 
-    def write(self, data):
+    def write(self, data: str | bytes):
         # TODO - Check bytes vs unicode
         if isinstance(data, str):
             data = codecs.latin_1_encode(data)[0]
@@ -165,23 +174,23 @@ class BgzfWriter(object):
         self._handle.flush()
         self._handle.close()
 
-    def tell(self):
+    def tell(self) -> int:
         """Returns a BGZF 64-bit virtual offset."""
         return make_virtual_offset(self._handle.tell(), len(self._buffer))
 
-    def seekable(self):
+    def seekable(self) -> bool:
         # Not seekable, but we do support tell...
         return False
 
     @classmethod
-    def isatty(klass):
+    def isatty(cls) -> bool:
         return False
 
-    def fileno(self):
+    def fileno(self) -> int:
         return self._handle.fileno()
 
-    def __enter__(self):
+    def __enter__(self) -> "BgzfWriter":
         return self
 
-    def __exit__(self, type_, value, traceback):
+    def __exit__(self, type_: type[BaseException] | None, value: BaseException | None, traceback: typing.Any) -> None:
         self.close()

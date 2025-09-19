@@ -4,6 +4,8 @@
 
 import gzip
 import os
+import typing
+from io import TextIOWrapper
 
 import pysam
 
@@ -37,7 +39,14 @@ class Reader:
     """
 
     @classmethod
-    def from_stream(klass, stream, path=None, tabix_path=None, record_checks=None, parsed_samples=None):
+    def from_stream(
+        cls,
+        stream: TextIOWrapper,
+        path: str | None = None,
+        tabix_path: str | None = None,
+        record_checks: list[typing.Literal["INFO", "FORMAT"]] | None = None,
+        parsed_samples: list[str] | None = None,
+    ):
         """Create new :py:class:`Reader` from file
 
         .. note::
@@ -64,7 +73,13 @@ class Reader:
         )
 
     @classmethod
-    def from_path(klass, path, tabix_path=None, record_checks=None, parsed_samples=None):
+    def from_path(
+        cls,
+        path: str,
+        tabix_path: str | None = None,
+        record_checks: list[typing.Literal["INFO", "FORMAT"]] | None = None,
+        parsed_samples: list[str] | None = None,
+    ):
         """Create new :py:class:`Reader` from path
 
         .. note::
@@ -89,7 +104,7 @@ class Reader:
                     tabix_path = None  # guessing path failed
         else:
             f = open(path, "rt")
-        return klass.from_stream(
+        return cls.from_stream(
             stream=f,
             path=path,
             tabix_path=tabix_path,
@@ -97,7 +112,14 @@ class Reader:
             parsed_samples=parsed_samples,
         )
 
-    def __init__(self, stream, path=None, tabix_path=None, record_checks=None, parsed_samples=None):
+    def __init__(
+        self,
+        stream: TextIOWrapper,
+        path: str | None = None,
+        tabix_path: str | None = None,
+        record_checks: typing.Iterable[typing.Literal["FORMAT", "INFO"]] | None = None,
+        parsed_samples: list[str] | None = None,
+    ):
         #: stream (``file``-like object) to read from
         self.stream = stream
         #: optional ``str`` with the path to the stream
@@ -118,7 +140,7 @@ class Reader:
         #: the Header
         self.header = self.parser.parse_header(parsed_samples)
 
-    def fetch(self, chrom_or_region, begin=None, end=None):
+    def fetch(self, chrom_or_region: str, begin: int | None = None, end: int | None = None):
         """Jump to the start position of the given chromosomal position
         and limit iteration to the end position
 
@@ -135,6 +157,8 @@ class Reader:
             self.tabix_file.close()
         # open tabix file if not yet open
         if not self.tabix_file or self.tabix_file.closed:
+            if self.path is None:
+                raise ValueError("Cannot fetch without path")
             self.tabix_file = pysam.TabixFile(filename=self.path, index=self.tabix_path)
         # jump to the next position
         if begin is None:
@@ -150,10 +174,10 @@ class Reader:
         if self.stream:
             self.stream.close()
 
-    def __enter__(self):
+    def __enter__(self) -> "Reader":
         return self
 
-    def __exit__(self, type_, value, traceback):
+    def __exit__(self, type_: type[BaseException] | None, value: BaseException | None, traceback: typing.Any) -> None:
         self.close()
 
     def __iter__(self):

@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from .compat import OrderedDict
 from .exceptions import (
     HeaderNotFound,
     IncorrectVCFFormat,
@@ -103,5 +102,4 @@ __all__ = [
     "FIVE_PRIME",
     "THREE_PRIME",
     "__version__",
-    "OrderedDict",
 ]

@@ -4,12 +4,17 @@
 Currently, only writing to plain-text files is supported
 """
 
+import typing
+from typing import IO, Any, Literal, cast
+
+from vcfpy.header import FieldInfo, Header
+
 from . import bgzf, parser, record
 
 __author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"
 
 
-def format_atomic(value, section):
+def format_atomic(value: Any | None, section: Literal["INFO", "FORMAT"]) -> str:
     """Format atomic value
 
     This function also takes care of escaping the value in case one of the
@@ -27,7 +32,7 @@ def format_atomic(value, section):
         return str(value)
 
 
-def format_value(field_info, value, section):
+def format_value(field_info: FieldInfo, value: str | list[Any] | None | int | bool | float, section: Literal["INFO", "FORMAT"]):
     """Format possibly compound value given the FieldInfo"""
     if section == "FORMAT" and field_info.id == "FT":
         if not value:
@@ -60,7 +65,7 @@ class Writer:
     """
 
     @classmethod
-    def from_stream(klass, stream, header, path=None, use_bgzf=None):
+    def from_stream(cls, stream: IO[str] | IO[bytes], header: Header, path: str | None = None, use_bgzf: bool | None = None):
         """Create new :py:class:`Writer` from file
 
         Note that for getting bgzf support, you have to pass in a stream
@@ -76,11 +81,14 @@ class Writer:
             if ``True``, prevent if ``False``, interpret ``path`` if ``None``
         """
         if use_bgzf or (use_bgzf is None and path and path.endswith(".gz")):
-            stream = bgzf.BgzfWriter(fileobj=stream)
-        return Writer(stream, header, path)
+            stream_b = cast(IO[bytes], stream)
+            stream_: IO[str] = bgzf.BgzfWriter(fileobj=stream_b)
+        else:
+            stream_ = cast(IO[str], stream)
+        return Writer(stream_, header, path)
 
     @classmethod
-    def from_path(klass, path, header):
+    def from_path(cls, path: str, header: Header):
         """Create new :py:class:`Writer` from path
 
         :param path: the path to load from (converted to ``str`` for
@@ -93,9 +101,9 @@ class Writer:
             f = bgzf.BgzfWriter(filename=path)
         else:
             f = open(path, "wt")
-        return klass.from_stream(f, header, path, use_bgzf=use_bgzf)
+        return cls.from_stream(f, header, path, use_bgzf=use_bgzf)
 
-    def __init__(self, stream, header, path=None):
+    def __init__(self, stream: IO[str], header: Header, path: str | None = None):
         #: stream (``file``-like object) to read from
         self.stream = stream
         #: the :py:class:~vcfpy.header.Header` to write out, will be
@@ -156,7 +164,7 @@ class Writer:
                 result.append("{}={}".format(key, format_value(info, value, "INFO")))
         return ";".join(result)
 
-    def _serialize_call(self, format_, call):
+    def _serialize_call(self, format_: list[str], call: record.Call) -> str:
         """Return serialized version of the Call using the record's FORMAT'"""
         if isinstance(call, record.UnparsedCall):
             return call.unparsed_data
@@ -167,15 +175,15 @@ class Writer:
             return ":".join(result)
 
     @classmethod
-    def _empty_to_dot(klass, val):
+    def _empty_to_dot(cls, val: Any) -> str:
         """Return val or '.' if empty value"""
         if val == "" or val is None or val == []:
             return "."
         else:
             return val
 
-    def __enter__(self):
+    def __enter__(self) -> "Writer":
         return self
 
-    def __exit__(self, type_, value, traceback):
+    def __exit__(self, type_: type[BaseException] | None, value: BaseException | None, traceback: typing.Any) -> None:
         self.close()

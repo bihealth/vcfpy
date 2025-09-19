@@ -5,6 +5,10 @@ The VCF record structure is modeled after the one of PyVCF
 """
 
 import re
+import warnings
+from typing import Any, Iterator, Literal
+
+from vcfpy.exceptions import CannotModifyUnparsedCallWarning
 
 #: Code for single nucleotide variant allele
 SNV = "SNV"
@@ -34,7 +38,7 @@ HET = 1
 HOM_ALT = 2
 
 #: Characters reserved in VCF, have to be escaped in INFO fields
-RESERVED_CHARS = {"INFO": ";=%,\r\n\t", "FORMAT": ":=%,\r\n\t"}
+RESERVED_CHARS: dict[Literal["INFO", "FORMAT"], str] = {"INFO": ";=%,\r\n\t", "FORMAT": ":=%,\r\n\t"}
 #: Mapping for escaping reserved characters
 ESCAPE_MAPPING = [
     ("%", "%25"),
@@ -56,7 +60,19 @@ class Record:
     Record objects are iterators of their calls
     """
 
-    def __init__(self, CHROM, POS, ID, REF, ALT, QUAL, FILTER, INFO, FORMAT=None, calls=None):
+    def __init__(
+        self,
+        CHROM: str,
+        POS: int,
+        ID: list[str],
+        REF: str,
+        ALT: list["AltRecord"],
+        QUAL: float | None,
+        FILTER: list[str],
+        INFO: dict[str, Any],
+        FORMAT: list[str] | None = None,
+        calls: list["Call | UnparsedCall"] | None = None,
+    ):
         if bool(FORMAT) != bool(calls):
             raise ValueError("Either provide both FORMAT and calls or none.")
         #: A ``str`` with the chromosome name
@@ -72,7 +88,7 @@ class Record:
         #: A ``str`` with the REF value
         self.REF = REF
         #: A list of alternative allele records of type :py:class:`AltRecord`
-        self.ALT = list(ALT)
+        self.ALT: list["AltRecord"] = list(ALT)
         #: The quality value, can be ``None``
         self.QUAL = QUAL
         #: A list of strings for the FILTER column
@@ -90,7 +106,7 @@ class Record:
         self.call_for_sample = {}
         self.update_calls(self.calls)
 
-    def update_calls(self, calls):
+    def update_calls(self, calls: list["Call | UnparsedCall"]):
         """Update ``self.calls`` and other fields as necessary."""
         for call in calls:
             call.site = self
@@ -134,7 +150,7 @@ class Record:
         else:  # Return 0-based end position, behind last REF base
             return (self.POS - 1) + len(self.REF)
 
-    def add_filter(self, label):
+    def add_filter(self, label: str):
         """Add label to FILTER if not set yet, removing ``PASS`` entry if
         present
         """
@@ -143,7 +159,7 @@ class Record:
                 self.FILTER = [f for f in self.FILTER if f != "PASS"]
             self.FILTER.append(label)
 
-    def add_format(self, key, value=None):
+    def add_format(self, key: str, value: Any | None = None):
         """Add an entry to format
 
         The record's calls ``data[key]`` will be set to ``value`` if not yet
@@ -155,18 +171,21 @@ class Record:
         self.FORMAT.append(key)
         if value is not None:
             for call in self:
-                call.data.setdefault(key, value)
+                if isinstance(call, UnparsedCall):
+                    warnings.warn("UnparsedCall encountered, skipping", CannotModifyUnparsedCallWarning)
+                else:
+                    call.data.setdefault(key, value)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator["Call | UnparsedCall"]:
         """Return generator yielding from ``self.calls``"""
         yield from self.calls
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return self.__dict__ == other.__dict__
         return NotImplemented
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return not self.__eq__(other)
         return NotImplemented
@@ -176,7 +195,7 @@ class Record:
 
     def __str__(self):
         tpl = "Record({})"
-        lst = [
+        lst: list[Any] = [
             self.CHROM,
             self.POS,
             self.ID,
@@ -197,7 +216,7 @@ class Record:
 class UnparsedCall:
     """Placeholder for :py:class:`Call` when parsing only a subset of fields"""
 
-    def __init__(self, sample, unparsed_data, site=None):
+    def __init__(self, sample: str, unparsed_data: Any, site: Record | None = None):
         #: the name of the sample for which the call was made
         self.sample = sample
         #: ``str`` with the unparsed data
@@ -218,23 +237,23 @@ class Call:
     coverage at the variant position.
     """
 
-    def __init__(self, sample, data, site=None):
+    def __init__(self, sample: str, data: dict[str, Any], site: Record | None = None):
         #: the name of the sample for which the call was made
         self.sample = sample
         #: an OrderedDict with the key/value pair information from the
         #: call's data
-        self.data = data
+        self.data: dict[str, Any] = data
         #: the :py:class:`Record` of this :py:class:`Call`
         self.site = site
         #: the allele numbers (0, 1, ...) in this calls or None for no-call
-        self.gt_alleles = None
+        self.gt_alleles: list[int | None] | None = None
         #: whether or not the variant is fully called
         self.called = None
         #: the number of alleles in this sample's call
         self.ploidy = None
         self._genotype_updated()
 
-    def set_genotype(self, genotype):
+    def set_genotype(self, genotype: str | None):
         """Set ``self.data["GT"]`` to ``genotype`` and properly update related
         properties.
         """
@@ -268,26 +287,30 @@ class Call:
         return "/" if not self.is_phased else "|"
 
     @property
-    def gt_bases(self):
+    def gt_bases(self) -> tuple[str | None, ...]:
         """Return the actual genotype bases, e.g. if VCF genotype is 0/1,
         could return ('A', 'T')
         """
-        result = []
-        for a in self.gt_alleles:
+        result: list[str | None] = []
+        for a in self.gt_alleles or []:
             if a is None:
                 result.append(None)
             elif a == 0:
+                if self.site is None:
+                    raise ValueError("Cannot determine bases without site being set")
                 result.append(self.site.REF)
             else:
-                result.append(self.site.ALT[a - 1].value)
+                if self.site is None:
+                    raise ValueError("Cannot determine bases without site being set")
+                result.append(getattr(self.site.ALT[a - 1], "value", None))
         return tuple(result)
 
     @property
-    def gt_type(self):
+    def gt_type(self) -> Literal[0, 1, 2] | None:
         """The type of genotype, returns one of ``HOM_REF``, ``HOM_ALT``, and
         ``HET``.
         """
-        if not self.called:
+        if not self.called or not self.gt_alleles:
             return None  # not called
         elif all(a == 0 for a in self.gt_alleles):
             return HOM_REF
@@ -296,7 +319,7 @@ class Call:
         else:
             return HET
 
-    def is_filtered(self, require=None, ignore=None):
+    def is_filtered(self, require: list[str] | None = None, ignore: list[str] | None = None):
         """Return ``True`` for filtered calls
 
         :param iterable ignore: if set, the filters to ignore, make sure to
@@ -317,31 +340,31 @@ class Call:
         return False
 
     @property
-    def is_het(self):
+    def is_het(self) -> bool:
         """Return ``True`` for heterozygous calls"""
         return self.gt_type == HET
 
     @property
-    def is_variant(self):
+    def is_variant(self) -> bool:
         """Return ``True`` for non-hom-ref calls"""
         return bool(self.gt_type)
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return self.__dict__ == other.__dict__
         return NotImplemented
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return not self.__eq__(other)
         return NotImplemented
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(tuple(sorted(self.__dict__.items())))
 
     def __str__(self):
         tpl = "Call({})"
-        lst = [self.sample, self.data]
+        lst: list[str | dict[str, Any]] = [self.sample, self.data]
         return tpl.format(", ".join(map(repr, lst)))
 
     def __repr__(self):
@@ -354,26 +377,28 @@ class AltRecord:
     Currently, can be a substitution, an SV placeholder, or breakend
     """
 
-    def __init__(self, type_=None):
+    def __init__(
+        self, type_: Literal["SNV", "MNV", "DEL", "INS", "INDEL", "SV", "BND", "SYMBOLIC", "MIXED"] | None = None
+    ):
         #: String describing the type of the variant, could be one of
         #: SNV, MNV, could be any of teh types described in the ALT
         #: header lines, such as DUP, DEL, INS, ...
         self.type = type_
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return self.__dict__ == other.__dict__
         return NotImplemented
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return not self.__eq__(other)
         return NotImplemented
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(tuple(sorted(self.__dict__.items())))
 
-    def serialize(self):
+    def serialize(self) -> str:
         """Return ``str`` with representation for VCF file"""
         raise NotImplementedError("Abstract class, implemented in sub class")
 
@@ -385,28 +410,30 @@ class Substitution(AltRecord):
     Note that this subsumes MNVs, insertions, and deletions.
     """
 
-    def __init__(self, type_, value):
+    def __init__(
+        self, type_: Literal["SNV", "MNV", "DEL", "INS", "INDEL", "SV", "BND", "SYMBOLIC", "MIXED"], value: str
+    ):
         super().__init__(type_)
         #: The alternative base sequence to use in the substitution
         self.value = value
 
-    def serialize(self):
+    def serialize(self) -> str:
         return self.value
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return self.__dict__ == other.__dict__
         return NotImplemented
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return not self.__eq__(other)
         return NotImplemented
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(tuple(sorted(self.__dict__.items())))
 
-    def __str__(self):
+    def __str__(self) -> str:
         tpl = "Substitution(type_={}, value={})"
         return tpl.format(*map(repr, [self.type, self.value]))
 
@@ -428,7 +455,15 @@ REVERSE = "-"
 class BreakEnd(AltRecord):
     """A placeholder for a breakend"""
 
-    def __init__(self, mate_chrom, mate_pos, orientation, mate_orientation, sequence, within_main_assembly):
+    def __init__(
+        self,
+        mate_chrom: str | None,
+        mate_pos: int | None,
+        orientation: str | None,
+        mate_orientation: Literal["+", "-"] | None,
+        sequence: str,
+        within_main_assembly: bool | None,
+    ):
         super().__init__("BND")
         #: chromosome of the mate breakend
         self.mate_chrom = mate_chrom
@@ -453,6 +488,8 @@ class BreakEnd(AltRecord):
                 mate_chrom = self.mate_chrom
             else:
                 mate_chrom = "<{}>".format(self.mate_chrom)
+            if self.mate_orientation is None:
+                raise ValueError("mate_orientation must be set if mate_chrom is set")
             tpl = {FORWARD: "[{}:{}[", REVERSE: "]{}:{}]"}[self.mate_orientation]
             remote_tag = tpl.format(mate_chrom, self.mate_pos)
         if self.orientation == FORWARD:
@@ -460,12 +497,12 @@ class BreakEnd(AltRecord):
         else:
             return self.sequence + remote_tag
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return self.__dict__ == other.__dict__
         return NotImplemented
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return not self.__eq__(other)
         return NotImplemented
@@ -475,7 +512,7 @@ class BreakEnd(AltRecord):
 
     def __str__(self):
         tpl = "BreakEnd({})"
-        vals = [
+        vals: list[Any] = [
             self.mate_chrom,
             self.mate_pos,
             self.orientation,
@@ -492,15 +529,15 @@ class BreakEnd(AltRecord):
 class SingleBreakEnd(BreakEnd):
     """A placeholder for a single breakend"""
 
-    def __init__(self, orientation, sequence):
+    def __init__(self, orientation: str, sequence: str):
         super().__init__(None, None, orientation, None, sequence, None)
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return self.__dict__ == other.__dict__
         return NotImplemented
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return not self.__eq__(other)
         return NotImplemented
@@ -510,7 +547,7 @@ class SingleBreakEnd(BreakEnd):
 
     def __str__(self):
         tpl = "SingleBreakEnd({})"
-        vals = [self.orientation, self.sequence]
+        vals: list[Any] = [self.orientation, self.sequence]
         return tpl.format(", ".join(map(repr, vals)))
 
 
@@ -522,7 +559,7 @@ class SymbolicAllele(AltRecord):
     structural variants or IUPAC parameters.
     """
 
-    def __init__(self, value):
+    def __init__(self, value: str):
         super().__init__(SYMBOLIC)
         #: The symbolic value, e.g. 'DUP'
         self.value = value
@@ -530,12 +567,12 @@ class SymbolicAllele(AltRecord):
     def serialize(self):
         return "<{}>".format(self.value)
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return self.__dict__ == other.__dict__
         return NotImplemented
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return not self.__eq__(other)
         return NotImplemented

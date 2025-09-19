@@ -75,3 +75,7 @@ class SpaceInChromLine(VCFPyWarning):
 
 class CannotConvertValue(VCFPyWarning):
     """Cannot convert value."""
+
+
+class CannotModifyUnparsedCallWarning(VCFPyWarning):
+    """Cannot modify unparsed call instance."""
