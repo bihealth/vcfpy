@@ -70,19 +70,16 @@ def test_vcf_header_line_parser_parse_mapping_simple():
 def test_vcf_header_line_parser_parse_mapping_flag():
     INPUT = r"<key=value,key2=value,yay>"
     EXPECTED = (("key", "value"), ("key2", "value"), ("yay", True))
-    parser.MappingHeaderLineParser(None)
     assert EXPECTED == tuple(parser.parse_mapping(INPUT).items())
 
 
 def test_vcf_header_line_parser_parse_mapping_quoted():
     INPUT = r'<key=value,key2="value,value">'
     EXPECTED = (("key", "value"), ("key2", "value,value"))
-    parser.MappingHeaderLineParser(None)
     assert EXPECTED == tuple(parser.parse_mapping(INPUT).items())
 
 
 def test_vcf_header_line_parser_parse_mapping_escaped():
     INPUT = r'<key=value,key2="value,value=\"asdf">'
     EXPECTED = (("key", "value"), ("key2", 'value,value="asdf'))
-    parser.MappingHeaderLineParser(None)
     assert EXPECTED == tuple(parser.parse_mapping(INPUT).items())

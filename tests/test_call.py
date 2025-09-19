@@ -8,7 +8,7 @@ from vcfpy import record
 __author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"
 
 
-def build_rec(calls: list[record.Call] | None=None, format_extras: list[str] | None=None):
+def build_rec(calls: list[record.Call] | None = None, format_extras: list[str] | None = None):
     calls = calls or []
     format_extras = format_extras or []
     alt1 = record.Substitution(vcfpy.SNV, "T")
@@ -158,12 +158,16 @@ def test_is_variant_no_call():
     assert not call1.is_variant
     call2 = record.Call("sample", {"GT": "./."})
     assert not call2.is_variant
+
+
 # Call.ploidy ----------------------------------------------------------------
 
 
 def test_ploidy_nocall():
     call = record.Call("sample", {"GT": "."})
     assert call.ploidy == 1
+
+
 def test_ploidy_one():
     call = record.Call("sample", {"GT": "1"})
     assert call.ploidy == 1

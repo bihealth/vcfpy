@@ -16,9 +16,9 @@ def test_record_from_scratch():
         ALT=[vcfpy.Substitution("SNV", "T")],
         QUAL=None,
         FILTER=[],
-        INFO=vcfpy.OrderedDict(),
+        INFO={},
     )
-    record.calls = [vcfpy.Call("sample-1", vcfpy.OrderedDict())]
+    record.calls = [vcfpy.Call("sample-1", {})]
     record.add_format("GT", "./.")
     if sys.version_info < (3, 6):
         assert (
