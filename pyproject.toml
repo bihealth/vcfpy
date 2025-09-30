@@ -50,6 +50,7 @@ dev = [
     "hatch~=1.14.2",
     "imagesize>=0.7.1",
     "py>=1.4.32",
+    "pyright",
     "pytest-cache>=1.0",
     "pytest-cov",
     "pytest-cov>=2.4.0",
