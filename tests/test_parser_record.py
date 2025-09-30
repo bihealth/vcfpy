@@ -2,7 +2,6 @@
 """Test parsing of full VCF record lines"""
 
 import io
-import sys
 import warnings
 from io import StringIO
 
@@ -57,17 +56,10 @@ def test_parse_minimal_record():
     p = vcf_parser(LINES)
     p.parse_header()
     # Perform the actual test
-    if sys.version_info < (3, 6):
-        EXPECTED = (
-            "Record('20', 1, [], 'C', [Substitution(type_='SNV', value='G')], None, [], OrderedDict(), ['GT'], "
-            "[Call('NA00001', OrderedDict([('GT', '0/1')])), Call('NA00002', OrderedDict([('GT', '0/2')])), "
-            "Call('NA00003', OrderedDict([('GT', None)]))])"
-        )
-    else:
-        EXPECTED = (
-            "Record('20', 1, [], 'C', [Substitution(type_='SNV', value='G')], None, [], {}, ['GT'], "
-            "[Call('NA00001', {'GT': '0/1'}), Call('NA00002', {'GT': '0/2'}), Call('NA00003', {'GT': None})])"
-        )
+    EXPECTED = (
+        "Record('20', 1, [], 'C', [Substitution(type_='SNV', value='G')], None, [], {}, ['GT'], "
+        "[Call('NA00001', {'GT': '0/1'}), Call('NA00002', {'GT': '0/2'}), Call('NA00003', {'GT': None})])"
+    )
     RESULT = p.parse_next_record()
     assert str(RESULT) == EXPECTED
 
@@ -78,17 +70,10 @@ def test_parse_record_with_info():
     p = vcf_parser(LINES)
     p.parse_header()
     # Perform the actual test
-    if sys.version_info < (3, 6):
-        EXPECTED = (
-            "Record('20', 1, [], 'C', [Substitution(type_='SNV', value='G')], None, [], OrderedDict([('AA', 'G')]), "
-            "['GT'], [Call('NA00001', OrderedDict([('GT', '0/1')])), Call('NA00002', OrderedDict([('GT', '0/1')])),"
-            " Call('NA00003', OrderedDict([('GT', None)]))])"
-        )
-    else:
-        EXPECTED = (
-            "Record('20', 1, [], 'C', [Substitution(type_='SNV', value='G')], None, [], {'AA': 'G'}, "
-            "['GT'], [Call('NA00001', {'GT': '0/1'}), Call('NA00002', {'GT': '0/1'}), Call('NA00003', {'GT': None})])"
-        )
+    EXPECTED = (
+        "Record('20', 1, [], 'C', [Substitution(type_='SNV', value='G')], None, [], {'AA': 'G'}, "
+        "['GT'], [Call('NA00001', {'GT': '0/1'}), Call('NA00002', {'GT': '0/1'}), Call('NA00003', {'GT': None})])"
+    )
     RESULT = p.parse_next_record()
     assert str(RESULT) == EXPECTED
 
@@ -99,21 +84,12 @@ def test_parse_record_with_escaping():
     p = vcf_parser(LINES)
     p.parse_header()
     # Perform the actual test
-    if sys.version_info < (3, 6):
-        EXPECTED = (
-            "Record('20', 100, [], 'C', [Substitution(type_='SNV', value='G')], None, [], "
-            "OrderedDict([('ANNO', ['Here,are%some chars', '%25'])]), ['GT', 'FT'], "
-            "[Call('NA00001', OrderedDict([('GT', '0/1'), ('FT', ['FOO'])])),"
-            " Call('NA00002', OrderedDict([('GT', '0/0'), ('FT', [])])),"
-            " Call('NA00003', OrderedDict([('GT', '1/1'), ('FT', [])]))])"
-        )
-    else:
-        EXPECTED = (
-            "Record('20', 100, [], 'C', [Substitution(type_='SNV', value='G')], None, [], "
-            "{'ANNO': ['Here,are%some chars', '%25']}, ['GT', 'FT'], "
-            "[Call('NA00001', {'GT': '0/1', 'FT': ['FOO']}), Call('NA00002', {'GT': '0/0', 'FT': []}), "
-            "Call('NA00003', {'GT': '1/1', 'FT': []})])"
-        )
+    EXPECTED = (
+        "Record('20', 100, [], 'C', [Substitution(type_='SNV', value='G')], None, [], "
+        "{'ANNO': ['Here,are%some chars', '%25']}, ['GT', 'FT'], "
+        "[Call('NA00001', {'GT': '0/1', 'FT': ['FOO']}), Call('NA00002', {'GT': '0/0', 'FT': []}), "
+        "Call('NA00003', {'GT': '1/1', 'FT': []})])"
+    )
     RESULT = p.parse_next_record()
     assert str(RESULT) == EXPECTED
 
@@ -124,19 +100,11 @@ def test_parse_record_with_filter_warning():
     p = vcf_parser(LINES)
     p.parse_header()
     # Perform the actual test
-    if sys.version_info < (3, 6):
-        EXPECTED = (
-            "Record('20', 1, [], 'C', [Substitution(type_='SNV', value='G')], None, ['BAZ'], OrderedDict(), "
-            "['GT', 'FT'], [Call('NA00001', OrderedDict([('GT', '0/1'), ('FT', [])])),"
-            " Call('NA00002', OrderedDict([('GT', '0/2'), ('FT', ['BAR'])])),"
-            " Call('NA00003', OrderedDict([('GT', None), ('FT', [])]))])"
-        )
-    else:
-        EXPECTED = (
-            "Record('20', 1, [], 'C', [Substitution(type_='SNV', value='G')], None, ['BAZ'], {}, "
-            "['GT', 'FT'], [Call('NA00001', {'GT': '0/1', 'FT': []}),"
-            " Call('NA00002', {'GT': '0/2', 'FT': ['BAR']}), Call('NA00003', {'GT': None, 'FT': []})])"
-        )
+    EXPECTED = (
+        "Record('20', 1, [], 'C', [Substitution(type_='SNV', value='G')], None, ['BAZ'], {}, "
+        "['GT', 'FT'], [Call('NA00001', {'GT': '0/1', 'FT': []}),"
+        " Call('NA00002', {'GT': '0/2', 'FT': ['BAR']}), Call('NA00003', {'GT': None, 'FT': []})])"
+    )
     with pytest.warns((exceptions.UnknownFilter,)):
         RESULT = p.parse_next_record()
     assert str(RESULT) == EXPECTED
@@ -148,19 +116,11 @@ def test_parse_record_with_filter_no_warning(recwarn: pytest.WarningsRecorder):
     p = vcf_parser(LINES)
     p.parse_header()
     # Perform the actual test
-    if sys.version_info < (3, 6):
-        EXPECTED = (
-            "Record('20', 1, [], 'C', [Substitution(type_='SNV', value='G')], None, ['FOO'], OrderedDict(), "
-            "['GT', 'FT'], [Call('NA00001', OrderedDict([('GT', '0/1'), ('FT', [])])),"
-            " Call('NA00002', OrderedDict([('GT', '0/2'), ('FT', ['FOO', 'FOO'])])),"
-            " Call('NA00003', OrderedDict([('GT', None), ('FT', [])]))])"
-        )
-    else:
-        EXPECTED = (
-            "Record('20', 1, [], 'C', [Substitution(type_='SNV', value='G')], None, ['FOO'], {}, "
-            "['GT', 'FT'], [Call('NA00001', {'GT': '0/1', 'FT': []}),"
-            " Call('NA00002', {'GT': '0/2', 'FT': ['FOO', 'BAZ']}), Call('NA00003', {'GT': None, 'FT': []})])"
-        )
+    EXPECTED = (
+        "Record('20', 1, [], 'C', [Substitution(type_='SNV', value='G')], None, ['FOO'], {}, "
+        "['GT', 'FT'], [Call('NA00001', {'GT': '0/1', 'FT': []}),"
+        " Call('NA00002', {'GT': '0/2', 'FT': ['FOO', 'BAZ']}), Call('NA00003', {'GT': None, 'FT': []})])"
+    )
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         RESULT = p.parse_next_record()
@@ -174,17 +134,10 @@ def test_missing_pass(recwarn: pytest.WarningsRecorder):
     p = vcf_parser(LINES)
     p.parse_header()
     # Perform the actual test
-    if sys.version_info < (3, 6):
-        EXPECTED = (
-            "Record('20', 1, [], 'C', [Substitution(type_='SNV', value='G')], None, ['PASS'], OrderedDict(), ['GT'], "
-            "[Call('NA00001', OrderedDict([('GT', '0/1')])), Call('NA00002', OrderedDict([('GT', '0/2')])), "
-            "Call('NA00003', OrderedDict([('GT', None)]))])"
-        )
-    else:
-        EXPECTED = (
-            "Record('20', 1, [], 'C', [Substitution(type_='SNV', value='G')], None, ['PASS'], {}, ['GT'], "
-            "[Call('NA00001', {'GT': '0/1'}), Call('NA00002', {'GT': '0/2'}), Call('NA00003', {'GT': None})])"
-        )
+    EXPECTED = (
+        "Record('20', 1, [], 'C', [Substitution(type_='SNV', value='G')], None, ['PASS'], {}, ['GT'], "
+        "[Call('NA00001', {'GT': '0/1'}), Call('NA00002', {'GT': '0/2'}), Call('NA00003', {'GT': None})])"
+    )
     RESULT = p.parse_next_record()
     assert str(RESULT) == EXPECTED
     assert list(recwarn) == []
