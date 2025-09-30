@@ -83,3 +83,73 @@ def test_vcf_header_line_parser_parse_mapping_escaped():
     INPUT = r'<key=value,key2="value,value=\"asdf">'
     EXPECTED = (("key", "value"), ("key2", 'value,value="asdf'))
     assert EXPECTED == tuple(parser.parse_mapping(INPUT).items())
+
+
+def test_parse_mapping_invalid_brackets():
+    """Test parse_mapping with invalid angular brackets"""
+    import pytest
+
+    from vcfpy import exceptions
+
+    # Missing opening bracket
+    with pytest.raises(
+        exceptions.InvalidHeaderException, match="Header mapping value was not wrapped in angular brackets"
+    ):
+        parser.parse_mapping("key=value>")
+
+    # Missing closing bracket
+    with pytest.raises(
+        exceptions.InvalidHeaderException, match="Header mapping value was not wrapped in angular brackets"
+    ):
+        parser.parse_mapping("<key=value")
+
+    # No brackets at all
+    with pytest.raises(
+        exceptions.InvalidHeaderException, match="Header mapping value was not wrapped in angular brackets"
+    ):
+        parser.parse_mapping("key=value")
+
+
+def test_parse_mapping_with_array_values():
+    """Test parse_mapping with array-style values"""
+    INPUT = "<ID=DP,Number=A,Type=Float,Values=[1,2,3]>"
+    result = parser.parse_mapping(INPUT)
+    assert result["Values"] == ["1", "2", "3"]
+
+
+def test_parse_mapping_with_flags():
+    """Test parse_mapping with flag (no value)"""
+    INPUT = "<ID=DP,flag>"
+    result = parser.parse_mapping(INPUT)
+    assert result["ID"] == "DP"
+    assert result["flag"] is True
+
+
+def test_split_mapping_edge_cases():
+    """Test split_mapping function with edge cases"""
+    # Test basic case
+    result = parser.split_mapping("key=value")
+    assert result == ("key", "value")
+
+    # Test with equals in value (should only split on first equals)
+    result = parser.split_mapping("key=value=with=equals")
+    assert result == ("key", "value=with=equals")
+
+
+def test_split_quoted_string_edge_cases():
+    """Test split_quoted_string with additional edge cases"""
+    # Test with different delimiters
+    result = parser.split_quoted_string("a;b;c", delim=";")
+    assert result == ["a", "b", "c"]
+
+    # Test with different quote characters
+    result = parser.split_quoted_string("a='b,c',d", quote="'")
+    assert result == ["a='b,c'", "d"]
+
+    # Test empty string
+    result = parser.split_quoted_string("")
+    assert result == [""]
+
+    # Test single value
+    result = parser.split_quoted_string("single")
+    assert result == ["single"]

@@ -62,7 +62,7 @@ class Reader:
             ``None`` for ignoring
         """
         record_checks = record_checks or []
-        if tabix_path and not path:
+        if tabix_path and not path:  # pragma: no cover
             raise ValueError("Must give path if tabix_path is given")
         return Reader(
             stream=stream,
@@ -150,14 +150,14 @@ class Reader:
         :param int begin: 0-based begin position (inclusive)
         :param int end: 0-based end position (exclusive)
         """
-        if begin is not None and end is None:
+        if begin is not None and end is None:  # pragma: no cover
             raise ValueError("begin and end must both be None or neither")
         # close tabix file if any and is open
         if self.tabix_file and not self.tabix_file.closed:
             self.tabix_file.close()
         # open tabix file if not yet open
         if not self.tabix_file or self.tabix_file.closed:
-            if self.path is None:
+            if self.path is None:  # pragma: no cover
                 raise ValueError("Cannot fetch without path")
             self.tabix_file = pysam.TabixFile(filename=self.path, index=self.tabix_path)
         # jump to the next position

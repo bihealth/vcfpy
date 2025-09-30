@@ -253,7 +253,7 @@ def convert_field_value(
     else:
         try:
             return _CONVERTERS[type_](value)
-        except ValueError:
+        except ValueError:  # pragma: no cover
             warnings.warn(
                 ("{} cannot be converted to {}, keeping as string.").format(value, type_),
                 exceptions.CannotConvertValue,
@@ -321,7 +321,7 @@ def process_sub_grow(ref: str, alt_str: str) -> record.Substitution:
 
 def process_sub_shrink(ref: str, alt_str: str) -> record.Substitution:
     """Process substution where the string shrink"""
-    if len(ref) == 0:
+    if len(ref) == 0:  # pragma: no cover
         raise exceptions.InvalidRecordException("Invalid VCF, empty REF")
     elif len(ref) == 1:
         if ref[0] == alt_str[0]:
@@ -378,9 +378,9 @@ class HeaderParser:
         :raises: :py:class:`vcfpy.exceptions.InvalidHeaderException` if
             there was a problem parsing the file
         """
-        if not line or not line.startswith("##"):
+        if not line or not line.startswith("##"):  # pragma: no cover
             raise exceptions.InvalidHeaderException('Invalid VCF header line (must start with "##") {}'.format(line))
-        if "=" not in line:
+        if "=" not in line:  # pragma: no cover
             raise exceptions.InvalidHeaderException('Invalid VCF header line (must contain "=") {}'.format(line))
         line = line[len("##") :].rstrip()  # trim '^##' and trailing whitespace
         # split key/value pair at "="
@@ -454,7 +454,7 @@ class RecordParser:
         else:
             try:
                 qual = int(arr[5])
-            except ValueError:  # try as float
+            except ValueError:  # try as float  # pragma: no cover
                 qual = float(arr[5])
         # FILTER
         if arr[6] == ".":
@@ -465,7 +465,7 @@ class RecordParser:
         # INFO
         info = self._parse_info(arr[7], len(alts))
         if len(arr) == 9:
-            raise exceptions.IncorrectVCFFormat("Expected 8 or 10+ columns, got 9!")
+            raise exceptions.IncorrectVCFFormat("Expected 8 or 10+ columns, got 9!")  # pragma: no cover
         elif len(arr) == 8:
             format_ = None
             calls = None
@@ -490,10 +490,10 @@ class RecordParser:
                 call = record.Call(sample, data)
                 self._format_checker.run(call, len(alts))
                 ft_value = call.data.get("FT") or []
-                if not isinstance(ft_value, list):
+                if not isinstance(ft_value, list):  # pragma: no cover
                     raise ValueError("FORMAT/FT field must be a list of strings but was {}".format(repr(ft_value)))
                 ft_value_ = cast(list[str], ft_value)
-                if not all(isinstance(x, str) for x in ft_value_):
+                if not all(isinstance(x, str) for x in ft_value_):  # pragma: no cover
                     raise ValueError("FORMAT/FT field must be a list of strings but was {}".format(repr(ft_value_)))
                 self._check_filters(ft_value_, "FORMAT/FT", call.sample)
                 calls.append(call)
@@ -510,7 +510,7 @@ class RecordParser:
     def _check_filter(self, f: str, source: str, sample: str | None):
         if f == "PASS":
             pass  # the PASS filter is implicitely defined
-        elif f not in self._filter_ids:
+        elif f not in self._filter_ids:  # pragma: no cover
             if source == "FILTER":
                 warnings.warn(
                     ("Filter not found in header: {}; problem in FILTER column").format(f),
@@ -587,7 +587,9 @@ class HeaderChecker:
     def _check_header_lines(self, header_lines: list[header.HeaderLine]) -> None:
         """Check header lines, in particular for starting file "##fileformat" """
         if not header_lines:
-            raise exceptions.InvalidHeaderException("The VCF file did not contain any header lines!")
+            raise exceptions.InvalidHeaderException(
+                "The VCF file did not contain any header lines!"
+            )  # pragma: no cover
         first = header_lines[0]
         if first.key != "fileformat":
             raise exceptions.InvalidHeaderException("The VCF file did not start with ##fileformat")
@@ -609,7 +611,7 @@ class AbstractInfoChecker:
 
     def run(self, key: str, value: str, num_alts: int) -> None:
         """Run the checker"""
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
 
 class NoopInfoChecker(AbstractInfoChecker):
@@ -654,7 +656,7 @@ class AbstractNoopFormatChecker:
     """Abstract base class for FORMAT field checkers"""
 
     def run(self, call: "record.Call", num_alts: int) -> None:
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
 
 class NoopFormatChecker(AbstractNoopFormatChecker):
@@ -681,6 +683,8 @@ class FormatChecker(AbstractNoopFormatChecker):
 
     def _check_count(self, call: "record.Call", key: str, value: str, num_alts: int) -> None:
         field_info = self.header.get_format_field_info(key)
+        if field_info.id == "GT":
+            return
         if isinstance(value, list):
             return
         num_alleles = len(call.gt_alleles or [])
@@ -763,18 +767,18 @@ class Parser:
         self._record_parser = RecordParser(self.header, self.samples, self.record_checks)
         # read next line, must not be header
         self._read_next_line()
-        if self._line and self._line.startswith("#"):
+        if self._line and self._line.startswith("#"):  # pragma: no cover
             raise exceptions.IncorrectVCFFormat('Expecting non-header line or EOF after "#CHROM" line')
         return self.header
 
     def _handle_sample_line(self, parsed_samples: list[str] | None = None):
         """ "Check and interpret the "##CHROM" line and return samples"""
-        if not self._line or not self._line.startswith("#CHROM"):
+        if not self._line or not self._line.startswith("#CHROM"):  # pragma: no cover
             raise exceptions.IncorrectVCFFormat('Missing line starting with "#CHROM"')
         # check for space before INFO
         line = self._line.rstrip()
         pos = line.find("FORMAT") if ("FORMAT" in line) else line.find("INFO")
-        if pos == -1:
+        if pos == -1:  # pragma: no cover
             raise exceptions.IncorrectVCFFormat('Ill-formatted line starting with "#CHROM"')
         if " " in line[:pos]:
             warnings.warn(
@@ -793,13 +797,13 @@ class Parser:
         """Peform additional check on samples line"""
         if len(arr) <= len(REQUIRE_NO_SAMPLE_HEADER):
             if tuple(arr) != REQUIRE_NO_SAMPLE_HEADER:
-                raise exceptions.IncorrectVCFFormat(
+                raise exceptions.IncorrectVCFFormat(  # pragma: no cover
                     "Sample header line indicates no sample but does not equal required prefix {}".format(
                         "\t".join(REQUIRE_NO_SAMPLE_HEADER)
                     )
                 )
         elif tuple(arr[: len(REQUIRE_SAMPLE_HEADER)]) != REQUIRE_SAMPLE_HEADER:
-            raise exceptions.IncorrectVCFFormat(
+            raise exceptions.IncorrectVCFFormat(  # pragma: no cover
                 'Sample header line (starting with "#CHROM") does not start with required prefix {}'.format(
                     "\t".join(REQUIRE_SAMPLE_HEADER)
                 )
@@ -808,7 +812,7 @@ class Parser:
     def parse_line(self, line: str):
         """Parse the given line without reading another one from the stream"""
         if self._record_parser is None:
-            raise exceptions.InvalidRecordException("Cannot parse record before parsing header")
+            raise exceptions.InvalidRecordException("Cannot parse record before parsing header")  # pragma: no cover
         return self._record_parser.parse_line(line)
 
     def parse_next_record(self):

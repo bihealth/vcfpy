@@ -134,6 +134,9 @@ lint.select = [
 [tool.black]
 line-length = 120
 
+[tool.pytest.ini_options]
+addopts = "--doctest-modules"
+
 [tool.ruff.lint.isort]
 known-first-party = ["src/vcfpy"]
 
@@ -144,7 +147,7 @@ feature = [
 ]
 
 [tool.hatch.envs.tests.scripts]
-run = "pytest --cov=src/vcfpy --cov-report=term-missing tests/ --durations 5 -s {args:tests}"
+run = "pytest --cov=src/vcfpy --cov-report=term-missing --durations 5 -s tests/ src/vcfpy {args:tests}"
 
 [tool.hatch.envs.build]
 installer = "uv"

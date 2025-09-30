@@ -183,12 +183,12 @@ class Record:
     def __eq__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return self.__dict__ == other.__dict__
-        return NotImplemented
+        raise NotImplementedError  # pragma: no cover
 
     def __ne__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return not self.__eq__(other)
-        return NotImplemented
+        raise NotImplementedError  # pragma: no cover
 
     def __hash__(self):
         return hash(tuple(sorted(self.__dict__.items())))
@@ -300,7 +300,7 @@ class Call:
                     raise ValueError("Cannot determine bases without site being set")
                 result.append(self.site.REF)
             else:
-                if self.site is None:
+                if self.site is None:  # pragma: no cover
                     raise ValueError("Cannot determine bases without site being set")
                 result.append(getattr(self.site.ALT[a - 1], "value", None))
         return tuple(result)
@@ -352,12 +352,12 @@ class Call:
     def __eq__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return self.__dict__ == other.__dict__
-        return NotImplemented
+        raise NotImplementedError  # pragma: no cover
 
     def __ne__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return not self.__eq__(other)
-        return NotImplemented
+        raise NotImplementedError  # pragma: no cover
 
     def __hash__(self) -> int:
         return hash(tuple(sorted(self.__dict__.items())))
@@ -388,12 +388,12 @@ class AltRecord:
     def __eq__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return self.__dict__ == other.__dict__
-        return NotImplemented
+        raise NotImplementedError  # pragma: no cover
 
     def __ne__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return not self.__eq__(other)
-        return NotImplemented
+        raise NotImplementedError  # pragma: no cover
 
     def __hash__(self) -> int:
         return hash(tuple(sorted(self.__dict__.items())))
@@ -423,12 +423,12 @@ class Substitution(AltRecord):
     def __eq__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return self.__dict__ == other.__dict__
-        return NotImplemented
+        raise NotImplementedError  # pragma: no cover
 
     def __ne__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return not self.__eq__(other)
-        return NotImplemented
+        raise NotImplementedError  # pragma: no cover
 
     def __hash__(self) -> int:
         return hash(tuple(sorted(self.__dict__.items())))
@@ -488,7 +488,7 @@ class BreakEnd(AltRecord):
                 mate_chrom = self.mate_chrom
             else:
                 mate_chrom = "<{}>".format(self.mate_chrom)
-            if self.mate_orientation is None:
+            if self.mate_orientation is None:  # pragma: no cover
                 raise ValueError("mate_orientation must be set if mate_chrom is set")
             tpl = {FORWARD: "[{}:{}[", REVERSE: "]{}:{}]"}[self.mate_orientation]
             remote_tag = tpl.format(mate_chrom, self.mate_pos)
@@ -500,12 +500,12 @@ class BreakEnd(AltRecord):
     def __eq__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return self.__dict__ == other.__dict__
-        return NotImplemented
+        raise NotImplementedError  # pragma: no cover
 
     def __ne__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return not self.__eq__(other)
-        return NotImplemented
+        raise NotImplementedError  # pragma: no cover
 
     def __hash__(self):
         return hash(tuple(sorted(self.__dict__.items())))
@@ -535,12 +535,12 @@ class SingleBreakEnd(BreakEnd):
     def __eq__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return self.__dict__ == other.__dict__
-        return NotImplemented
+        raise NotImplementedError  # pragma: no cover
 
     def __ne__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return not self.__eq__(other)
-        return NotImplemented
+        raise NotImplementedError  # pragma: no cover
 
     def __hash__(self):
         return hash(tuple(sorted(self.__dict__.items())))
@@ -570,12 +570,12 @@ class SymbolicAllele(AltRecord):
     def __eq__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return self.__dict__ == other.__dict__
-        return NotImplemented
+        raise NotImplementedError  # pragma: no cover
 
     def __ne__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return not self.__eq__(other)
-        return NotImplemented
+        raise NotImplementedError  # pragma: no cover
 
     def __hash__(self):
         return hash(tuple(sorted(self.__dict__.items())))

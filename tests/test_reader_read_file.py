@@ -4,6 +4,7 @@
 import io
 import os
 
+import vcfpy
 from vcfpy import reader
 
 __author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"
@@ -67,3 +68,17 @@ def test_read_info_flag():
     with reader.Reader.from_stream(string_buffer) as r:
         line = next(r)
         assert line.INFO["MH"]
+
+
+def test_reader_from_stream():
+    """Test reader with various stream edge cases"""
+    vcf_content = """##fileformat=VCFv4.2
+##INFO=<ID=DP,Number=1,Type=Integer,Description="Depth">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+chr1	100	.	A	T	30	PASS	DP=10
+"""
+
+    stream = io.StringIO(vcf_content)
+    reader = vcfpy.Reader.from_stream(stream)
+    record_list = list(reader)
+    assert len(record_list) == 1
