@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Tests for vcfpy.header
-"""
+"""Tests for vcfpy.header"""
 
 import sys
 
@@ -103,13 +102,11 @@ def test_header_alt_allele_header_line():
         )
     else:
         assert (
-            str(line1)
-            == "AltAlleleHeaderLine('ALT', '<ID=DEL,Description=\"deletion\">', "
+            str(line1) == "AltAlleleHeaderLine('ALT', '<ID=DEL,Description=\"deletion\">', "
             "{'ID': 'DEL', 'Description': 'deletion'})"
         )
         assert (
-            repr(line1)
-            == "AltAlleleHeaderLine('ALT', '<ID=DEL,Description=\"deletion\">', "
+            repr(line1) == "AltAlleleHeaderLine('ALT', '<ID=DEL,Description=\"deletion\">', "
             "{'ID': 'DEL', 'Description': 'deletion'})"
         )
     assert line1.value == '<ID=DEL,Description="deletion">'
@@ -149,24 +146,20 @@ def test_header_filter_header_line():
     assert line1 != line3
     if sys.version_info < (3, 6):
         assert (
-            str(line1)
-            == "FilterHeaderLine('FILTER', '<ID=PASS,Description=\"All filters passed\">', "
+            str(line1) == "FilterHeaderLine('FILTER', '<ID=PASS,Description=\"All filters passed\">', "
             "OrderedDict([('ID', 'PASS'), ('Description', 'All filters passed')]))"
         )
         assert (
-            repr(line1)
-            == "FilterHeaderLine('FILTER', '<ID=PASS,Description=\"All filters passed\">', "
+            repr(line1) == "FilterHeaderLine('FILTER', '<ID=PASS,Description=\"All filters passed\">', "
             "OrderedDict([('ID', 'PASS'), ('Description', 'All filters passed')]))"
         )
     else:
         assert (
-            str(line1)
-            == "FilterHeaderLine('FILTER', '<ID=PASS,Description=\"All filters passed\">', "
+            str(line1) == "FilterHeaderLine('FILTER', '<ID=PASS,Description=\"All filters passed\">', "
             "{'ID': 'PASS', 'Description': 'All filters passed'})"
         )
         assert (
-            repr(line1)
-            == "FilterHeaderLine('FILTER', '<ID=PASS,Description=\"All filters passed\">', "
+            repr(line1) == "FilterHeaderLine('FILTER', '<ID=PASS,Description=\"All filters passed\">', "
             "{'ID': 'PASS', 'Description': 'All filters passed'})"
         )
     assert line1.value == '<ID=PASS,Description="All filters passed">'
@@ -183,13 +176,11 @@ def test_header_pedigree_header_line():
     assert line1 != line3
     if sys.version_info < (3, 6):
         assert (
-            str(line1)
-            == "PedigreeHeaderLine('PEDIGREE', '<ID=child,Father=father>', "
+            str(line1) == "PedigreeHeaderLine('PEDIGREE', '<ID=child,Father=father>', "
             "OrderedDict([('ID', 'child'), ('Father', 'father')]))"
         )
         assert (
-            repr(line1)
-            == "PedigreeHeaderLine('PEDIGREE', '<ID=child,Father=father>', "
+            repr(line1) == "PedigreeHeaderLine('PEDIGREE', '<ID=child,Father=father>', "
             "OrderedDict([('ID', 'child'), ('Father', 'father')]))"
         )
     else:
@@ -239,13 +230,11 @@ def test_header_info_header_line():
     assert line1 != line3
     if sys.version_info < (3, 6):
         assert (
-            str(line1)
-            == "InfoHeaderLine('INFO', '<ID=SVTYPE,Number=1,Type=String>', "
+            str(line1) == "InfoHeaderLine('INFO', '<ID=SVTYPE,Number=1,Type=String>', "
             "OrderedDict([('ID', 'SVTYPE'), ('Number', 1), ('Type', 'String')]))"
         )
         assert (
-            repr(line1)
-            == "InfoHeaderLine('INFO', '<ID=SVTYPE,Number=1,Type=String>', "
+            repr(line1) == "InfoHeaderLine('INFO', '<ID=SVTYPE,Number=1,Type=String>', "
             "OrderedDict([('ID', 'SVTYPE'), ('Number', 1), ('Type', 'String')]))"
         )
     else:
@@ -279,24 +268,20 @@ def test_header_format_header_line():
     assert line1 != line3
     if sys.version_info < (3, 6):
         assert (
-            str(line1)
-            == "FormatHeaderLine('FORMAT', '<ID=AD,Number=R,Type=Integer>', "
+            str(line1) == "FormatHeaderLine('FORMAT', '<ID=AD,Number=R,Type=Integer>', "
             "OrderedDict([('ID', 'AD'), ('Number', 'R'), ('Type', 'Integer')]))"
         )
         assert (
-            repr(line1)
-            == "FormatHeaderLine('FORMAT', '<ID=AD,Number=R,Type=Integer>', "
+            repr(line1) == "FormatHeaderLine('FORMAT', '<ID=AD,Number=R,Type=Integer>', "
             "OrderedDict([('ID', 'AD'), ('Number', 'R'), ('Type', 'Integer')]))"
         )
     else:
         assert (
-            str(line1)
-            == "FormatHeaderLine('FORMAT', '<ID=AD,Number=R,Type=Integer,Description=\"Allelic depths\">', "
+            str(line1) == "FormatHeaderLine('FORMAT', '<ID=AD,Number=R,Type=Integer,Description=\"Allelic depths\">', "
             "{'ID': 'AD', 'Number': 'R', 'Type': 'Integer', 'Description': 'Allelic depths'})"
         )
         assert (
-            repr(line1)
-            == "FormatHeaderLine('FORMAT', '<ID=AD,Number=R,Type=Integer,Description=\"Allelic depths\">', "
+            repr(line1) == "FormatHeaderLine('FORMAT', '<ID=AD,Number=R,Type=Integer,Description=\"Allelic depths\">', "
             "{'ID': 'AD', 'Number': 'R', 'Type': 'Integer', 'Description': 'Allelic depths'})"
         )
     assert line1.value == '<ID=AD,Number=R,Type=Integer,Description="Allelic depths">'

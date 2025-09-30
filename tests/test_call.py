@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Test Call class
-"""
+"""Test Call class"""
 
 import vcfpy
 from vcfpy import record

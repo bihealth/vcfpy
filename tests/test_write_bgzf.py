@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Test writing of BGZF files
-"""
+"""Test writing of BGZF files"""
 
 import codecs
 import gzip

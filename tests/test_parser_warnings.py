@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Test that the public API classes are available from the ``vcfpy`` package
-"""
+"""Test that the public API classes are available from the ``vcfpy`` package"""
 
 import io
 import textwrap

@@ -75,12 +75,15 @@ check = [
   "ruff check src tests",
 ]
 format = [
-  "black --preview src tests",
+  "black src tests",
   "ruff check --fix --unsafe-fixes src tests",
   "check",
 ]
 typecheck = [
-  "pyright src tests",
+  """
+  pyright --pythonpath="$(uv run --active hatch run quality:python -c 'import sys; print(sys.executable)')" \
+    {args:src/ tests/}
+  """
 ]
 
 [tool.pyright]

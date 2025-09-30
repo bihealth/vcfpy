@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Test parsing of breakend records
-"""
+"""Test parsing of breakend records"""
 
 import io
 import sys

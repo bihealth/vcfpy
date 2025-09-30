@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Reading of VCF files from plain and bgzip-ed files
-"""
+"""Reading of VCF files from plain and bgzip-ed files"""
 
 import io
 import os

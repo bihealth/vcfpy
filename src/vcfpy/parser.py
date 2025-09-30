@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Parsing of VCF files from ``str``
-"""
+"""Parsing of VCF files from ``str``"""
 
 import ast
 import functools

@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Tests for reserved field handling in header
-"""
+"""Tests for reserved field handling in header"""
 
 from vcfpy import header
 

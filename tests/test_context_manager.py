@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Tests for the Reader and Writer working as context managers
-"""
+"""Tests for the Reader and Writer working as context managers"""
 
 import io
 import os

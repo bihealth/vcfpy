@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Test the structural variant Record classes
-"""
+"""Test the structural variant Record classes"""
 
 from vcfpy import record
 

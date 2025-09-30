@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Test parsing of VCF header lines from strings
-"""
+"""Test parsing of VCF header lines from strings"""
 
 import sys
 

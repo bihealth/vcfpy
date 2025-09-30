@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Test escaping on writing VCF records
-"""
+"""Test escaping on writing VCF records"""
 
 from vcfpy import header, writer
 

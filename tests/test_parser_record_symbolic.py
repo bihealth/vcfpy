@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Test parsing of symbolic records
-"""
+"""Test parsing of symbolic records"""
 
 import io
 import sys

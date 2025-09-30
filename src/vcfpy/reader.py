@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Parsing of VCF files from ``file``-like objects
-"""
+"""Parsing of VCF files from ``file``-like objects"""
 
 import gzip
 import os

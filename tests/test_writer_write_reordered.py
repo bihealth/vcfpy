@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Tests for reading writing samples in different order from reading them
-"""
+"""Tests for reading writing samples in different order from reading them"""
 
 import pathlib
 

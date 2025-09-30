@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Writing of VCF records
-"""
+"""Writing of VCF records"""
 
 import io
 import pathlib

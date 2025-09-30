@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Exceptions for the vcfpy module
-"""
+"""Exceptions for the vcfpy module"""
 
 __author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"
 

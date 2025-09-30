@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Test adding header lines to headers
-"""
+"""Test adding header lines to headers"""
 
 import io
 

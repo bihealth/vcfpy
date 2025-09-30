@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Parsing and converting of field values
-"""
+"""Parsing and converting of field values"""
 
 import pytest
 
