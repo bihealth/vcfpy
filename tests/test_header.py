@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
-"""Tests for vcfpy.header
-"""
+"""Tests for vcfpy.header"""
 
 import sys
 
 import pytest
 
-import vcfpy
-from vcfpy import header
+from vcfpy import exceptions, header
 
 
 def test_header_field_info():
@@ -64,8 +62,8 @@ def test_header_without_lines():
     lines = [header.HeaderLine("foo", "bar"), header.HeaderLine("foo2", "bar2")]
     samples = header.SamplesInfos(["one", "two", "three"])
     hdr = header.Header(lines, samples)
-    hdr.add_filter_line(vcfpy.OrderedDict([("ID", "PASS")]))
-    hdr.add_filter_line(vcfpy.OrderedDict([("ID", "q30")]))
+    hdr.add_filter_line({"ID": "PASS", "Description": "All filters passed"})
+    hdr.add_filter_line({"ID": "q30", "Description": "Phred score <30"})
     assert len(hdr.lines) == 4
 
     hdr2 = header.header_without_lines(hdr, [("foo", "bar"), ("FILTER", "q30")])
@@ -88,9 +86,9 @@ def test_header_header_line():
 
 
 def test_header_alt_allele_header_line():
-    line1 = header.AltAlleleHeaderLine.from_mapping(vcfpy.OrderedDict([("ID", "DEL"), ("Description", "deletion")]))
-    line2 = header.AltAlleleHeaderLine.from_mapping(vcfpy.OrderedDict([("ID", "DEL"), ("Description", "deletion")]))
-    line3 = header.AltAlleleHeaderLine.from_mapping(vcfpy.OrderedDict([("ID", "DUP"), ("Description", "duplication")]))
+    line1 = header.AltAlleleHeaderLine.from_mapping({"ID": "DEL", "Description": "deletion"})
+    line2 = header.AltAlleleHeaderLine.from_mapping({"ID": "DEL", "Description": "deletion"})
+    line3 = header.AltAlleleHeaderLine.from_mapping({"ID": "DUP", "Description": "duplication"})
     assert line1 == line2
     assert line1 != line3
     if sys.version_info < (3, 6):
@@ -104,13 +102,11 @@ def test_header_alt_allele_header_line():
         )
     else:
         assert (
-            str(line1)
-            == "AltAlleleHeaderLine('ALT', '<ID=DEL,Description=\"deletion\">', "
+            str(line1) == "AltAlleleHeaderLine('ALT', '<ID=DEL,Description=\"deletion\">', "
             "{'ID': 'DEL', 'Description': 'deletion'})"
         )
         assert (
-            repr(line1)
-            == "AltAlleleHeaderLine('ALT', '<ID=DEL,Description=\"deletion\">', "
+            repr(line1) == "AltAlleleHeaderLine('ALT', '<ID=DEL,Description=\"deletion\">', "
             "{'ID': 'DEL', 'Description': 'deletion'})"
         )
     assert line1.value == '<ID=DEL,Description="deletion">'
@@ -120,9 +116,9 @@ def test_header_alt_allele_header_line():
 
 
 def test_header_contig_header_line():
-    line1 = header.ContigHeaderLine.from_mapping(vcfpy.OrderedDict([("ID", "1"), ("length", 234)]))
-    line2 = header.ContigHeaderLine.from_mapping(vcfpy.OrderedDict([("ID", "1"), ("length", 234)]))
-    line3 = header.ContigHeaderLine.from_mapping(vcfpy.OrderedDict([("ID", "2"), ("length", 123)]))
+    line1 = header.ContigHeaderLine.from_mapping({"ID": "1", "length": 234})
+    line2 = header.ContigHeaderLine.from_mapping({"ID": "1", "length": 234})
+    line3 = header.ContigHeaderLine.from_mapping({"ID": "2", "length": 123})
     assert line1 == line2
     assert line1 != line3
     if sys.version_info < (3, 6):
@@ -143,35 +139,27 @@ def test_header_contig_header_line():
 
 
 def test_header_filter_header_line():
-    line1 = header.FilterHeaderLine.from_mapping(
-        vcfpy.OrderedDict([("ID", "PASS"), ("Description", "All filters passed")])
-    )
-    line2 = header.FilterHeaderLine.from_mapping(
-        vcfpy.OrderedDict([("ID", "PASS"), ("Description", "All filters passed")])
-    )
-    line3 = header.FilterHeaderLine.from_mapping(vcfpy.OrderedDict([("ID", "q30"), ("Description", "Phred score <30")]))
+    line1 = header.FilterHeaderLine.from_mapping({"ID": "PASS", "Description": "All filters passed"})
+    line2 = header.FilterHeaderLine.from_mapping({"ID": "PASS", "Description": "All filters passed"})
+    line3 = header.FilterHeaderLine.from_mapping({"ID": "q30", "Description": "Phred score <30"})
     assert line1 == line2
     assert line1 != line3
     if sys.version_info < (3, 6):
         assert (
-            str(line1)
-            == "FilterHeaderLine('FILTER', '<ID=PASS,Description=\"All filters passed\">', "
+            str(line1) == "FilterHeaderLine('FILTER', '<ID=PASS,Description=\"All filters passed\">', "
             "OrderedDict([('ID', 'PASS'), ('Description', 'All filters passed')]))"
         )
         assert (
-            repr(line1)
-            == "FilterHeaderLine('FILTER', '<ID=PASS,Description=\"All filters passed\">', "
+            repr(line1) == "FilterHeaderLine('FILTER', '<ID=PASS,Description=\"All filters passed\">', "
             "OrderedDict([('ID', 'PASS'), ('Description', 'All filters passed')]))"
         )
     else:
         assert (
-            str(line1)
-            == "FilterHeaderLine('FILTER', '<ID=PASS,Description=\"All filters passed\">', "
+            str(line1) == "FilterHeaderLine('FILTER', '<ID=PASS,Description=\"All filters passed\">', "
             "{'ID': 'PASS', 'Description': 'All filters passed'})"
         )
         assert (
-            repr(line1)
-            == "FilterHeaderLine('FILTER', '<ID=PASS,Description=\"All filters passed\">', "
+            repr(line1) == "FilterHeaderLine('FILTER', '<ID=PASS,Description=\"All filters passed\">', "
             "{'ID': 'PASS', 'Description': 'All filters passed'})"
         )
     assert line1.value == '<ID=PASS,Description="All filters passed">'
@@ -181,20 +169,18 @@ def test_header_filter_header_line():
 
 
 def test_header_pedigree_header_line():
-    line1 = header.PedigreeHeaderLine.from_mapping(vcfpy.OrderedDict([("ID", "child"), ("Father", "father")]))
-    line2 = header.PedigreeHeaderLine.from_mapping(vcfpy.OrderedDict([("ID", "child"), ("Father", "father")]))
-    line3 = header.PedigreeHeaderLine.from_mapping(vcfpy.OrderedDict([("ID", "father")]))
+    line1 = header.PedigreeHeaderLine.from_mapping({"ID": "child", "Father": "father"})
+    line2 = header.PedigreeHeaderLine.from_mapping({"ID": "child", "Father": "father"})
+    line3 = header.PedigreeHeaderLine.from_mapping({"ID": "father"})
     assert line1 == line2
     assert line1 != line3
     if sys.version_info < (3, 6):
         assert (
-            str(line1)
-            == "PedigreeHeaderLine('PEDIGREE', '<ID=child,Father=father>', "
+            str(line1) == "PedigreeHeaderLine('PEDIGREE', '<ID=child,Father=father>', "
             "OrderedDict([('ID', 'child'), ('Father', 'father')]))"
         )
         assert (
-            repr(line1)
-            == "PedigreeHeaderLine('PEDIGREE', '<ID=child,Father=father>', "
+            repr(line1) == "PedigreeHeaderLine('PEDIGREE', '<ID=child,Father=father>', "
             "OrderedDict([('ID', 'child'), ('Father', 'father')]))"
         )
     else:
@@ -213,9 +199,9 @@ def test_header_pedigree_header_line():
 
 
 def test_header_sample_header_line():
-    line1 = header.SampleHeaderLine.from_mapping(vcfpy.OrderedDict([("ID", "sample1")]))
-    line2 = header.SampleHeaderLine.from_mapping(vcfpy.OrderedDict([("ID", "sample1")]))
-    line3 = header.SampleHeaderLine.from_mapping(vcfpy.OrderedDict([("ID", "sample2")]))
+    line1 = header.SampleHeaderLine.from_mapping({"ID": "sample1"})
+    line2 = header.SampleHeaderLine.from_mapping({"ID": "sample1"})
+    line3 = header.SampleHeaderLine.from_mapping({"ID": "sample2"})
     assert line1 == line2
     assert line1 != line3
     if sys.version_info < (3, 6):
@@ -231,85 +217,89 @@ def test_header_sample_header_line():
 
 
 def test_header_info_header_line():
-    line1 = header.InfoHeaderLine.from_mapping(vcfpy.OrderedDict([("ID", "SVTYPE"), ("Number", 1), ("Type", "String")]))
-    line2 = header.InfoHeaderLine.from_mapping(vcfpy.OrderedDict([("ID", "SVTYPE"), ("Number", 1), ("Type", "String")]))
-    line3 = header.InfoHeaderLine.from_mapping(vcfpy.OrderedDict([("ID", "END"), ("Number", 1), ("Type", "Integer")]))
+    line1 = header.InfoHeaderLine.from_mapping(
+        {"ID": "SVTYPE", "Number": 1, "Type": "String", "Description": "Type of structural variant"}
+    )
+    line2 = header.InfoHeaderLine.from_mapping(
+        {"ID": "SVTYPE", "Number": 1, "Type": "String", "Description": "Type of structural variant"}
+    )
+    line3 = header.InfoHeaderLine.from_mapping(
+        {"ID": "END", "Number": 1, "Type": "Integer", "Description": "End position"}
+    )
     assert line1 == line2
     assert line1 != line3
     if sys.version_info < (3, 6):
         assert (
-            str(line1)
-            == "InfoHeaderLine('INFO', '<ID=SVTYPE,Number=1,Type=String>', "
+            str(line1) == "InfoHeaderLine('INFO', '<ID=SVTYPE,Number=1,Type=String>', "
             "OrderedDict([('ID', 'SVTYPE'), ('Number', 1), ('Type', 'String')]))"
         )
         assert (
-            repr(line1)
-            == "InfoHeaderLine('INFO', '<ID=SVTYPE,Number=1,Type=String>', "
+            repr(line1) == "InfoHeaderLine('INFO', '<ID=SVTYPE,Number=1,Type=String>', "
             "OrderedDict([('ID', 'SVTYPE'), ('Number', 1), ('Type', 'String')]))"
         )
     else:
         assert (
             str(line1)
-            == "InfoHeaderLine('INFO', '<ID=SVTYPE,Number=1,Type=String>', "
-            "{'ID': 'SVTYPE', 'Number': 1, 'Type': 'String'})"
+            == "InfoHeaderLine('INFO', '<ID=SVTYPE,Number=1,Type=String,Description=\"Type of structural variant\">', "
+            "{'ID': 'SVTYPE', 'Number': 1, 'Type': 'String', 'Description': 'Type of structural variant'})"
         )
         assert (
             repr(line1)
-            == "InfoHeaderLine('INFO', '<ID=SVTYPE,Number=1,Type=String>', "
-            "{'ID': 'SVTYPE', 'Number': 1, 'Type': 'String'})"
+            == "InfoHeaderLine('INFO', '<ID=SVTYPE,Number=1,Type=String,Description=\"Type of structural variant\">', "
+            "{'ID': 'SVTYPE', 'Number': 1, 'Type': 'String', 'Description': 'Type of structural variant'})"
         )
-    assert line1.value == "<ID=SVTYPE,Number=1,Type=String>"
-    assert line1.serialize() == "##INFO=<ID=SVTYPE,Number=1,Type=String>"
+    assert line1.value == '<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">'
+    assert line1.serialize() == '##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">'
     with pytest.raises(TypeError):
         hash(line1)
 
 
 def test_header_format_header_line():
     line1 = header.FormatHeaderLine.from_mapping(
-        vcfpy.OrderedDict([("ID", "AD"), ("Number", "R"), ("Type", "Integer")])
+        {"ID": "AD", "Number": "R", "Type": "Integer", "Description": "Allelic depths"}
     )
     line2 = header.FormatHeaderLine.from_mapping(
-        vcfpy.OrderedDict([("ID", "AD"), ("Number", "R"), ("Type", "Integer")])
+        {"ID": "AD", "Number": "R", "Type": "Integer", "Description": "Allelic depths"}
     )
-    line3 = header.FormatHeaderLine.from_mapping(vcfpy.OrderedDict([("ID", "DP"), ("Number", 1), ("Type", "Integer")]))
+    line3 = header.FormatHeaderLine.from_mapping(
+        {"ID": "DP", "Number": 1, "Type": "Integer", "Description": "Read depth"}
+    )
     assert line1 == line2
     assert line1 != line3
     if sys.version_info < (3, 6):
         assert (
-            str(line1)
-            == "FormatHeaderLine('FORMAT', '<ID=AD,Number=R,Type=Integer>', "
+            str(line1) == "FormatHeaderLine('FORMAT', '<ID=AD,Number=R,Type=Integer>', "
             "OrderedDict([('ID', 'AD'), ('Number', 'R'), ('Type', 'Integer')]))"
         )
         assert (
-            repr(line1)
-            == "FormatHeaderLine('FORMAT', '<ID=AD,Number=R,Type=Integer>', "
+            repr(line1) == "FormatHeaderLine('FORMAT', '<ID=AD,Number=R,Type=Integer>', "
             "OrderedDict([('ID', 'AD'), ('Number', 'R'), ('Type', 'Integer')]))"
         )
     else:
         assert (
-            str(line1)
-            == "FormatHeaderLine('FORMAT', '<ID=AD,Number=R,Type=Integer>', "
-            "{'ID': 'AD', 'Number': 'R', 'Type': 'Integer'})"
+            str(line1) == "FormatHeaderLine('FORMAT', '<ID=AD,Number=R,Type=Integer,Description=\"Allelic depths\">', "
+            "{'ID': 'AD', 'Number': 'R', 'Type': 'Integer', 'Description': 'Allelic depths'})"
         )
         assert (
-            repr(line1)
-            == "FormatHeaderLine('FORMAT', '<ID=AD,Number=R,Type=Integer>', "
-            "{'ID': 'AD', 'Number': 'R', 'Type': 'Integer'})"
+            repr(line1) == "FormatHeaderLine('FORMAT', '<ID=AD,Number=R,Type=Integer,Description=\"Allelic depths\">', "
+            "{'ID': 'AD', 'Number': 'R', 'Type': 'Integer', 'Description': 'Allelic depths'})"
         )
-    assert line1.value == "<ID=AD,Number=R,Type=Integer>"
-    assert line1.serialize() == "##FORMAT=<ID=AD,Number=R,Type=Integer>"
+    assert line1.value == '<ID=AD,Number=R,Type=Integer,Description="Allelic depths">'
+    assert line1.serialize() == '##FORMAT=<ID=AD,Number=R,Type=Integer,Description="Allelic depths">'
     with pytest.raises(TypeError):
         hash(line1)
 
 
 def test_header_has_header_line_positive():
     lines = [
-        header.FormatHeaderLine.from_mapping(vcfpy.OrderedDict([("ID", "DP"), ("Number", "R"), ("Type", "Integer")])),
-        header.InfoHeaderLine.from_mapping(vcfpy.OrderedDict([("ID", "AD"), ("Number", "R"), ("Type", "Integer")])),
-        header.FilterHeaderLine.from_mapping(
-            vcfpy.OrderedDict([("ID", "PASS"), ("Description", "All filters passed")])
+        header.FormatHeaderLine.from_mapping(
+            {"ID": "DP", "Number": "R", "Type": "Integer", "Description": "Depth of coverage"}
         ),
-        header.ContigHeaderLine.from_mapping(vcfpy.OrderedDict([("ID", "1"), ("length", 234)])),
+        header.InfoHeaderLine.from_mapping(
+            {"ID": "AD", "Number": "R", "Type": "Integer", "Description": "Allelic depths"}
+        ),
+        header.FilterHeaderLine.from_mapping({"ID": "PASS", "Description": "All filters passed"}),
+        header.ContigHeaderLine.from_mapping({"ID": "1", "length": 234}),
     ]
     samples = header.SamplesInfos(["one", "two", "three"])
     hdr = header.Header(lines, samples)
@@ -335,7 +325,8 @@ def test_header_get_format_field_info():
     lines = []
     samples = header.SamplesInfos(["one", "two", "three"])
     hdr = header.Header(lines, samples)
-    gt_field_info = hdr.get_format_field_info("GT")
+    with pytest.warns(exceptions.FieldInfoNotFound):
+        gt_field_info = hdr.get_format_field_info("GT")
 
     expected = header.RESERVED_FORMAT["GT"]
 
@@ -346,7 +337,8 @@ def test_header_get_info_format_field_info():
     lines = []
     samples = header.SamplesInfos(["one", "two", "three"])
     hdr = header.Header(lines, samples)
-    gt_field_info = hdr.get_info_field_info("AA")
+    with pytest.warns(exceptions.FieldInfoNotFound):
+        gt_field_info = hdr.get_info_field_info("AA")
 
     expected = header.RESERVED_INFO["AA"]
 

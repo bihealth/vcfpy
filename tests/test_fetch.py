@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Test fetching within tabix files
-"""
+"""Test fetching within tabix files"""
 
 import os
 

@@ -1,22 +1,16 @@
 # -*- coding: utf-8 -*-
-"""Parsing of VCF files from ``str``
-"""
+"""Parsing of VCF files from ``str``"""
 
 import ast
 import functools
+import io
 import math
+import pathlib
 import re
 import warnings
+from typing import Any, Callable, Iterable, Literal, cast
 
-from . import exceptions, header, record
-from .compat import OrderedDict
-from .exceptions import (
-    CannotConvertValue,
-    LeadingTrailingSpaceInKey,
-    SpaceInChromLine,
-    UnknownFilter,
-    UnknownVCFVersion,
-)
+from vcfpy import exceptions, header, record
 
 __author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"
 
@@ -48,7 +42,7 @@ class QuotedStringSplitter:
     #: state constant for delimiter
     DELIM = 4
 
-    def __init__(self, delim=",", quote='"', brackets="[]"):
+    def __init__(self, delim: str = ",", quote: str = '"', brackets: str = "[]"):
         #: string delimiter
         self.delim = delim
         #: quote character
@@ -57,7 +51,7 @@ class QuotedStringSplitter:
         assert len(brackets) == 2
         self.brackets = brackets
 
-    def run(self, s):
+    def run(self, s: str) -> list[str]:
         """Split string ``s`` at delimiter, correctly interpreting quotes
 
         Further, interprets arrays wrapped in one level of ``[]``.  No
@@ -66,9 +60,10 @@ class QuotedStringSplitter:
         quoting inside of braces is not supported either.  This is just to
         support the example from VCF v4.3.
         """
-        begins, ends = [0], []
+        begins: list[int] = [0]
+        ends: list[int] = []
         # transition table
-        DISPATCH = {
+        DISPATCH: dict[Literal[0, 1, 2, 3, 4], Callable[[str, int, list[int], list[int]], Literal[0, 1, 2, 3, 4]]] = {
             self.NORMAL: self._handle_normal,
             self.QUOTED: self._handle_quoted,
             self.ARRAY: self._handle_array,
@@ -76,7 +71,7 @@ class QuotedStringSplitter:
             self.ESCAPED: self._handle_escaped,
         }
         # run state automaton
-        state = self.NORMAL
+        state: Literal[0, 1, 2, 3, 4] = self.NORMAL
         for pos, c in enumerate(s):
             state = DISPATCH[state](c, pos, begins, ends)
         ends.append(len(s))
@@ -84,7 +79,9 @@ class QuotedStringSplitter:
         # Build resulting list
         return [s[start:end] for start, end in zip(begins, ends, strict=False)]
 
-    def _handle_normal(self, c, pos, begins, ends):  # pylint: disable=W0613
+    def _handle_normal(
+        self, c: str, pos: int, begins: list[int], ends: list[int]
+    ) -> Literal[0, 1, 2, 3, 4]:  # pylint: disable=W0613
         if c == self.delim:
             ends.append(pos)
             return self.DELIM
@@ -95,7 +92,9 @@ class QuotedStringSplitter:
         else:
             return self.NORMAL
 
-    def _handle_quoted(self, c, pos, begins, ends):  # pylint: disable=W0613
+    def _handle_quoted(
+        self, c: str, pos: int, begins: list[int], ends: list[int]
+    ) -> Literal[0, 1, 2, 3, 4]:  # pylint: disable=W0613
         if c == "\\":
             return self.ESCAPED
         elif c == self.quote:
@@ -103,25 +102,31 @@ class QuotedStringSplitter:
         else:
             return self.QUOTED
 
-    def _handle_array(self, c, pos, begins, ends):  # pylint: disable=W0613
+    def _handle_array(
+        self, c: str, pos: int, begins: list[int], ends: list[int]
+    ) -> Literal[0, 1, 2, 3, 4]:  # pylint: disable=W0613
         if c == self.brackets[1]:
             return self.NORMAL
         else:
             return self.ARRAY
 
-    def _handle_delim(self, c, pos, begins, ends):  # pylint: disable=W0613
+    def _handle_delim(
+        self, c: str, pos: int, begins: list[int], ends: list[int]
+    ) -> Literal[0, 1, 2, 3, 4]:  # pylint: disable=W0613
         begins.append(pos)
         return self.NORMAL
 
-    def _handle_escaped(self, c, pos, begins, ends):  # pylint: disable=W0613
+    def _handle_escaped(
+        self, c: str, pos: int, begins: list[int], ends: list[int]
+    ) -> Literal[0, 1, 2, 3, 4]:  # pylint: disable=W0613
         return self.QUOTED
 
 
-def split_quoted_string(s, delim=",", quote='"', brackets="[]"):
+def split_quoted_string(s: str, delim: str = ",", quote: str = '"', brackets: str = "[]") -> list[str]:
     return QuotedStringSplitter(delim, quote, brackets).run(s)
 
 
-def split_mapping(pair_str):
+def split_mapping(pair_str: str) -> tuple[str, str]:
     """Split the ``str`` in ``pair_str`` at ``'='``
 
     Warn if key needs to be stripped
@@ -131,12 +136,12 @@ def split_mapping(pair_str):
     if key != orig_key:
         warnings.warn(
             "Mapping key {} has leading or trailing space".format(repr(orig_key)),
-            LeadingTrailingSpaceInKey,
+            exceptions.LeadingTrailingSpaceInKey,
         )
     return key, value
 
 
-def parse_mapping(value):
+def parse_mapping(value: str) -> dict[str, bool | str | list[str]]:
     """Parse the given VCF header line mapping
 
     Such a mapping consists of "key=value" pairs, separated by commas and
@@ -153,25 +158,28 @@ def parse_mapping(value):
     pairs = split_quoted_string(value[1:-1], delim=",", quote='"')
     # split these pairs into key/value pairs, converting flags to mappings
     # to True
-    key_values = []
+    key_values: list[tuple[str, bool | str | list[str]]] = []
     for pair in pairs:
+        value_: bool | str | list[str]
         if "=" in pair:
             key, value = split_mapping(pair)
             if value.startswith('"') and value.endswith('"'):
-                value = ast.literal_eval(value)
+                value_ = ast.literal_eval(value)
             elif value.startswith("[") and value.endswith("]"):
-                value = [v.strip() for v in value[1:-1].split(",")]
+                value_ = [v.strip() for v in value[1:-1].split(",")]
+            else:
+                value_ = value
         else:
-            key, value = pair, True
-        key_values.append((key, value))
+            key, value_ = pair, True
+        key_values.append((key, value_))
     # return completely parsed mapping as OrderedDict
-    return OrderedDict(key_values)
+    return dict(key_values)
 
 
 class HeaderLineParserBase:
     """Parse into appropriate HeaderLine"""
 
-    def parse_key_value(self, key, value):
+    def parse_key_value(self, key: str, value: str) -> header.HeaderLine:
         """Parse the key/value pair
 
         :param str key: the key to use in parsing
@@ -184,28 +192,28 @@ class HeaderLineParserBase:
 class StupidHeaderLineParser(HeaderLineParserBase):
     """Parse into HeaderLine (no particular structure)"""
 
-    def parse_key_value(self, key, value):
+    def parse_key_value(self, key: str, value: str) -> header.HeaderLine:
         return header.HeaderLine(key, value)
 
 
 class MappingHeaderLineParser(HeaderLineParserBase):
     """Parse into HeaderLine (no particular structure)"""
 
-    def __init__(self, line_class):
+    def __init__(self, line_class: Callable[[str, str, dict[str, bool | str | list[str]]], header.HeaderLine]):
         """Initialize the parser"""
         #: the class to use for the VCF header line
         self.line_class = line_class
 
-    def parse_key_value(self, key, value):
+    def parse_key_value(self, key: str, value: str) -> header.HeaderLine:
         return self.line_class(key, value, parse_mapping(value))
 
 
-def build_header_parsers():
+def build_header_parsers() -> dict[str, HeaderLineParserBase]:
     """Return mapping for parsers to use for each VCF header type
 
     Inject the WarningHelper into the parsers.
     """
-    result = {
+    result: dict[str, HeaderLineParserBase] = {
         "ALT": MappingHeaderLineParser(header.AltAlleleHeaderLine),
         "contig": MappingHeaderLineParser(header.ContigHeaderLine),
         "FILTER": MappingHeaderLineParser(header.FilterHeaderLine),
@@ -220,7 +228,9 @@ def build_header_parsers():
 
 
 # Field value converters
-_CONVERTERS = {
+_CONVERTERS: dict[
+    Literal["Integer", "Float", "Flag", "Character", "String"], Callable[[str], bool | int | float | str]
+] = {
     "Integer": int,
     "Float": float,
     "Flag": lambda x: True,
@@ -229,7 +239,9 @@ _CONVERTERS = {
 }
 
 
-def convert_field_value(type_, value):
+def convert_field_value(
+    type_: Literal["Integer", "Float", "Flag", "Character", "String"], value: str
+) -> bool | int | float | str | None:
     """Convert atomic field value according to the type"""
     if value == ".":
         return None
@@ -244,17 +256,19 @@ def convert_field_value(type_, value):
         except ValueError:
             warnings.warn(
                 ("{} cannot be converted to {}, keeping as string.").format(value, type_),
-                CannotConvertValue,
+                exceptions.CannotConvertValue,
             )
             return value
 
 
-def parse_field_value(field_info, value):
+def parse_field_value(
+    field_info: header.FieldInfo, value: str | bool
+) -> bool | int | float | str | list[bool | int | float | str | None] | None:
     """Parse ``value`` according to ``field_info``"""
-    if field_info.id == "FT":
-        return [x for x in value.split(";") if x != "."]
-    elif isinstance(value, bool) or field_info.type == "Flag":
+    if isinstance(value, bool) or field_info.type == "Flag":
         return True
+    elif field_info.id in ("FORMAT/FT", "FT"):
+        return [x for x in value.split(";") if x != "."]
     elif field_info.number == 1:
         return convert_field_value(field_info.type, value)
     else:
@@ -265,14 +279,15 @@ def parse_field_value(field_info, value):
 
 
 # Regular expression for break-end
-BREAKEND_PATTERN = re.compile("[\\[\\]]")
+BREAKEND_PATTERN = re.compile(r"[\[\]]")
 
 
-def parse_breakend(alt_str):
+def parse_breakend(alt_str: str) -> tuple[str, int, str, Literal["+", "-"], str, bool]:
     """Parse breakend and return tuple with results, parameters for BreakEnd
     constructor
     """
     arr = BREAKEND_PATTERN.split(alt_str)
+    assert isinstance(arr[1], str)
     mate_chrom, mate_pos = arr[1].split(":", 1)
     mate_pos = int(mate_pos)
     if mate_chrom[0] == "<":
@@ -280,9 +295,10 @@ def parse_breakend(alt_str):
         within_main_assembly = False
     else:
         within_main_assembly = True
-    FWD_REV = {True: record.FORWARD, False: record.REVERSE}
+    FWD_REV: dict[bool, Literal["+", "-"]] = {True: record.FORWARD, False: record.REVERSE}
     orientation = FWD_REV[alt_str[0] == "[" or alt_str[0] == "]"]
     mate_orientation = FWD_REV["[" in alt_str]
+    assert isinstance(arr[2], str) and isinstance(arr[0], str)
     if orientation == record.FORWARD:
         sequence = arr[2]
     else:
@@ -290,7 +306,7 @@ def parse_breakend(alt_str):
     return (mate_chrom, mate_pos, orientation, mate_orientation, sequence, within_main_assembly)
 
 
-def process_sub_grow(ref, alt_str):
+def process_sub_grow(ref: str, alt_str: str) -> record.Substitution:
     """Process substution where the string grows"""
     if len(alt_str) == 0:
         raise exceptions.InvalidRecordException("Invalid VCF, empty ALT")
@@ -303,7 +319,7 @@ def process_sub_grow(ref, alt_str):
         return record.Substitution(record.INDEL, alt_str)
 
 
-def process_sub_shrink(ref, alt_str):
+def process_sub_shrink(ref: str, alt_str: str) -> record.Substitution:
     """Process substution where the string shrink"""
     if len(ref) == 0:
         raise exceptions.InvalidRecordException("Invalid VCF, empty REF")
@@ -316,7 +332,7 @@ def process_sub_shrink(ref, alt_str):
         return record.Substitution(record.INDEL, alt_str)
 
 
-def process_sub(ref, alt_str):
+def process_sub(ref: str, alt_str: str) -> record.Substitution:
     """Process substitution"""
     if len(ref) == len(alt_str):
         if len(ref) == 1:
@@ -329,7 +345,7 @@ def process_sub(ref, alt_str):
         return process_sub_shrink(ref, alt_str)
 
 
-def process_alt(header, ref, alt_str):  # pylint: disable=W0613
+def process_alt(header: header.Header, ref: str, alt_str: str) -> record.AltRecord:
     """Process alternative value using Header in ``header``"""
     # By its nature, this function contains a large number of case distinctions
     if "]" in alt_str or "[" in alt_str:
@@ -352,7 +368,7 @@ class HeaderParser:
         #: Sub parsers to use for parsing the header lines
         self.sub_parsers = build_header_parsers()
 
-    def parse_line(self, line):
+    def parse_line(self, line: str) -> header.HeaderLine:
         """Parse VCF header ``line`` (trailing '\r\n' or '\n' is ignored)
 
         :param str line: ``str`` with line to parse
@@ -376,7 +392,12 @@ class HeaderParser:
 class RecordParser:
     """Helper class for parsing VCF records"""
 
-    def __init__(self, header, samples, record_checks=None):
+    def __init__(
+        self,
+        header: header.Header,
+        samples: header.SamplesInfos,
+        record_checks: Iterable[Literal["FORMAT", "INFO"]] | None = None,
+    ):
         #: Header with the meta information
         self.header = header
         #: SamplesInfos with sample information
@@ -389,7 +410,7 @@ class RecordParser:
         else:
             self.expected_fields = 8
         # Cache of FieldInfo objects by FORMAT string
-        self._format_cache = {}
+        self._format_cache: dict[str, list["header.FieldInfo"]] = {}
         # Cache of FILTER entries, also applied to FORMAT/FT
         self._filter_ids = set(self.header.filter_ids())
         # Helper for checking INFO fields
@@ -403,7 +424,7 @@ class RecordParser:
         else:
             self._format_checker = NoopFormatChecker()
 
-    def parse_line(self, line_str):
+    def parse_line(self, line_str: str) -> "record.Record | None":
         """Parse line from file (including trailing line break) and return
         resulting Record
         """
@@ -423,7 +444,7 @@ class RecordParser:
         # REF
         ref = arr[3]
         # ALT
-        alts = []
+        alts: list[record.AltRecord] = []
         if arr[4] != ".":
             for alt in arr[4].split(","):
                 alts.append(process_alt(self.header, ref, alt))
@@ -455,46 +476,54 @@ class RecordParser:
             calls = self._handle_calls(alts, format_, arr[8], arr)
         return record.Record(chrom, pos, ids, ref, alts, qual, filt, info, format_, calls)
 
-    def _handle_calls(self, alts, format_, format_str, arr):
+    def _handle_calls(
+        self, alts: list[record.AltRecord], format_: list[str], format_str: str, arr: list[str]
+    ) -> list["record.Call | record.UnparsedCall"]:
         """Handle FORMAT and calls columns, factored out of parse_line"""
         if format_str not in self._format_cache:
             self._format_cache[format_str] = list(map(self.header.get_format_field_info, format_))
         # per-sample calls
-        calls = []
+        calls: list["record.Call | record.UnparsedCall"] = []
         for sample, raw_data in zip(self.samples.names, arr[9:], strict=False):
             if self.samples.is_parsed(sample):
                 data = self._parse_calls_data(format_, self._format_cache[format_str], raw_data)
                 call = record.Call(sample, data)
                 self._format_checker.run(call, len(alts))
-                self._check_filters(call.data.get("FT"), "FORMAT/FT", call.sample)
+                ft_value = call.data.get("FT") or []
+                if not isinstance(ft_value, list):
+                    raise ValueError("FORMAT/FT field must be a list of strings but was {}".format(repr(ft_value)))
+                ft_value_ = cast(list[str], ft_value)
+                if not all(isinstance(x, str) for x in ft_value_):
+                    raise ValueError("FORMAT/FT field must be a list of strings but was {}".format(repr(ft_value_)))
+                self._check_filters(ft_value_, "FORMAT/FT", call.sample)
                 calls.append(call)
             else:
                 calls.append(record.UnparsedCall(sample, raw_data))
         return calls
 
-    def _check_filters(self, filt, source, sample=None):
+    def _check_filters(self, filt: list[str], source: str, sample: str | None = None):
         if not filt:
             return
         for f in filt:
             self._check_filter(f, source, sample)
 
-    def _check_filter(self, f, source, sample):
+    def _check_filter(self, f: str, source: str, sample: str | None):
         if f == "PASS":
             pass  # the PASS filter is implicitely defined
         elif f not in self._filter_ids:
             if source == "FILTER":
                 warnings.warn(
                     ("Filter not found in header: {}; problem in FILTER column").format(f),
-                    UnknownFilter,
+                    exceptions.UnknownFilter,
                 )
             else:
                 assert source == "FORMAT/FT" and sample
                 warnings.warn(
                     ("Filter not found in header: {}; problem in FORMAT/FT column of sample {}").format(f, sample),
-                    UnknownFilter,
+                    exceptions.UnknownFilter,
                 )
 
-    def _split_line(self, line_str):
+    def _split_line(self, line_str: str) -> list[str]:
         """Split line and check number of columns"""
         arr = line_str.rstrip().split("\t")
         if len(arr) != self.expected_fields:
@@ -505,9 +534,9 @@ class RecordParser:
             )
         return arr
 
-    def _parse_info(self, info_str, num_alts):
+    def _parse_info(self, info_str: str, num_alts: int) -> dict[str, Any]:
         """Parse INFO column from string"""
-        result = OrderedDict()
+        result: dict[str, Any] = {}
         if info_str == ".":
             return result
         # The standard is very nice to parsers, we can simply split at
@@ -524,13 +553,15 @@ class RecordParser:
         return result
 
     @classmethod
-    def _parse_calls_data(klass, format_, infos, gt_str):
+    def _parse_calls_data(
+        cls, format_: list[str], infos: list["header.FieldInfo"], gt_str: str
+    ) -> dict[str, bool | int | float | str | list[bool | int | float | str | None] | None]:
         """Parse genotype call information from arrays using format array
 
         :param list format: List of strings with format names
         :param gt_str arr: string with genotype information values
         """
-        data = OrderedDict()
+        data: dict[str, bool | int | float | str | list[bool | int | float | str | None] | None] = {}
         # The standard is very nice to parsers, we can simply split at
         # colon characters, although I (Manuel) don't know how strict
         # programs follow this
@@ -542,7 +573,7 @@ class RecordParser:
 class HeaderChecker:
     """Helper class for checking a VCF header"""
 
-    def run(self, header):
+    def run(self, header: header.Header) -> None:
         """Check the header
 
         Warnings will be printed using ``warnings`` while errors will raise
@@ -553,7 +584,7 @@ class HeaderChecker:
         """
         self._check_header_lines(header.lines)
 
-    def _check_header_lines(self, header_lines):
+    def _check_header_lines(self, header_lines: list[header.HeaderLine]) -> None:
         """Check header lines, in particular for starting file "##fileformat" """
         if not header_lines:
             raise exceptions.InvalidHeaderException("The VCF file did not contain any header lines!")
@@ -561,11 +592,11 @@ class HeaderChecker:
         if first.key != "fileformat":
             raise exceptions.InvalidHeaderException("The VCF file did not start with ##fileformat")
         if first.value not in SUPPORTED_VCF_VERSIONS:
-            warnings.warn("Unknown VCF version {}".format(first.value), UnknownVCFVersion)
+            warnings.warn("Unknown VCF version {}".format(first.value), exceptions.UnknownVCFVersion)
 
 
 @functools.lru_cache(maxsize=32)
-def binomial(n, k):
+def binomial(n: int, k: int):
     try:
         res = math.factorial(n) // math.factorial(k) // math.factorial(n - k)
     except ValueError:
@@ -573,24 +604,29 @@ def binomial(n, k):
     return res
 
 
-class NoopInfoChecker:
+class AbstractInfoChecker:
+    """Abstract base class for INFO field checkers"""
+
+    def run(self, key: str, value: str, num_alts: int) -> None:
+        """Run the checker"""
+        raise NotImplementedError
+
+
+class NoopInfoChecker(AbstractInfoChecker):
     """Helper class that performs no checks"""
 
-    def __init__(self):
-        pass
-
-    def run(self, key, value, num_alts):
+    def run(self, key: str, value: str, num_alts: int) -> None:
         pass
 
 
-class InfoChecker:
+class InfoChecker(AbstractInfoChecker):
     """Helper class for checking an INFO field"""
 
-    def __init__(self, header):
+    def __init__(self, header: header.Header):
         #: VCFHeader to use for checking
         self.header = header
 
-    def run(self, key, value, num_alts):
+    def run(self, key: str, value: str, num_alts: int) -> None:
         """Check value in INFO[key] of record
 
         Currently, only checks for consistent counts are implemented
@@ -608,30 +644,34 @@ class InfoChecker:
             "R": num_alts + 1,
             "G": binomial(num_alts + 1, 2),  # diploid only at the moment
         }
-        expected = TABLE.get(field_info.number, field_info.number)
+        expected = TABLE.get(str(field_info.number), field_info.number)
         if len(value) != expected:
             tpl = "Number of elements for INFO field {} is {} instead of {}"
             warnings.warn(tpl.format(key, len(value), field_info.number), exceptions.IncorrectListLength)
 
 
-class NoopFormatChecker:
+class AbstractNoopFormatChecker:
+    """Abstract base class for FORMAT field checkers"""
+
+    def run(self, call: "record.Call", num_alts: int) -> None:
+        raise NotImplementedError
+
+
+class NoopFormatChecker(AbstractNoopFormatChecker):
     """Helper class that performs no checks"""
 
-    def __init__(self):
-        pass
-
-    def run(self, call, num_alts):
+    def run(self, call: "record.Call", num_alts: int) -> None:
         pass
 
 
-class FormatChecker:
+class FormatChecker(AbstractNoopFormatChecker):
     """Helper class for checking a FORMAT field"""
 
-    def __init__(self, header):
+    def __init__(self, header: header.Header):
         #: VCFHeader to use for checking
         self.header = header
 
-    def run(self, call, num_alts):
+    def run(self, call: "record.Call", num_alts: int) -> None:
         """Check ``FORMAT`` of a record.Call
 
         Currently, only checks for consistent counts are implemented
@@ -639,7 +679,7 @@ class FormatChecker:
         for key, value in call.data.items():
             self._check_count(call, key, value, num_alts)
 
-    def _check_count(self, call, key, value, num_alts):
+    def _check_count(self, call: "record.Call", key: str, value: str, num_alts: int) -> None:
         field_info = self.header.get_format_field_info(key)
         if isinstance(value, list):
             return
@@ -650,7 +690,7 @@ class FormatChecker:
             "R": num_alts + 1,
             "G": binomial(num_alts + num_alleles, num_alleles),
         }
-        expected = TABLE.get(field_info.number, field_info.number)
+        expected = TABLE.get(str(field_info.number), field_info.number)
         if len(value) != expected:
             tpl = "Number of elements for FORMAT field {} is {} instead of {} (number specifier {})"
             warnings.warn(
@@ -669,11 +709,16 @@ class Parser:
         only, optional
     """
 
-    def __init__(self, stream, path=None, record_checks=None):
+    def __init__(
+        self,
+        stream: "io.TextIOWrapper",
+        path: pathlib.Path | str | None = None,
+        record_checks: Iterable[Literal["FORMAT", "INFO"]] | None = None,
+    ):
         self.stream = stream
-        self.path = path
+        self.path = None if path is None else str(path)
         #: checks to perform, can contain 'INFO' and 'FORMAT'
-        self.record_checks = tuple(record_checks or [])
+        self.record_checks = tuple(record_checks or []) or None
         #: header, once it has been read
         self.header = None
         # the currently read line
@@ -692,7 +737,7 @@ class Parser:
         self._line = self.stream.readline()
         return prev_line
 
-    def parse_header(self, parsed_samples=None):
+    def parse_header(self, parsed_samples: list[str] | None = None):
         """Read and parse :py:class:`vcfpy.header.Header` from file, set
         into ``self.header`` and return it
 
@@ -704,7 +749,7 @@ class Parser:
         """
         # parse header lines
         sub_parser = HeaderParser()
-        header_lines = []
+        header_lines: list[header.HeaderLine] = []
         while self._line and self._line.startswith("##"):
             header_lines.append(sub_parser.parse_line(self._line))
             self._read_next_line()
@@ -722,7 +767,7 @@ class Parser:
             raise exceptions.IncorrectVCFFormat('Expecting non-header line or EOF after "#CHROM" line')
         return self.header
 
-    def _handle_sample_line(self, parsed_samples=None):
+    def _handle_sample_line(self, parsed_samples: list[str] | None = None):
         """ "Check and interpret the "##CHROM" line and return samples"""
         if not self._line or not self._line.startswith("#CHROM"):
             raise exceptions.IncorrectVCFFormat('Missing line starting with "#CHROM"')
@@ -734,7 +779,7 @@ class Parser:
         if " " in line[:pos]:
             warnings.warn(
                 "Found space in #CHROM line, splitting at whitespace instead of tab; this VCF file is ill-formatted",
-                SpaceInChromLine,
+                exceptions.SpaceInChromLine,
             )
             arr = self._line.rstrip().split()
         else:
@@ -744,7 +789,7 @@ class Parser:
         return header.SamplesInfos(arr[len(REQUIRE_SAMPLE_HEADER) :], parsed_samples)
 
     @classmethod
-    def _check_samples_line(klass, arr):
+    def _check_samples_line(cls, arr: list[str]):
         """Peform additional check on samples line"""
         if len(arr) <= len(REQUIRE_NO_SAMPLE_HEADER):
             if tuple(arr) != REQUIRE_NO_SAMPLE_HEADER:
@@ -760,8 +805,10 @@ class Parser:
                 )
             )
 
-    def parse_line(self, line):
-        """Pare the given line without reading another one from the stream"""
+    def parse_line(self, line: str):
+        """Parse the given line without reading another one from the stream"""
+        if self._record_parser is None:
+            raise exceptions.InvalidRecordException("Cannot parse record before parsing header")
         return self._record_parser.parse_line(line)
 
     def parse_next_record(self):

@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
-"""Writing of VCF headers
-"""
+"""Writing of VCF headers"""
 
 import io
+import pathlib
 import textwrap
+from typing import cast
 
 import pytest
 
@@ -39,35 +40,40 @@ MEDIUM_HEADER = """
 
 
 @pytest.fixture(scope="function")
-def header_samples():
-    p = parser.Parser(stream=io.StringIO(MEDIUM_HEADER), path="<builtin>")
+def header_samples() -> tuple[header.Header, header.SamplesInfos]:
+    cast_stream = cast(io.TextIOWrapper, io.StringIO(MEDIUM_HEADER))
+    p = parser.Parser(stream=cast_stream, path="<builtin>")
     p.parse_header()
+    assert p.header is not None
+    assert p.samples is not None
     return (p.header, p.samples)
 
 
-def test_write_header(header_samples, tmpdir_factory):
-    path = tmpdir_factory.mktemp("write_header").join("out.vcf")
+def test_write_header(header_samples: tuple[header.Header, header.SamplesInfos], tmpdir: pathlib.Path):
+    path = tmpdir / "out.vcf"
     header, _ = header_samples
     w = writer.Writer.from_path(path, header)
     w.close()
-    RESULT = path.read()
-    EXPECTED = MEDIUM_HEADER
-    assert RESULT == EXPECTED
+    with path.open("rt") as f:
+        result = f.read()
+    expected = MEDIUM_HEADER
+    assert result == expected
 
 
-def test_write_header_no_samples(tmpdir_factory):
+def test_write_header_no_samples(tmpdir: pathlib.Path):
     # Create header to write out from scratch
     hdr = header.Header(lines=[header.HeaderLine("fileformat", "VCFv4.0")], samples=header.SamplesInfos([]))
     # Write out header
-    path = tmpdir_factory.mktemp("write_header").join("out.vcf")
+    path = tmpdir / "out.vcf"
     w = writer.Writer.from_path(path, hdr)
     w.close()
     # Compare result
-    RESULT = path.read()
-    EXPECTED = textwrap.dedent(
+    with path.open("rt") as f:
+        result = f.read()
+    expected = textwrap.dedent(
         r"""
     ##fileformat=VCFv4.0
     #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
     """
     ).lstrip()
-    assert RESULT == EXPECTED
+    assert result == expected

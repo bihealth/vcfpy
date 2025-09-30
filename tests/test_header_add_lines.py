@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
-"""Test adding header lines to headers
-"""
+"""Test adding header lines to headers"""
 
 import io
 
 import pytest
 
-import vcfpy
 from vcfpy import header, parser
 
 __author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"
@@ -62,16 +60,14 @@ def test_add_contig_line(vcf_header):
     line = header.ContigHeaderLine(
         "contig",
         VALUE,
-        vcfpy.OrderedDict(
-            [
-                ("ID", "20a"),
-                ("length", 62435964),
-                ("assembly", "B36"),
-                ("md5", "f126cdf8a6e0c7f379d618ff66beb2da"),
-                ("species", "Homo sapiens"),
-                ("taxonomy", "x"),
-            ]
-        ),
+        {
+            "ID": "20a",
+            "length": 62435964,
+            "assembly": "B36",
+            "md5": "f126cdf8a6e0c7f379d618ff66beb2da",
+            "species": "Homo sapiens",
+            "taxonomy": "x",
+        },
     )
     vcf_header.add_line(line)
 
@@ -98,16 +94,14 @@ def test_add_contig_line_shortcut(vcf_header):
     assert "20a" not in vcf_header._indices["contig"]
 
     # add header line
-    mapping = vcfpy.OrderedDict(
-        [
-            ("ID", "20a"),
-            ("length", 62435964),
-            ("assembly", "B36"),
-            ("md5", "f126cdf8a6e0c7f379d618ff66beb2da"),
-            ("species", "Homo sapiens"),
-            ("taxonomy", "x"),
-        ]
-    )
+    mapping = {
+        "ID": "20a",
+        "length": 62435964,
+        "assembly": "B36",
+        "md5": "f126cdf8a6e0c7f379d618ff66beb2da",
+        "species": "Homo sapiens",
+        "taxonomy": "x",
+    }
     vcf_header.add_contig_line(mapping)
 
     # check header after adding
@@ -136,9 +130,7 @@ def test_add_filter_line(vcf_header):
 
     # add header line
     VALUE = '<ID=q10a,Description="Quality below 10">'
-    line = header.FilterHeaderLine(
-        "FILTER", VALUE, vcfpy.OrderedDict([("ID", "q10a"), ("Description", "Quality below 10")])
-    )
+    line = header.FilterHeaderLine("FILTER", VALUE, {"ID": "q10a", "Description": "Quality below 10"})
     vcf_header.add_line(line)
 
     # check header after adding
@@ -159,7 +151,7 @@ def test_add_filter_line_shortcut(vcf_header):
     assert len(vcf_header.lines) == 18
 
     # add header line
-    mapping = vcfpy.OrderedDict([("ID", "q10a"), ("Description", "Quality below 10")])
+    mapping = {"ID": "q10a", "Description": "Quality below 10"}
     vcf_header.add_filter_line(mapping)
 
     # check header after adding
@@ -185,7 +177,7 @@ def test_add_format_line(vcf_header):
     line = header.FormatHeaderLine(
         "FORMAT",
         VALUE,
-        vcfpy.OrderedDict([("ID", "GTa"), ("Number", 1), ("Type", "String"), ("Description", "Genotype")]),
+        {"ID": "GTa", "Number": 1, "Type": "String", "Description": "Genotype"},
     )
     vcf_header.add_line(line)
 
@@ -209,7 +201,7 @@ def test_add_format_line_shortcut(vcf_header):
     assert len(vcf_header.lines) == 18
 
     # add header line
-    mapping = vcfpy.OrderedDict([("ID", "GTa"), ("Number", 1), ("Type", "String"), ("Description", "Genotype")])
+    mapping = {"ID": "GTa", "Number": 1, "Type": "String", "Description": "Genotype"}
     vcf_header.add_format_line(mapping)
 
     # check header after adding
@@ -237,7 +229,7 @@ def test_add_info_line(vcf_header):
     line = header.FormatHeaderLine(
         "INFO",
         VALUE,
-        vcfpy.OrderedDict([("ID", "DPa"), ("Number", 1), ("Type", "Integer"), ("Description", "Total Depth")]),
+        {"ID": "DPa", "Number": 1, "Type": "Integer", "Description": "Total Depth"},
     )
     vcf_header.add_line(line)
     assert len(vcf_header.lines) == 19
@@ -263,7 +255,7 @@ def test_add_info_line_shortcut(vcf_header):
 
     # add header line
     VALUE = '<ID=DPa,Number=1,Type=Integer,Description="Total Depth">'
-    mapping = vcfpy.OrderedDict([("ID", "DPa"), ("Number", 1), ("Type", "Integer"), ("Description", "Total Depth")])
+    mapping = {"ID": "DPa", "Number": 1, "Type": "Integer", "Description": "Total Depth"}
     vcf_header.add_info_line(mapping)
     assert len(vcf_header.lines) == 19
 

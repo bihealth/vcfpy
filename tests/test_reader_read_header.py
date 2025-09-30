@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Reading of VCF header from plain and bgzip-ed file
-"""
+"""Reading of VCF header from plain and bgzip-ed file"""
 
 import os
 import sys

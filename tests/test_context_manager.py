@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
-"""Tests for the Reader and Writer working as context managers
-"""
+"""Tests for the Reader and Writer working as context managers"""
 
 import io
 import os
+from typing import cast
 
 import pytest
 
-import vcfpy
 from vcfpy import parser, reader, record, writer
 
 __author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"
@@ -42,7 +41,8 @@ MEDIUM_HEADER = """
 
 @pytest.fixture(scope="function")
 def header_samples():
-    p = parser.Parser(stream=io.StringIO(MEDIUM_HEADER), path="<builtin>")
+    cast_stream = cast(io.TextIOWrapper, io.StringIO(MEDIUM_HEADER))
+    p = parser.Parser(stream=cast_stream, path="<builtin>")
     p.parse_header()
     return (p.header, p.samples)
 
@@ -82,7 +82,6 @@ def test_reader_fetch():
 
 
 def test_writer(header_samples, tmpdir_factory):
-    OD = vcfpy.OrderedDict
     # open temporary file and setup the Writer with header
     path = tmpdir_factory.mktemp("write_header").join("out.vcf")
     header, _ = header_samples
@@ -95,12 +94,12 @@ def test_writer(header_samples, tmpdir_factory):
         [record.Substitution(record.SNV, "T")],
         None,
         [],
-        OD(),
+        {},
         ["GT"],
         [
-            record.Call("NA00001", OD(GT="0/1")),
-            record.Call("NA00002", OD(GT="0/0")),
-            record.Call("NA00003", OD(GT="1/1")),
+            record.Call("NA00001", {"GT": "0/1"}),
+            record.Call("NA00002", {"GT": "0/0"}),
+            record.Call("NA00003", {"GT": "1/1"}),
         ],
     )
     # open writer

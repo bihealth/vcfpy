@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Test procesing of ALT column
-"""
+"""Test procesing of ALT column"""
 
 import pytest
 

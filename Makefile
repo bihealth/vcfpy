@@ -17,7 +17,7 @@ fix:
 .PHONY: check
 check:
 	uv run hatch run quality:check
-# 	uv run hatch run quality:typecheck
+	uv run hatch run quality:typecheck
 
 .PHONY: test
 test:

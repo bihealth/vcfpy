@@ -42,14 +42,15 @@ dev = [
     "Sphinx>=1.5.2",
     "alabaster>=0.7.9",
     "apipkg>=1.4",
-    "black ==22.3.0",
-    "coverage>=4.3.4",
-    "docutils>=0.13.1",
+    "black ==25.9.0",
+    "coverage>=7.10.7",
+    "docutils>=0.22.2",
     "execnet>=1.4.1",
     "flake8>=3.6.0",
-    "hatch~=1.13.0",
+    "hatch~=1.14.2",
     "imagesize>=0.7.1",
     "py>=1.4.32",
+    "pyright",
     "pytest-cache>=1.0",
     "pytest-cov",
     "pytest-cov>=2.4.0",
@@ -57,7 +58,7 @@ dev = [
     "pytest>=3.0.6",
     "pytz>=2016.10",
     "requests>=2.13.0",
-    "ruff~=0.8.2",
+    "ruff~=0.13.2",
     "six>=1.10.0",
     "snowballstemmer>=1.2.1",
     "termcolor>=1.1.0",
@@ -71,20 +72,23 @@ feature = [
 
 [tool.hatch.envs.quality.scripts]
 check = [
-  "black --check --diff --preview vcfpy tests",
-  "ruff check vcfpy tests",
+  "black --check --diff --preview src tests",
+  "ruff check src tests",
 ]
 format = [
-  "black --preview vcfpy tests",
-  "ruff check --fix --unsafe-fixes vcfpy tests",
+  "black src tests",
+  "ruff check --fix --unsafe-fixes src tests",
   "check",
 ]
-# typecheck = [
-#   "pyright vcfpy",
-# ]
+typecheck = [
+  """
+  pyright --pythonpath="$(uv run --active hatch run quality:python -c 'import sys; print(sys.executable)')" \
+    {args:src/ tests/}
+  """
+]
 
 [tool.pyright]
-include = ["vcfpy"]
+include = ["src/vcfpy"]
 exclude = [
     "**/node_modules",
     "**/__pycache__",
@@ -102,7 +106,7 @@ reportOptionalMemberAccess = false
 reportArgumentType = false
 reportAttributeAccessIssue = false
 
-pythonVersion = "3.11"
+pythonVersion = "3.10"
 pythonPlatform = "Linux"
 
 [tool.ruff]
@@ -131,7 +135,7 @@ lint.select = [
 line-length = 120
 
 [tool.ruff.lint.isort]
-known-first-party = ["vcfpy"]
+known-first-party = ["src/vcfpy"]
 
 [tool.hatch.envs.tests]
 installer = "uv"
@@ -140,7 +144,7 @@ feature = [
 ]
 
 [tool.hatch.envs.tests.scripts]
-run = "pytest --cov=vcfpy --cov-report=term-missing tests/ --durations 0 -s {args:tests}"
+run = "pytest --cov=src/vcfpy --cov-report=term-missing tests/ --durations 5 -s {args:tests}"
 
 [tool.hatch.envs.build]
 installer = "uv"

@@ -26,7 +26,9 @@ Shamelessly taken from Biopython
 
 import codecs
 import struct
+import typing
 import zlib
+from typing import Iterable
 
 # For Python 2 can just use: _bgzf_magic = '\x1f\x8b\x08\x04'
 # but need to use bytes on Python 3
@@ -38,7 +40,7 @@ _bgzf_eof = (
 _bytes_BC = b"BC"
 
 
-def make_virtual_offset(block_start_offset, within_block_offset):
+def make_virtual_offset(block_start_offset: int, within_block_offset: int) -> int:
     """Compute a BGZF virtual offset from block start and within block offsets.
     The BAM indexing scheme records read positions using a 64 bit
     'virtual offset', comprising in C terms:
@@ -74,31 +76,42 @@ def make_virtual_offset(block_start_offset, within_block_offset):
     ...
     ValueError: Require 0 <= block_start_offset < 2**48, got 281474976710656
     """
-    if within_block_offset < 0 or within_block_offset >= 65536:
+    if within_block_offset < 0 or within_block_offset >= 65536:  # pragma: no cover
         raise ValueError("Require 0 <= within_block_offset < 2**16, got %i" % within_block_offset)
-    if block_start_offset < 0 or block_start_offset >= 281474976710656:
+    if block_start_offset < 0 or block_start_offset >= 281474976710656:  # pragma: no cover
         raise ValueError("Require 0 <= block_start_offset < 2**48, got %i" % block_start_offset)
     return (block_start_offset << 16) | within_block_offset
 
 
-class BgzfWriter(object):
-    def __init__(self, filename=None, mode="w", fileobj=None, compresslevel=6):
+class BgzfWriter(typing.IO[str]):
+    def __init__(
+        self,
+        filename: str | None = None,
+        mode: str = "w",
+        fileobj: typing.IO[bytes] | None = None,
+        compresslevel: int = 6,
+    ):
         if fileobj:
             assert filename is None
             handle = fileobj
         else:
-            if "w" not in mode.lower() and "a" not in mode.lower():
+            if "w" not in mode.lower() and "a" not in mode.lower():  # pragma: no cover
                 raise ValueError("Must use write or append mode, not %r" % mode)
-            if "a" in mode.lower():
+            if filename is None:  # pragma: no cover
+                raise ValueError("Must give a filename if not passing a file handle")
+            if "a" in mode.lower():  # pragma: no cover
                 handle = open(filename, "ab")
             else:
                 handle = open(filename, "wb")
-        self._text = "b" not in mode.lower()
-        self._handle = handle
-        self._buffer = b""
-        self.compresslevel = compresslevel
+        self._text: bool = "b" not in mode.lower()
+        self._handle: typing.IO[bytes] = handle
+        self._buffer: bytes = b""
+        self.compresslevel: int = compresslevel
+        self._filename = filename
+        self._mode = mode
+        self._closed = False
 
-    def _write_block(self, block):
+    def _write_block(self, block: bytes):
         # print("Saving %i bytes" % len(block))
         assert len(block) <= 65536
         # Giving a negative window bits means no gzip/zlib headers,
@@ -109,7 +122,7 @@ class BgzfWriter(object):
         assert len(compressed) < 65536, "TODO - Didn't compress enough, try less data in this block"
         crc = zlib.crc32(block)
         # Should cope with a mix of Python platforms...
-        if crc < 0:
+        if crc < 0:  # pragma: no cover
             crc = struct.pack("<i", crc)
         else:
             crc = struct.pack("<I", crc)
@@ -127,61 +140,126 @@ class BgzfWriter(object):
         data = _bgzf_header + bsize + compressed + crc + uncompressed_length
         self._handle.write(data)
 
-    def write(self, data):
-        # TODO - Check bytes vs unicode
-        if isinstance(data, str):
-            data = codecs.latin_1_encode(data)[0]
+    def write(self, data: str) -> int:
+        """Write string data to the BGZF file.
+
+        Args:
+            data: String data to write
+
+        Returns:
+            Number of characters written
+        """
+        if self._closed:  # pragma: no cover
+            raise ValueError("I/O operation on closed file.")
+
+        original_len = len(data)
+        # Convert string to bytes using latin-1 encoding
+        data_bytes = codecs.latin_1_encode(data)[0]
+
         # block_size = 2**16 = 65536
-        data_len = len(data)
+        data_len = len(data_bytes)
         if len(self._buffer) + data_len < 65536:
             # print("Cached %r" % data)
-            self._buffer += data
-            return
-        else:
+            self._buffer += data_bytes
+        else:  # pragma: no cover
             # print("Got %r, writing out some data..." % data)
-            self._buffer += data
+            self._buffer += data_bytes
             while len(self._buffer) >= 65536:
                 self._write_block(self._buffer[:65536])
                 self._buffer = self._buffer[65536:]
 
+        return original_len
+
     def flush(self):
-        while len(self._buffer) >= 65536:
+        while len(self._buffer) >= 65536:  # pragma: no cover
             self._write_block(self._buffer[:65535])
             self._buffer = self._buffer[65535:]
         self._write_block(self._buffer)
         self._buffer = b""
         self._handle.flush()
 
-    def close(self):
+    def close(self) -> None:
         """Flush data, write 28 bytes BGZF EOF marker, and close BGZF file.
         samtools will look for a magic EOF marker, just a 28 byte empty BGZF
         block, and if it is missing warns the BAM file may be truncated. In
         addition to samtools writing this block, so too does bgzip - so this
         implementation does too.
         """
+        if self._closed:  # pragma: no cover
+            return
+
         if self._buffer:
             self.flush()
         self._handle.write(_bgzf_eof)
         self._handle.flush()
         self._handle.close()
+        self._closed = True
 
-    def tell(self):
+    def tell(self) -> int:  # pragma: no cover
         """Returns a BGZF 64-bit virtual offset."""
         return make_virtual_offset(self._handle.tell(), len(self._buffer))
 
-    def seekable(self):
+    def seekable(self) -> bool:  # pragma: no cover
         # Not seekable, but we do support tell...
         return False
 
-    @classmethod
-    def isatty(klass):
+    def isatty(self) -> bool:  # pragma: no cover
+        """Return False as BGZF files are not TTY."""
         return False
 
-    def fileno(self):
+    @property
+    def closed(self) -> bool:  # pragma: no cover
+        """Return True if the file is closed."""
+        return self._closed
+
+    @property
+    def mode(self) -> str:  # pragma: no cover
+        """Return the file mode."""
+        return self._mode
+
+    @property
+    def name(self) -> str:  # pragma: no cover
+        """Return the file name."""
+        return self._filename or ""
+
+    def readable(self) -> bool:  # pragma: no cover
+        """Return False as this is a write-only file."""
+        return False
+
+    def writable(self) -> bool:  # pragma: no cover
+        """Return True as this is a writable file."""
+        return not self._closed
+
+    def read(self, size: int = -1) -> str:  # pragma: no cover
+        """Read operation not supported for write-only BGZF file."""
+        raise OSError("not readable")
+
+    def readline(self, size: int = -1) -> str:  # pragma: no cover
+        """Readline operation not supported for write-only BGZF file."""
+        raise OSError("not readable")
+
+    def readlines(self, hint: int = -1) -> list[str]:  # pragma: no cover
+        """Readlines operation not supported for write-only BGZF file."""
+        raise OSError("not readable")
+
+    def seek(self, offset: int, whence: int = 0) -> int:  # pragma: no cover
+        """Seek operation not supported for BGZF files."""
+        raise OSError("seek not supported on BGZF files")
+
+    def truncate(self, size: int | None = None) -> int:  # pragma: no cover
+        """Truncate operation not supported for BGZF files."""
+        raise OSError("truncate not supported on BGZF files")
+
+    def writelines(self, lines: Iterable[str]) -> None:
+        """Write a list of strings to the file."""
+        for line in lines:
+            self.write(line)
+
+    def fileno(self) -> int:
         return self._handle.fileno()
 
-    def __enter__(self):
+    def __enter__(self) -> "BgzfWriter":
         return self
 
-    def __exit__(self, type_, value, traceback):
+    def __exit__(self, type_: type[BaseException] | None, value: BaseException | None, traceback: typing.Any) -> None:
         self.close()

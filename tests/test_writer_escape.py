@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Test escaping on writing VCF records
-"""
+"""Test escaping on writing VCF records"""
 
 from vcfpy import header, writer
 
@@ -8,39 +7,39 @@ from vcfpy import header, writer
 
 
 def test_format_atomic_with_escape_info():
-    EXPECTED = "%3B%3D%25%2C%0D%0A%09"
-    RESULT = writer.format_atomic(";=%,\r\n\t", "INFO")
-    assert EXPECTED == RESULT
+    expected = "%3B%3D%25%2C%0D%0A%09"
+    result = writer.format_atomic(";=%,\r\n\t", "INFO")
+    assert expected == result
 
 
 def test_format_atomic_with_escape_format():
-    EXPECTED = "%3A%3D%25%2C%0D%0A%09"
-    RESULT = writer.format_atomic(":=%,\r\n\t", "FORMAT")
-    assert EXPECTED == RESULT
+    expected = "%3A%3D%25%2C%0D%0A%09"
+    result = writer.format_atomic(":=%,\r\n\t", "FORMAT")
+    assert expected == result
 
 
 def test_format_atomic_without_escape_info():
-    EXPECTED = "This is a legal string:"
-    RESULT = writer.format_atomic("This is a legal string:", "INFO")
-    assert EXPECTED == RESULT
+    expected = "This is a legal string:"
+    result = writer.format_atomic("This is a legal string:", "INFO")
+    assert expected == result
 
 
 def test_format_atomic_without_escape_format():
-    EXPECTED = "This is a legal string;"
-    RESULT = writer.format_atomic("This is a legal string;", "FORMAT")
-    assert EXPECTED == RESULT
+    expected = "This is a legal string;"
+    result = writer.format_atomic("This is a legal string;", "FORMAT")
+    assert expected == result
 
 
 # vcfpy.writer.format_value() -------------------------------------------------
 
 
 def test_format_value_with_escape():
-    EXPECTED = "%3A%3B%3D%25%2C%0D%0A%09,%25"
-    RESULT = writer.format_value(header.FieldInfo("String", 2), (":;=%,\r\n\t", "%"), "INFO")
-    assert EXPECTED == RESULT
+    expected = "%3A%3B%3D%25%2C%0D%0A%09,%25"
+    result = writer.format_value(header.FieldInfo("String", 2), [":;=%,\r\n\t", "%"], "INFO")
+    assert expected == result
 
 
 def test_format_value_without_escape():
-    EXPECTED = "This is a legal string,me too"
-    RESULT = writer.format_value(header.FieldInfo("String", 2), ("This is a legal string", "me too"), "INFO")
-    assert EXPECTED == RESULT
+    expected = "This is a legal string,me too"
+    result = writer.format_value(header.FieldInfo("String", 2), ["This is a legal string", "me too"], "INFO")
+    assert expected == result

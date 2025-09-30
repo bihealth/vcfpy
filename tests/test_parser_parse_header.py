@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Test parsing of full VCF header
-"""
+"""Test parsing of full VCF header"""
 
 import io
 import sys

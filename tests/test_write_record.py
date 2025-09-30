@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-"""Writing of VCF records
-"""
+"""Writing of VCF records"""
 
 import io
+import pathlib
 import textwrap
+from typing import cast
 
 import pytest
 
-import vcfpy
 from vcfpy import header, parser, record, writer
 
 __author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"
@@ -40,16 +40,18 @@ MEDIUM_HEADER = """
 
 
 @pytest.fixture(scope="function")
-def header_samples():
-    p = parser.Parser(stream=io.StringIO(MEDIUM_HEADER), path="<builtin>")
+def header_samples() -> tuple[header.Header, header.SamplesInfos]:
+    cast_stream = cast(io.TextIOWrapper, io.StringIO(MEDIUM_HEADER))
+    p = parser.Parser(stream=cast_stream, path="<builtin>")
     p.parse_header()
+    assert p.header is not None
+    assert p.samples is not None
     return (p.header, p.samples)
 
 
-def test_write_minimal_record(header_samples, tmpdir_factory):
-    OD = vcfpy.OrderedDict
+def test_write_minimal_record(header_samples: tuple[header.Header, header.SamplesInfos], tmpdir: pathlib.Path):
     # open temporary file and setup the Writer with header
-    path = tmpdir_factory.mktemp("write_header").join("out.vcf")
+    path = tmpdir / "out.vcf"
     header, _ = header_samples
     w = writer.Writer.from_path(path, header)
     # construct record to write out from scratch
@@ -61,28 +63,28 @@ def test_write_minimal_record(header_samples, tmpdir_factory):
         [record.Substitution(record.SNV, "T")],
         None,
         [],
-        OD(),
+        {},
         ["GT"],
         [
-            record.Call("NA00001", OD(GT="0/1")),
-            record.Call("NA00002", OD(GT="0/0")),
-            record.Call("NA00003", OD(GT="1/1")),
+            record.Call("NA00001", {"GT": "0/1"}),
+            record.Call("NA00002", {"GT": "0/0"}),
+            record.Call("NA00003", {"GT": "1/1"}),
         ],
     )
     # write out the record, close file to ensure flushing to disk
     w.write_record(r)
     w.close()
     # compare actual result with expected
-    RESULT = path.read()
-    LINE = "20\t100\t.\tC\tT\t.\t.\t.\tGT\t0/1\t0/0\t1/1\n"
-    EXPECTED = MEDIUM_HEADER + LINE
-    assert EXPECTED == RESULT
+    with path.open("rt") as f:
+        result = f.read()
+    line = "20\t100\t.\tC\tT\t.\t.\t.\tGT\t0/1\t0/0\t1/1\n"
+    expected = MEDIUM_HEADER + line
+    assert expected == result
 
 
-def test_write_annotated_record(header_samples, tmpdir_factory):
-    OD = vcfpy.OrderedDict
+def test_write_annotated_record(header_samples: tuple[header.Header, header.SamplesInfos], tmpdir: pathlib.Path):
     # open temporary file and setup the Writer with header
-    path = tmpdir_factory.mktemp("write_annotated_record").join("out.vcf")
+    path = tmpdir / "out.vcf"
     header, _ = header_samples
     w = writer.Writer.from_path(path, header)
     # construct record to write out from scratch
@@ -94,28 +96,28 @@ def test_write_annotated_record(header_samples, tmpdir_factory):
         [record.Substitution(record.SNV, "T"), record.Substitution(record.SNV, "G")],
         50,
         ["PASS"],
-        OD([("DP", 93), ("AF", [0.3, 0.2]), ("DB", True)]),
+        {"DP": 93, "AF": [0.3, 0.2], "DB": True},
         ["GT", "DP", "GQ", "HQ"],
         [
-            record.Call("NA00001", OD(GT="0/1", DP=30, GQ=40, HQ=[1, 2])),
-            record.Call("NA00002", OD(GT="0/2", DP=31, GQ=41, HQ=[3, 4])),
-            record.Call("NA00003", OD(GT="1/2", DP=32, GQ=42, HQ=[5, 6])),
+            record.Call("NA00001", {"GT": "0/1", "DP": 30, "GQ": 40, "HQ": [1, 2]}),
+            record.Call("NA00002", {"GT": "0/2", "DP": 31, "GQ": 41, "HQ": [3, 4]}),
+            record.Call("NA00003", {"GT": "1/2", "DP": 32, "GQ": 42, "HQ": [5, 6]}),
         ],
     )
     # write out the record, close file to ensure flushing to disk
     w.write_record(r)
     w.close()
     # compare actual result with expected
-    RESULT = path.read()
-    LINE = "20\t100\trs333;CSN42\tC\tT,G\t50\tPASS\tDP=93;AF=0.3,0.2;DB\tGT:DP:GQ:HQ\t0/1:30:40:1,2\t0/2:31:41:3,4\t1/2:32:42:5,6\n"
-    EXPECTED = MEDIUM_HEADER + LINE
-    assert EXPECTED == RESULT
+    with path.open("r") as f:
+        result = f.read()
+    line = "20\t100\trs333;CSN42\tC\tT,G\t50\tPASS\tDP=93;AF=0.3,0.2;DB\tGT:DP:GQ:HQ\t0/1:30:40:1,2\t0/2:31:41:3,4\t1/2:32:42:5,6\n"
+    expected = MEDIUM_HEADER + line
+    assert expected == result
 
 
-def test_write_record_with_escaping(header_samples, tmpdir_factory):
-    OD = vcfpy.OrderedDict
+def test_write_record_with_escaping(header_samples: tuple[header.Header, header.SamplesInfos], tmpdir: pathlib.Path):
     # open temporary file and setup the Writer with header
-    path = tmpdir_factory.mktemp("write_header").join("out.vcf")
+    path = tmpdir / "out.vcf"
     header, _ = header_samples
     w = writer.Writer.from_path(path, header)
     # construct record to write out from scratch
@@ -127,42 +129,43 @@ def test_write_record_with_escaping(header_samples, tmpdir_factory):
         [record.Substitution(record.SNV, "T")],
         None,
         [],
-        OD([("ANNO", ["Here,are%some chars", "%25"])]),
+        {"ANNO": ["Here,are%some chars", "%25"]},
         ["GT", "FT"],
         [
-            record.Call("NA00001", OD(GT="0/1", FT=["%25", "FOO"])),
-            record.Call("NA00002", OD(GT="0/0", FT=[])),
-            record.Call("NA00003", OD(GT="1/1", FT=[])),
+            record.Call("NA00001", {"GT": "0/1", "FT": ["%25", "FOO"]}),
+            record.Call("NA00002", {"GT": "0/0", "FT": []}),
+            record.Call("NA00003", {"GT": "1/1", "FT": []}),
         ],
     )
     # write out the record, close file to ensure flushing to disk
     w.write_record(r)
     w.close()
     # compare actual result with expected
-    RESULT = path.read()
-    LINE = "20\t100\t.\tC\tT\t.\t.\tANNO=Here%2Care%25some chars,%2525\tGT:FT\t0/1:%2525;FOO\t0/0:.\t1/1:.\n"
-    EXPECTED = MEDIUM_HEADER + LINE
-    assert EXPECTED == RESULT
+    with path.open("r") as f:
+        result = f.read()
+    line = "20\t100\t.\tC\tT\t.\t.\tANNO=Here%2Care%25some chars,%2525\tGT:FT\t0/1:%2525;FOO\t0/0:.\t1/1:.\n"
+    expected = MEDIUM_HEADER + line
+    assert expected == result
 
 
-def test_write_record_no_samples(tmpdir_factory):
-    OD = vcfpy.OrderedDict
+def test_write_record_no_samples(tmpdir: pathlib.Path):
     # Create header without samples
     hdr = header.Header(lines=[header.HeaderLine("fileformat", "VCFv4.0")], samples=header.SamplesInfos([]))
     # construct record to write out from scratch
-    r = record.Record("20", 100, [], "C", [record.Substitution(record.SNV, "T")], None, [], OD())
+    r = record.Record("20", 100, [], "C", [record.Substitution(record.SNV, "T")], None, [], {})
     # Write out header and record
-    path = tmpdir_factory.mktemp("write_header").join("out.vcf")
+    path = tmpdir / "out.vcf"
     w = writer.Writer.from_path(path, hdr)
     w.write_record(r)
     w.close()
     # Compare result
-    RESULT = path.read()
-    EXPECTED = textwrap.dedent(
+    with path.open("rt") as f:
+        result = f.read()
+    expected = textwrap.dedent(
         """
     ##fileformat=VCFv4.0
     #CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO
     20\t100\t.\tC\tT\t.\t.\t.
     """
     ).lstrip()
-    assert RESULT == EXPECTED
+    assert result == expected

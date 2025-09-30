@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Exceptions for the vcfpy module
-"""
+"""Exceptions for the vcfpy module"""
 
 __author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"
 
@@ -75,3 +74,7 @@ class SpaceInChromLine(VCFPyWarning):
 
 class CannotConvertValue(VCFPyWarning):
     """Cannot convert value."""
+
+
+class CannotModifyUnparsedCallWarning(VCFPyWarning):
+    """Cannot modify unparsed call instance."""

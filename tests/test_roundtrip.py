@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Roundtrip-test: read in VCF file and write out again
-"""
+"""Roundtrip-test: read in VCF file and write out again"""
 
 import os
 

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-"""Test parsing of full VCF record lines
-"""
+"""Test parsing of full VCF record lines"""
 
 import io
 import sys
+import warnings
 
 import pytest
 
@@ -118,51 +118,54 @@ def test_parse_record_with_escaping():
 
 def test_parse_record_with_filter_warning():
     # Setup parser with stock header and lines to parse
-    LINES = "20\t1\t.\tC\tG\t.\tREX\t.\tGT:FT\t0/1:.\t0/2:BAR\t.:.\n"
+    LINES = "20\t1\t.\tC\tG\t.\tBAZ\t.\tGT:FT\t0/1:.\t0/2:BAR\t.:.\n"
     p = vcf_parser(LINES)
     p.parse_header()
     # Perform the actual test
     if sys.version_info < (3, 6):
         EXPECTED = (
-            "Record('20', 1, [], 'C', [Substitution(type_='SNV', value='G')], None, ['REX'], OrderedDict(), "
+            "Record('20', 1, [], 'C', [Substitution(type_='SNV', value='G')], None, ['BAZ'], OrderedDict(), "
             "['GT', 'FT'], [Call('NA00001', OrderedDict([('GT', '0/1'), ('FT', [])])),"
             " Call('NA00002', OrderedDict([('GT', '0/2'), ('FT', ['BAR'])])),"
             " Call('NA00003', OrderedDict([('GT', None), ('FT', [])]))])"
         )
     else:
         EXPECTED = (
-            "Record('20', 1, [], 'C', [Substitution(type_='SNV', value='G')], None, ['REX'], {}, "
+            "Record('20', 1, [], 'C', [Substitution(type_='SNV', value='G')], None, ['BAZ'], {}, "
             "['GT', 'FT'], [Call('NA00001', {'GT': '0/1', 'FT': []}),"
             " Call('NA00002', {'GT': '0/2', 'FT': ['BAR']}), Call('NA00003', {'GT': None, 'FT': []})])"
         )
-    RESULT = p.parse_next_record()
+    with pytest.warns((exceptions.UnknownFilter,)):
+        RESULT = p.parse_next_record()
     assert str(RESULT) == EXPECTED
 
 
-def test_parse_record_with_filter_no_warning():
+def test_parse_record_with_filter_no_warning(recwarn: pytest.WarningsRecorder):
     # Setup parser with stock header and lines to parse
-    LINES = "20\t1\t.\tC\tG\t.\tREX\t.\tGT:FT\t0/1:.\t0/2:FOO;BAZ\t.:.\n"
+    LINES = "20\t1\t.\tC\tG\t.\tFOO\t.\tGT:FT\t0/1:.\t0/2:FOO;BAZ\t.:.\n"
     p = vcf_parser(LINES)
     p.parse_header()
     # Perform the actual test
     if sys.version_info < (3, 6):
         EXPECTED = (
-            "Record('20', 1, [], 'C', [Substitution(type_='SNV', value='G')], None, ['REX'], OrderedDict(), "
+            "Record('20', 1, [], 'C', [Substitution(type_='SNV', value='G')], None, ['FOO'], OrderedDict(), "
             "['GT', 'FT'], [Call('NA00001', OrderedDict([('GT', '0/1'), ('FT', [])])),"
-            " Call('NA00002', OrderedDict([('GT', '0/2'), ('FT', ['FOO', 'BAZ'])])),"
+            " Call('NA00002', OrderedDict([('GT', '0/2'), ('FT', ['FOO', 'FOO'])])),"
             " Call('NA00003', OrderedDict([('GT', None), ('FT', [])]))])"
         )
     else:
         EXPECTED = (
-            "Record('20', 1, [], 'C', [Substitution(type_='SNV', value='G')], None, ['REX'], {}, "
+            "Record('20', 1, [], 'C', [Substitution(type_='SNV', value='G')], None, ['FOO'], {}, "
             "['GT', 'FT'], [Call('NA00001', {'GT': '0/1', 'FT': []}),"
             " Call('NA00002', {'GT': '0/2', 'FT': ['FOO', 'BAZ']}), Call('NA00003', {'GT': None, 'FT': []})])"
         )
-    RESULT = p.parse_next_record()
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        RESULT = p.parse_next_record()
     assert str(RESULT) == EXPECTED
 
 
-def test_missing_pass(recwarn):
+def test_missing_pass(recwarn: pytest.WarningsRecorder):
     """Test parsing VCF file with missing ``PASS`` definition in header."""
     # Setup parser with stock header and lines to parse
     LINES = "20\t1\t.\tC\tG\t.\tPASS\t.\tGT\t0/1\t0/2\t.\n"
@@ -199,8 +202,8 @@ def test_parse_line_invalid_number_of_fields():
 
 
 def test_parse_record_with_gt_data():
-    LINES = "20\t1\t.\tC\tG\t.\t.\tAA=G\tGT\t0|1\t1/1\t.\n"
-    p = parser.Parser(io.StringIO(SMALL_HEADER + LINES))
+    LINES = "20\t1\t.\tC\tG\t.\t.\t.\tGT\t0|1\t1/1\t.\n"
+    p = parser.Parser(io.StringIO(MEDIUM_HEADER + LINES))
     p.parse_header()
     record = p.parse_next_record()
     assert record.calls[0].data["GT"] == "0|1"
