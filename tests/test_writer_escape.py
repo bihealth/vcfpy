@@ -43,3 +43,10 @@ def test_format_value_without_escape():
     expected = "This is a legal string,me too"
     result = writer.format_value(header.FieldInfo("String", 2), ["This is a legal string", "me too"], "INFO")
     assert expected == result
+
+
+def test_format_value_empty_list():
+    """Test format_value with an empty list for a field with number != 1"""
+    expected = "."
+    result = writer.format_value(header.FieldInfo("String", 2), [], "INFO")
+    assert expected == result

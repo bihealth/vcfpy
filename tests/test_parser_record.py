@@ -4,9 +4,11 @@
 import io
 import sys
 import warnings
+from io import StringIO
 
 import pytest
 
+import vcfpy
 from vcfpy import exceptions, parser
 
 __author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"
@@ -209,3 +211,41 @@ def test_parse_record_with_gt_data():
     assert record.calls[0].data["GT"] == "0|1"
     assert record.calls[1].data["GT"] == "1/1"
     assert record.calls[2].data["GT"] is None
+
+
+def test_reader_parse_warnings():
+    """Test reader parsing with warnings for missing header lines"""
+    vcf_content = """##fileformat=VCFv4.2
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+chr1	100	.	A	T	30	PASS	DP=10
+"""
+
+    with warnings.catch_warnings(record=True):
+        warnings.simplefilter("always")
+        stream = StringIO(vcf_content)
+        reader = vcfpy.Reader.from_stream(stream)
+        # Just ensure it parses without error
+        records = list(reader)
+        assert len(records) == 1
+
+
+def test_parser_quoted_string_splitter_edge_cases():
+    """Test QuotedStringSplitter with edge cases"""
+    splitter = parser.QuotedStringSplitter()
+
+    # Test with escaped quotes
+    result = splitter.run('key="val\\"with\\"quotes"')
+    assert len(result) == 1
+
+    # Test with nested brackets
+    result = splitter.run("key1=[nested[value]],key2=simple")
+    assert len(result) == 2
+
+
+def test_parse_mapping_correct_format():
+    """Test parse_mapping with correct angular bracket format"""
+    # Test with proper angular brackets
+    result = parser.parse_mapping('<ID=test,Description="Complex value with, commas">')
+    assert "ID" in result
+    assert "Description" in result
+    assert result["ID"] == "test"

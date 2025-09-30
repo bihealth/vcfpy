@@ -169,3 +169,27 @@ def test_write_record_no_samples(tmpdir: pathlib.Path):
     """
     ).lstrip()
     assert result == expected
+
+
+def test_write_record_no_header_samples(tmpdir: pathlib.Path):
+    """Test writing a record when header.samples is None"""
+    # Create header with samples=None
+    hdr = header.Header(lines=[header.HeaderLine("fileformat", "VCFv4.0")], samples=None)
+    # construct record to write out from scratch
+    r = record.Record("20", 100, [], "C", [record.Substitution(record.SNV, "T")], None, [], {})
+    # Write out header and record
+    path = tmpdir / "out.vcf"
+    w = writer.Writer.from_path(path, hdr)
+    w.write_record(r)
+    w.close()
+    # Compare result
+    with path.open("rt") as f:
+        result = f.read()
+    expected = textwrap.dedent(
+        """
+    ##fileformat=VCFv4.0
+    #CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO
+    20\t100\t.\tC\tT\t.\t.\t.
+    """
+    ).lstrip()
+    assert result == expected

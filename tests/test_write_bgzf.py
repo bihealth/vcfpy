@@ -4,11 +4,14 @@
 import codecs
 import gzip
 import io
+import os
+import pathlib
 from typing import cast
 
 import pytest
 
 from vcfpy import parser, record, writer
+from vcfpy.bgzf import BgzfWriter
 
 __author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"
 
@@ -149,3 +152,20 @@ def test_write_minimal_record_writer_from_stream_use_bgzf(header_samples, tmpdir
     # check the resulting record
     LINE = "20\t100\t.\tC\tT\t.\t.\t.\tGT\t0/1\t0/0\t1/1\n"
     check_file(path, LINE)
+
+
+def test_bgzf_edge_case(tmpdir: pathlib.Path):
+    """Test BGZF edge case for coverage"""
+    outputf = tmpdir / "out.vcf.bgzf"
+    with outputf.open(mode="wb") as f:
+        try:
+            writer = BgzfWriter(f.name)
+            # Test writing empty content
+            writer.write("")
+            writer.close()
+
+            # Test file size
+            assert os.path.getsize(f.name) > 0
+        finally:
+            if os.path.exists(f.name):
+                os.unlink(f.name)

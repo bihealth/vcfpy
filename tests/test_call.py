@@ -26,9 +26,6 @@ def build_rec(calls: list[record.Call] | None = None, format_extras: list[str] |
     )
 
 
-# Call.__init__() ------------------------------------------------------------
-
-
 def test_call_init_with_gt():
     call = record.Call("sample", {"GT": "0|1"})
     expected_length = 2
@@ -38,9 +35,6 @@ def test_call_init_with_gt():
     assert len(call.gt_alleles) == expected_length
     assert call.gt_alleles[0] == expected_allele_0
     assert call.gt_alleles[1] == expected_allele_1
-
-
-# Call.is_phased() ------------------------------------------------------------
 
 
 def test_is_phased_true():
@@ -58,9 +52,6 @@ def test_is_phased_false():
     assert call.is_phased is False
 
 
-# Call.gt_phase_char() --------------------------------------------------------
-
-
 def test_gt_phase_char_pipe():
     call = record.Call("sample", {"GT": "0|1"})
     assert call.gt_phase_char == "|"
@@ -69,9 +60,6 @@ def test_gt_phase_char_pipe():
 def test_gt_phase_char_slash():
     call = record.Call("sample", {"GT": "0/1"})
     assert call.gt_phase_char == "/"
-
-
-# Call.gt_bases() -------------------------------------------------------------
 
 
 def test_gt_bases_0_0():
@@ -98,9 +86,6 @@ def test_gt_bases_0_2():
     assert call.gt_bases == ("C", "A")
 
 
-# Call.gt_type() --------------------------------------------------------------
-
-
 def test_gt_type_het():
     call = record.Call("sample", {"GT": "0|1"})
     assert call.gt_type == vcfpy.HET
@@ -116,9 +101,6 @@ def test_gt_type_hom_alt():
     assert call.gt_type == vcfpy.HOM_ALT
 
 
-# Call.is_het() ---------------------------------------------------------------
-
-
 def test_is_het_het():
     call = record.Call("sample", {"GT": "0|1"})
     assert call.is_het
@@ -132,9 +114,6 @@ def test_is_het_hom_ref():
 def test_is_het_hom_alt():
     call = record.Call("sample", {"GT": "1/1"})
     assert not call.is_het
-
-
-# Call.is_variant() -----------------------------------------------------------
 
 
 def test_is_variant_het():
@@ -159,9 +138,6 @@ def test_is_variant_no_call():
     assert not call2.is_variant
 
 
-# Call.ploidy ----------------------------------------------------------------
-
-
 def test_ploidy_nocall():
     call = record.Call("sample", {"GT": "."})
     assert call.ploidy == 1
@@ -177,9 +153,6 @@ def test_ploidy_two():
     assert call.ploidy == 2
 
 
-# Call.is_filtered() ----------------------------------------------------------
-
-
 def test_gt_type_filtered_no_ft():
     call = record.Call("sample", {"GT": "1/1"})
     assert not call.is_filtered()
@@ -193,3 +166,54 @@ def test_gt_type_filtered_empty():
 def test_gt_type_filtered_pass():
     call = record.Call("sample", {"GT": "1/1", "FT": ["PASS"]})
     assert not call.is_filtered()
+
+
+def test_call_is_filtered():
+    """Test Call.is_filtered method"""
+    # Create a call with FT field
+    call = vcfpy.Call("sample1", {"GT": "0/1", "FT": ["LowQual", "PASS"]})
+
+    # Test default behavior (ignore PASS)
+    assert call.is_filtered()  # Should return True because LowQual is present
+
+    # Test ignoring specific filters
+    assert not call.is_filtered(ignore=["LowQual", "PASS"])  # Both filters ignored
+
+    # Test requiring specific filters
+    assert call.is_filtered(require=["LowQual"])  # LowQual is present
+    assert not call.is_filtered(require=["HighDepth"])  # HighDepth not present
+
+    # Test call without FT field
+    call_no_ft = vcfpy.Call("sample2", {"GT": "1/1"})
+    assert not call_no_ft.is_filtered()  # No FT field
+
+    # Test call with empty FT field
+    call_empty_ft = vcfpy.Call("sample3", {"GT": "0/0", "FT": []})
+    assert not call_empty_ft.is_filtered()  # Empty FT field
+
+    # Test call with only ignored filters
+    call_pass_only = vcfpy.Call("sample4", {"GT": "0/1", "FT": ["PASS"]})
+    assert not call_pass_only.is_filtered()  # Only PASS, which is ignored by default
+
+
+def test_call_is_variant_and_is_het():
+    """Test Call.is_variant and is_het properties"""
+    # Test heterozygous call
+    het_call = vcfpy.Call("sample1", {"GT": "0/1"})
+    assert het_call.is_het
+    assert het_call.is_variant
+
+    # Test homozygous reference call
+    hom_ref_call = vcfpy.Call("sample2", {"GT": "0/0"})
+    assert not hom_ref_call.is_het
+    assert not hom_ref_call.is_variant
+
+    # Test homozygous alternative call
+    hom_alt_call = vcfpy.Call("sample3", {"GT": "1/1"})
+    assert not hom_alt_call.is_het
+    assert hom_alt_call.is_variant
+
+    # Test missing genotype
+    no_gt_call = vcfpy.Call("sample4", {"DP": 30})
+    assert not no_gt_call.is_het
+    assert not no_gt_call.is_variant

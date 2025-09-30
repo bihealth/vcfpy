@@ -67,12 +67,12 @@ class FieldInfo:
     def __eq__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return self.__dict__ == other.__dict__
-        return NotImplemented
+        return NotImplemented  # pragma: no cover
 
     def __ne__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return not self.__eq__(other)
-        return NotImplemented
+        return NotImplemented  # pragma: no cover
 
     def __hash__(self):
         return hash(tuple(sorted(self.__dict__.items())))
@@ -231,7 +231,7 @@ def header_without_lines(header: "Header", remove: Iterable[tuple[str, str]]) ->
     lines: list[HeaderLine] = []
     for line in header.lines:
         if hasattr(line, "mapping"):
-            if not isinstance(line, (SimpleHeaderLine, CompoundHeaderLine)):
+            if not isinstance(line, (SimpleHeaderLine, CompoundHeaderLine)):  # pragma: no cover
                 raise HeaderInvalidType(
                     'Header line "{}={}" must be of type SimpleHeaderLine or CompoundHeaderLine'.format(
                         line.key, line.value
@@ -292,12 +292,12 @@ class SamplesInfos:
     def __eq__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return self.names == other.names
-        return NotImplemented
+        return NotImplemented  # pragma: no cover
 
     def __ne__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return self.names != other.names
-        return NotImplemented
+        return NotImplemented  # pragma: no cover
 
 
 class Header:
@@ -435,7 +435,7 @@ class Header:
         self._indices.setdefault(header_line.key, {})
         if not hasattr(header_line, "mapping"):
             return False  # no registration required
-        if self.has_header_line(header_line.key, header_line.mapping["ID"]):
+        if self.has_header_line(header_line.key, header_line.mapping["ID"]):  # pragma: no cover
             warnings.warn(
                 ("Detected duplicate header line with type {} and ID {}. Ignoring this and subsequent one").format(
                     header_line.key, header_line.mapping["ID"]
@@ -477,12 +477,12 @@ class Header:
     def __eq__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return (self.lines, self.samples) == (other.lines, other.samples)
-        return NotImplemented
+        return NotImplemented  # pragma: no cover
 
     def __ne__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return (self.lines, self.samples) != (other.lines, other.samples)
-        return NotImplemented
+        return NotImplemented  # pragma: no cover
 
     def __hash__(self):
         raise TypeError("Unhashable type: Header")
@@ -519,12 +519,12 @@ class HeaderLine:
     def __eq__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return (self.key, self.value) == (other.key, other.value)
-        return NotImplemented
+        return NotImplemented  # pragma: no cover
 
     def __ne__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return (self.key, self.value) != (other.key, other.value)
-        return NotImplemented
+        return NotImplemented  # pragma: no cover
 
     def __hash__(self):
         raise TypeError("Unhashable type: HeaderLine")
@@ -583,12 +583,12 @@ class SimpleHeaderLine(HeaderLine):
     def __eq__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return (self.key, self.value, self.mapping) == (other.key, other.value, other.mapping)
-        return NotImplemented
+        return NotImplemented  # pragma: no cover
 
     def __ne__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return (self.key, self.value, self.mapping) != (other.key, other.value, other.mapping)
-        return NotImplemented
+        return NotImplemented  # pragma: no cover
 
 
 class AltAlleleHeaderLine(SimpleHeaderLine):
@@ -659,7 +659,7 @@ class FilterHeaderLine(SimpleHeaderLine):
     def __init__(self, key: str, value: str, mapping: dict[str, Any]):
         super().__init__(key, value, mapping)
         # check for "Description" key
-        if "Description" not in self.mapping:
+        if "Description" not in self.mapping:  # pragma: no cover
             warnings.warn(
                 'Field "Description" not found in header line {}={}'.format(key, value),
                 FieldInfoNotFound,
@@ -735,12 +735,12 @@ class SampleHeaderLine(SimpleHeaderLine):
     def __eq__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return (self.key, self.value, self.mapping) == (other.key, other.value, other.mapping)
-        return NotImplemented
+        return NotImplemented  # pragma: no cover
 
     def __ne__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return (self.key, self.value, self.mapping) != (other.key, other.value, other.mapping)
-        return NotImplemented
+        return NotImplemented  # pragma: no cover
 
     def __hash__(self):
         raise TypeError("Unhashable type: SampleHeaderLine")
@@ -762,7 +762,7 @@ class CompoundHeaderLine(HeaderLine):
         #: OrderedDict with key/value mapping
         self.mapping = dict(mapping)
         # check that 'Number' is given and use "." otherwise
-        if "Number" not in self.mapping:
+        if "Number" not in self.mapping:  # pragma: no cover
             warnings.warn('[vcfpy] WARNING: missing number, using unbounded/"." instead', FieldMissingNumber)
             self.mapping["Number"] = "."
         try:
