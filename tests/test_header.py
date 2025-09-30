@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """Tests for vcfpy.header"""
 
-import sys
 import warnings
 
 import pytest
@@ -141,24 +140,14 @@ def test_header_alt_allele_header_line():
     line3 = header.AltAlleleHeaderLine.from_mapping({"ID": "DUP", "Description": "duplication"})
     assert line1 == line2
     assert line1 != line3
-    if sys.version_info < (3, 6):
-        assert str(line1) == (
-            """AltAlleleHeaderLine('ALT', '<ID=DEL,Description="deletion">', """
-            """OrderedDict([('ID', 'DEL'), ('Description', 'deletion')]))"""
-        )
-        assert repr(line1) == (
-            """AltAlleleHeaderLine('ALT', '<ID=DEL,Description="deletion">', """
-            """OrderedDict([('ID', 'DEL'), ('Description', 'deletion')]))"""
-        )
-    else:
-        assert (
-            str(line1) == "AltAlleleHeaderLine('ALT', '<ID=DEL,Description=\"deletion\">', "
-            "{'ID': 'DEL', 'Description': 'deletion'})"
-        )
-        assert (
-            repr(line1) == "AltAlleleHeaderLine('ALT', '<ID=DEL,Description=\"deletion\">', "
-            "{'ID': 'DEL', 'Description': 'deletion'})"
-        )
+    assert (
+        str(line1) == "AltAlleleHeaderLine('ALT', '<ID=DEL,Description=\"deletion\">', "
+        "{'ID': 'DEL', 'Description': 'deletion'})"
+    )
+    assert (
+        repr(line1) == "AltAlleleHeaderLine('ALT', '<ID=DEL,Description=\"deletion\">', "
+        "{'ID': 'DEL', 'Description': 'deletion'})"
+    )
     assert line1.value == '<ID=DEL,Description="deletion">'
     assert line1.serialize() == '##ALT=<ID=DEL,Description="deletion">'
     with pytest.raises(TypeError):
@@ -171,17 +160,8 @@ def test_header_contig_header_line():
     line3 = header.ContigHeaderLine.from_mapping({"ID": "2", "length": 123})
     assert line1 == line2
     assert line1 != line3
-    if sys.version_info < (3, 6):
-        assert (
-            str(line1) == "ContigHeaderLine('contig', '<ID=1,length=234>', OrderedDict([('ID', '1'), ('length', 234)]))"
-        )
-        assert (
-            repr(line1)
-            == "ContigHeaderLine('contig', '<ID=1,length=234>', OrderedDict([('ID', '1'), ('length', 234)]))"
-        )
-    else:
-        assert str(line1) == "ContigHeaderLine('contig', '<ID=1,length=234>', {'ID': '1', 'length': 234})"
-        assert repr(line1) == "ContigHeaderLine('contig', '<ID=1,length=234>', {'ID': '1', 'length': 234})"
+    assert str(line1) == "ContigHeaderLine('contig', '<ID=1,length=234>', {'ID': '1', 'length': 234})"
+    assert repr(line1) == "ContigHeaderLine('contig', '<ID=1,length=234>', {'ID': '1', 'length': 234})"
     assert line1.value == "<ID=1,length=234>"
     assert line1.serialize() == "##contig=<ID=1,length=234>"
     with pytest.raises(TypeError):
@@ -194,24 +174,14 @@ def test_header_filter_header_line():
     line3 = header.FilterHeaderLine.from_mapping({"ID": "q30", "Description": "Phred score <30"})
     assert line1 == line2
     assert line1 != line3
-    if sys.version_info < (3, 6):
-        assert (
-            str(line1) == "FilterHeaderLine('FILTER', '<ID=PASS,Description=\"All filters passed\">', "
-            "OrderedDict([('ID', 'PASS'), ('Description', 'All filters passed')]))"
-        )
-        assert (
-            repr(line1) == "FilterHeaderLine('FILTER', '<ID=PASS,Description=\"All filters passed\">', "
-            "OrderedDict([('ID', 'PASS'), ('Description', 'All filters passed')]))"
-        )
-    else:
-        assert (
-            str(line1) == "FilterHeaderLine('FILTER', '<ID=PASS,Description=\"All filters passed\">', "
-            "{'ID': 'PASS', 'Description': 'All filters passed'})"
-        )
-        assert (
-            repr(line1) == "FilterHeaderLine('FILTER', '<ID=PASS,Description=\"All filters passed\">', "
-            "{'ID': 'PASS', 'Description': 'All filters passed'})"
-        )
+    assert (
+        str(line1) == "FilterHeaderLine('FILTER', '<ID=PASS,Description=\"All filters passed\">', "
+        "{'ID': 'PASS', 'Description': 'All filters passed'})"
+    )
+    assert (
+        repr(line1) == "FilterHeaderLine('FILTER', '<ID=PASS,Description=\"All filters passed\">', "
+        "{'ID': 'PASS', 'Description': 'All filters passed'})"
+    )
     assert line1.value == '<ID=PASS,Description="All filters passed">'
     assert line1.serialize() == '##FILTER=<ID=PASS,Description="All filters passed">'
     with pytest.raises(TypeError):
@@ -224,24 +194,12 @@ def test_header_pedigree_header_line():
     line3 = header.PedigreeHeaderLine.from_mapping({"ID": "father"})
     assert line1 == line2
     assert line1 != line3
-    if sys.version_info < (3, 6):
-        assert (
-            str(line1) == "PedigreeHeaderLine('PEDIGREE', '<ID=child,Father=father>', "
-            "OrderedDict([('ID', 'child'), ('Father', 'father')]))"
-        )
-        assert (
-            repr(line1) == "PedigreeHeaderLine('PEDIGREE', '<ID=child,Father=father>', "
-            "OrderedDict([('ID', 'child'), ('Father', 'father')]))"
-        )
-    else:
-        assert (
-            str(line1)
-            == "PedigreeHeaderLine('PEDIGREE', '<ID=child,Father=father>', {'ID': 'child', 'Father': 'father'})"
-        )
-        assert (
-            repr(line1)
-            == "PedigreeHeaderLine('PEDIGREE', '<ID=child,Father=father>', {'ID': 'child', 'Father': 'father'})"
-        )
+    assert (
+        str(line1) == "PedigreeHeaderLine('PEDIGREE', '<ID=child,Father=father>', {'ID': 'child', 'Father': 'father'})"
+    )
+    assert (
+        repr(line1) == "PedigreeHeaderLine('PEDIGREE', '<ID=child,Father=father>', {'ID': 'child', 'Father': 'father'})"
+    )
     assert line1.value == "<ID=child,Father=father>"
     assert line1.serialize() == "##PEDIGREE=<ID=child,Father=father>"
     with pytest.raises(TypeError):
@@ -254,12 +212,8 @@ def test_header_sample_header_line():
     line3 = header.SampleHeaderLine.from_mapping({"ID": "sample2"})
     assert line1 == line2
     assert line1 != line3
-    if sys.version_info < (3, 6):
-        assert str(line1) == "SampleHeaderLine('SAMPLE', '<ID=sample1>', OrderedDict([('ID', 'sample1')]))"
-        assert repr(line1) == "SampleHeaderLine('SAMPLE', '<ID=sample1>', OrderedDict([('ID', 'sample1')]))"
-    else:
-        assert str(line1) == "SampleHeaderLine('SAMPLE', '<ID=sample1>', {'ID': 'sample1'})"
-        assert repr(line1) == "SampleHeaderLine('SAMPLE', '<ID=sample1>', {'ID': 'sample1'})"
+    assert str(line1) == "SampleHeaderLine('SAMPLE', '<ID=sample1>', {'ID': 'sample1'})"
+    assert repr(line1) == "SampleHeaderLine('SAMPLE', '<ID=sample1>', {'ID': 'sample1'})"
     assert line1.value == "<ID=sample1>"
     assert line1.serialize() == "##SAMPLE=<ID=sample1>"
     with pytest.raises(TypeError):
@@ -278,26 +232,16 @@ def test_header_info_header_line():
     )
     assert line1 == line2
     assert line1 != line3
-    if sys.version_info < (3, 6):
-        assert (
-            str(line1) == "InfoHeaderLine('INFO', '<ID=SVTYPE,Number=1,Type=String>', "
-            "OrderedDict([('ID', 'SVTYPE'), ('Number', 1), ('Type', 'String')]))"
-        )
-        assert (
-            repr(line1) == "InfoHeaderLine('INFO', '<ID=SVTYPE,Number=1,Type=String>', "
-            "OrderedDict([('ID', 'SVTYPE'), ('Number', 1), ('Type', 'String')]))"
-        )
-    else:
-        assert (
-            str(line1)
-            == "InfoHeaderLine('INFO', '<ID=SVTYPE,Number=1,Type=String,Description=\"Type of structural variant\">', "
-            "{'ID': 'SVTYPE', 'Number': 1, 'Type': 'String', 'Description': 'Type of structural variant'})"
-        )
-        assert (
-            repr(line1)
-            == "InfoHeaderLine('INFO', '<ID=SVTYPE,Number=1,Type=String,Description=\"Type of structural variant\">', "
-            "{'ID': 'SVTYPE', 'Number': 1, 'Type': 'String', 'Description': 'Type of structural variant'})"
-        )
+    assert (
+        str(line1)
+        == "InfoHeaderLine('INFO', '<ID=SVTYPE,Number=1,Type=String,Description=\"Type of structural variant\">', "
+        "{'ID': 'SVTYPE', 'Number': 1, 'Type': 'String', 'Description': 'Type of structural variant'})"
+    )
+    assert (
+        repr(line1)
+        == "InfoHeaderLine('INFO', '<ID=SVTYPE,Number=1,Type=String,Description=\"Type of structural variant\">', "
+        "{'ID': 'SVTYPE', 'Number': 1, 'Type': 'String', 'Description': 'Type of structural variant'})"
+    )
     assert line1.value == '<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">'
     assert line1.serialize() == '##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">'
     with pytest.raises(TypeError):
@@ -316,24 +260,14 @@ def test_header_format_header_line():
     )
     assert line1 == line2
     assert line1 != line3
-    if sys.version_info < (3, 6):
-        assert (
-            str(line1) == "FormatHeaderLine('FORMAT', '<ID=AD,Number=R,Type=Integer>', "
-            "OrderedDict([('ID', 'AD'), ('Number', 'R'), ('Type', 'Integer')]))"
-        )
-        assert (
-            repr(line1) == "FormatHeaderLine('FORMAT', '<ID=AD,Number=R,Type=Integer>', "
-            "OrderedDict([('ID', 'AD'), ('Number', 'R'), ('Type', 'Integer')]))"
-        )
-    else:
-        assert (
-            str(line1) == "FormatHeaderLine('FORMAT', '<ID=AD,Number=R,Type=Integer,Description=\"Allelic depths\">', "
-            "{'ID': 'AD', 'Number': 'R', 'Type': 'Integer', 'Description': 'Allelic depths'})"
-        )
-        assert (
-            repr(line1) == "FormatHeaderLine('FORMAT', '<ID=AD,Number=R,Type=Integer,Description=\"Allelic depths\">', "
-            "{'ID': 'AD', 'Number': 'R', 'Type': 'Integer', 'Description': 'Allelic depths'})"
-        )
+    assert (
+        str(line1) == "FormatHeaderLine('FORMAT', '<ID=AD,Number=R,Type=Integer,Description=\"Allelic depths\">', "
+        "{'ID': 'AD', 'Number': 'R', 'Type': 'Integer', 'Description': 'Allelic depths'})"
+    )
+    assert (
+        repr(line1) == "FormatHeaderLine('FORMAT', '<ID=AD,Number=R,Type=Integer,Description=\"Allelic depths\">', "
+        "{'ID': 'AD', 'Number': 'R', 'Type': 'Integer', 'Description': 'Allelic depths'})"
+    )
     assert line1.value == '<ID=AD,Number=R,Type=Integer,Description="Allelic depths">'
     assert line1.serialize() == '##FORMAT=<ID=AD,Number=R,Type=Integer,Description="Allelic depths">'
     with pytest.raises(TypeError):

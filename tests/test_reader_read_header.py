@@ -2,7 +2,6 @@
 """Reading of VCF header from plain and bgzip-ed file"""
 
 import os
-import sys
 
 from vcfpy import reader
 
@@ -17,16 +16,10 @@ def test_read_text():
     assert len(r.header.lines) == 18
     EXPECTED = "HeaderLine('fileformat', 'VCFv4.3')"
     assert str(r.header.lines[0]) == EXPECTED
-    if sys.version_info < (3, 6):
-        EXPECTED = (
-            "FormatHeaderLine('FORMAT', '<ID=HQ,Number=2,Type=Integer,Description=\"Haplotype Quality\">', "
-            "OrderedDict([('ID', 'HQ'), ('Number', 2), ('Type', 'Integer'), ('Description', 'Haplotype Quality')]))"
-        )
-    else:
-        EXPECTED = (
-            "FormatHeaderLine('FORMAT', '<ID=HQ,Number=2,Type=Integer,Description=\"Haplotype Quality\">', "
-            "{'ID': 'HQ', 'Number': 2, 'Type': 'Integer', 'Description': 'Haplotype Quality'})"
-        )
+    EXPECTED = (
+        "FormatHeaderLine('FORMAT', '<ID=HQ,Number=2,Type=Integer,Description=\"Haplotype Quality\">', "
+        "{'ID': 'HQ', 'Number': 2, 'Type': 'Integer', 'Description': 'Haplotype Quality'})"
+    )
     assert str(r.header.lines[-1]) == EXPECTED
     assert r.header.samples
     assert r.header.samples.names == ["NA00001", "NA00002", "NA00003"]
@@ -40,16 +33,10 @@ def test_read_bgzip():
     assert len(r.header.lines) == 18
     EXPECTED = "HeaderLine('fileformat', 'VCFv4.3')"
     assert str(r.header.lines[0]) == EXPECTED
-    if sys.version_info < (3, 6):
-        EXPECTED = (
-            "FormatHeaderLine('FORMAT', '<ID=HQ,Number=2,Type=Integer,Description=\"Haplotype Quality\">', "
-            "OrderedDict([('ID', 'HQ'), ('Number', 2), ('Type', 'Integer'), ('Description', 'Haplotype Quality')]))"
-        )
-    else:
-        EXPECTED = (
-            "FormatHeaderLine('FORMAT', '<ID=HQ,Number=2,Type=Integer,Description=\"Haplotype Quality\">', "
-            "{'ID': 'HQ', 'Number': 2, 'Type': 'Integer', 'Description': 'Haplotype Quality'})"
-        )
+    EXPECTED = (
+        "FormatHeaderLine('FORMAT', '<ID=HQ,Number=2,Type=Integer,Description=\"Haplotype Quality\">', "
+        "{'ID': 'HQ', 'Number': 2, 'Type': 'Integer', 'Description': 'Haplotype Quality'})"
+    )
     assert str(r.header.lines[-1]) == EXPECTED
     assert r.header.samples
     assert r.header.samples.names == ["NA00001", "NA00002", "NA00003"]
@@ -63,16 +50,10 @@ def test_read_text_no_samples():
     assert len(r.header.lines) == 18
     EXPECTED = "HeaderLine('fileformat', 'VCFv4.3')"
     assert str(r.header.lines[0]) == EXPECTED
-    if sys.version_info < (3, 6):
-        EXPECTED = (
-            "FormatHeaderLine('FORMAT', '<ID=HQ,Number=2,Type=Integer,Description=\"Haplotype Quality\">', "
-            "OrderedDict([('ID', 'HQ'), ('Number', 2), ('Type', 'Integer'), ('Description', 'Haplotype Quality')]))"
-        )
-    else:
-        EXPECTED = (
-            "FormatHeaderLine('FORMAT', '<ID=HQ,Number=2,Type=Integer,Description=\"Haplotype Quality\">', "
-            "{'ID': 'HQ', 'Number': 2, 'Type': 'Integer', 'Description': 'Haplotype Quality'})"
-        )
+    EXPECTED = (
+        "FormatHeaderLine('FORMAT', '<ID=HQ,Number=2,Type=Integer,Description=\"Haplotype Quality\">', "
+        "{'ID': 'HQ', 'Number': 2, 'Type': 'Integer', 'Description': 'Haplotype Quality'})"
+    )
     assert str(r.header.lines[-1]) == EXPECTED
     assert r.header.samples
     assert r.header.samples.names == []
