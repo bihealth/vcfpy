@@ -23,7 +23,7 @@ def test_header_checker_missing_fileformat():
         checker.run(hdr)
 
 
-def test_header_checker_unknown_vcf_version():
+def test_header_checker_unknown_vcf_version(recwarn: pytest.WarningsRecorder):
     # construct Header
     lines = [header.HeaderLine("fileformat", "VCFv4.4")]
     hdr = header.Header(lines=lines, samples=header.SamplesInfos(["NA001"]))
@@ -38,6 +38,8 @@ def test_header_checker_unknown_vcf_version():
     """
     ).lstrip()
     assert stream.getvalue() == EXPECTED
+    assert len(recwarn) == 1
+    assert str(recwarn[0].message) == "Unknown VCF version VCFv4.4"
 
 
 def test_header_checker_known_vcf_version():

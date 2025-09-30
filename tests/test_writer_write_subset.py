@@ -37,7 +37,7 @@ def test_reading_and_write_subset_of_samples_parse_different_subset(
     # Perform record-wise copying, saving results in records, not writing
     # out for some samples
     records: list[Record] = []
-    out_path = str(tmpdir / "output" / "output.vcf")
+    out_path = str(tmpdir / "output.vcf")
     with Reader.from_path(multisample_vcf_file, parsed_samples=["NA00001"]) as reader:
         samples = SamplesInfos(["NA00002"])
         header = Header(reader.header.lines, samples)

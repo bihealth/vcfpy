@@ -112,7 +112,7 @@ def test_parse_breakend_telomere():
 
 def test_parse_breakend_multi_mate():
     # Setup parser with stock header and lines to parse
-    LINES = "2\t321681\tbnd_U\tT\tC[2:321682[,C[17:198983\t6\tPASS\tSVTYPE=BND\tGT\t0/1\t0/0\t0/0\n"
+    LINES = "2\t321681\tbnd_U\tT\tC[2:321682[,C[17:198983[\t6\tPASS\tSVTYPE=BND\tGT\t0/1\t0/0\t0/0\n"
     p = vcf_parser(LINES)
     p.parse_header()
     # Perform the actual test

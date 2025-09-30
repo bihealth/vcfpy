@@ -6,6 +6,7 @@ crash.
 """
 
 import os
+import warnings
 
 import pytest
 
@@ -55,5 +56,7 @@ FILENAMES = [
 @pytest.mark.parametrize("filename", FILENAMES)
 def test_read_vcfs_from_the_wild(filename):
     path = os.path.join(os.path.dirname(__file__), "vcfs_from_the_wild", filename)
-    r = reader.Reader.from_path(path)
+    with warnings.catch_warnings():  # ignore warnings, smoke test only
+        warnings.simplefilter("ignore")
+        r = reader.Reader.from_path(path)
     _ = r

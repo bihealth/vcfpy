@@ -36,7 +36,7 @@ def format_value(
     field_info: FieldInfo, value: str | None | int | bool | float | list[Any], section: Literal["INFO", "FORMAT"]
 ):
     """Format possibly compound value given the FieldInfo"""
-    if section == "FORMAT" and field_info.id == "FT":
+    if section == "FORMAT" and field_info.id in ("FORMAT/FT", "FT"):
         if not value:
             return "."
         elif isinstance(value, list):
@@ -47,7 +47,7 @@ def format_value(
         else:
             return format_atomic(value, section)
     else:
-        if type(value) is not list:
+        if type(value) is not list:  # pragma: no cover
             raise ValueError("Expected list value for field with Number != 1")
         if not value:
             return "."

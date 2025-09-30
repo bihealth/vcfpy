@@ -6,7 +6,6 @@ import io
 
 import pytest
 
-import vcfpy
 from vcfpy import header, parser
 
 __author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"
@@ -62,16 +61,14 @@ def test_add_contig_line(vcf_header):
     line = header.ContigHeaderLine(
         "contig",
         VALUE,
-        vcfpy.OrderedDict(
-            [
-                ("ID", "20a"),
-                ("length", 62435964),
-                ("assembly", "B36"),
-                ("md5", "f126cdf8a6e0c7f379d618ff66beb2da"),
-                ("species", "Homo sapiens"),
-                ("taxonomy", "x"),
-            ]
-        ),
+        {
+            "ID": "20a",
+            "length": 62435964,
+            "assembly": "B36",
+            "md5": "f126cdf8a6e0c7f379d618ff66beb2da",
+            "species": "Homo sapiens",
+            "taxonomy": "x",
+        },
     )
     vcf_header.add_line(line)
 
@@ -98,16 +95,14 @@ def test_add_contig_line_shortcut(vcf_header):
     assert "20a" not in vcf_header._indices["contig"]
 
     # add header line
-    mapping = vcfpy.OrderedDict(
-        [
-            ("ID", "20a"),
-            ("length", 62435964),
-            ("assembly", "B36"),
-            ("md5", "f126cdf8a6e0c7f379d618ff66beb2da"),
-            ("species", "Homo sapiens"),
-            ("taxonomy", "x"),
-        ]
-    )
+    mapping = {
+        "ID": "20a",
+        "length": 62435964,
+        "assembly": "B36",
+        "md5": "f126cdf8a6e0c7f379d618ff66beb2da",
+        "species": "Homo sapiens",
+        "taxonomy": "x",
+    }
     vcf_header.add_contig_line(mapping)
 
     # check header after adding

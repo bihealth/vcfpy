@@ -13,14 +13,6 @@ from typing import Any, Callable, Iterable, Literal, cast
 
 from vcfpy import exceptions, header, record
 
-from .exceptions import (
-    CannotConvertValue,
-    LeadingTrailingSpaceInKey,
-    SpaceInChromLine,
-    UnknownFilter,
-    UnknownVCFVersion,
-)
-
 __author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"
 
 
@@ -145,7 +137,7 @@ def split_mapping(pair_str: str) -> tuple[str, str]:
     if key != orig_key:
         warnings.warn(
             "Mapping key {} has leading or trailing space".format(repr(orig_key)),
-            LeadingTrailingSpaceInKey,
+            exceptions.LeadingTrailingSpaceInKey,
         )
     return key, value
 
@@ -265,7 +257,7 @@ def convert_field_value(
         except ValueError:
             warnings.warn(
                 ("{} cannot be converted to {}, keeping as string.").format(value, type_),
-                CannotConvertValue,
+                exceptions.CannotConvertValue,
             )
             return value
 
@@ -276,7 +268,7 @@ def parse_field_value(
     """Parse ``value`` according to ``field_info``"""
     if isinstance(value, bool) or field_info.type == "Flag":
         return True
-    elif field_info.id == "FT":
+    elif field_info.id in ("FORMAT/FT", "FT"):
         return [x for x in value.split(";") if x != "."]
     elif field_info.number == 1:
         return convert_field_value(field_info.type, value)
@@ -288,7 +280,7 @@ def parse_field_value(
 
 
 # Regular expression for break-end
-BREAKEND_PATTERN = re.compile("[\\[\\]]")
+BREAKEND_PATTERN = re.compile(r"[\[\]]")
 
 
 def parse_breakend(alt_str: str) -> tuple[str, int, str, Literal["+", "-"], str, bool]:
@@ -498,7 +490,7 @@ class RecordParser:
                 data = self._parse_calls_data(format_, self._format_cache[format_str], raw_data)
                 call = record.Call(sample, data)
                 self._format_checker.run(call, len(alts))
-                ft_value = call.data.get("FT")
+                ft_value = call.data.get("FT") or []
                 if not isinstance(ft_value, list):
                     raise ValueError("FORMAT/FT field must be a list of strings but was {}".format(repr(ft_value)))
                 ft_value_ = cast(list[str], ft_value)
@@ -523,13 +515,13 @@ class RecordParser:
             if source == "FILTER":
                 warnings.warn(
                     ("Filter not found in header: {}; problem in FILTER column").format(f),
-                    UnknownFilter,
+                    exceptions.UnknownFilter,
                 )
             else:
                 assert source == "FORMAT/FT" and sample
                 warnings.warn(
                     ("Filter not found in header: {}; problem in FORMAT/FT column of sample {}").format(f, sample),
-                    UnknownFilter,
+                    exceptions.UnknownFilter,
                 )
 
     def _split_line(self, line_str: str) -> list[str]:
@@ -601,7 +593,7 @@ class HeaderChecker:
         if first.key != "fileformat":
             raise exceptions.InvalidHeaderException("The VCF file did not start with ##fileformat")
         if first.value not in SUPPORTED_VCF_VERSIONS:
-            warnings.warn("Unknown VCF version {}".format(first.value), UnknownVCFVersion)
+            warnings.warn("Unknown VCF version {}".format(first.value), exceptions.UnknownVCFVersion)
 
 
 @functools.lru_cache(maxsize=32)
@@ -788,7 +780,7 @@ class Parser:
         if " " in line[:pos]:
             warnings.warn(
                 "Found space in #CHROM line, splitting at whitespace instead of tab; this VCF file is ill-formatted",
-                SpaceInChromLine,
+                exceptions.SpaceInChromLine,
             )
             arr = self._line.rstrip().split()
         else:

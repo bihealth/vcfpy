@@ -231,9 +231,11 @@ def header_without_lines(header: "Header", remove: Iterable[tuple[str, str]]) ->
     lines: list[HeaderLine] = []
     for line in header.lines:
         if hasattr(line, "mapping"):
-            if not isinstance(line, SimpleHeaderLine):
+            if not isinstance(line, (SimpleHeaderLine, CompoundHeaderLine)):
                 raise HeaderInvalidType(
-                    'Header line "{}={}" must be of type SimpleHeaderLine'.format(line.key, line.value)
+                    'Header line "{}={}" must be of type SimpleHeaderLine or CompoundHeaderLine'.format(
+                        line.key, line.value
+                    )
                 )
             if (line.key, line.mapping.get("ID", None)) in remove:
                 continue  # filter out
@@ -433,10 +435,6 @@ class Header:
         self._indices.setdefault(header_line.key, {})
         if not hasattr(header_line, "mapping"):
             return False  # no registration required
-        if not isinstance(header_line, SimpleHeaderLine):
-            raise HeaderInvalidType(
-                'Header line "{}={}" must be of type SimpleHeaderLine'.format(header_line.key, header_line.value)
-            )
         if self.has_header_line(header_line.key, header_line.mapping["ID"]):
             warnings.warn(
                 ("Detected duplicate header line with type {} and ID {}. Ignoring this and subsequent one").format(
@@ -459,7 +457,7 @@ class Header:
 
     def _get_field_info(self, type_: str, key: str, reserved: dict[str, FieldInfo]) -> FieldInfo:
         result = self._indices[type_].get(key)
-        if result and isinstance(result, SimpleHeaderLine):
+        if result and isinstance(result, (SimpleHeaderLine, CompoundHeaderLine)):
             return FieldInfo(
                 result.mapping["Type"],
                 result.mapping["Number"],
