@@ -102,7 +102,7 @@ reportOptionalMemberAccess = false
 reportArgumentType = false
 reportAttributeAccessIssue = false
 
-pythonVersion = "3.11"
+pythonVersion = "3.10"
 pythonPlatform = "Linux"
 
 [tool.ruff]
