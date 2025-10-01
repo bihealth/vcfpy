@@ -1,1 +1,2 @@
 vcfpy/_version.py export-subst
+tests/vcfs/*tomato* filter=lfs diff=lfs merge=lfs -text

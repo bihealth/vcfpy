@@ -891,38 +891,6 @@ wheels = [
 ]
 
 [[package]]
-name = "pysam"
-version = "0.23.3"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/7c/2b/1cf19890a0e4c73ad2672ce7eb485606c4bd2846eef2d892c078ab193c92/pysam-0.23.3.tar.gz", hash = "sha256:9ebcb1f004b296fd139b103ec6fd7e415e80f89f194eb7d0d972ac6d11bbaf24", size = 4974405, upload-time = "2025-06-10T11:19:54.057Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/8a/2c/81bd1a448c19530581b7a0aea72d53b3ab62cea3e621f9dd787cd7fb4098/pysam-0.23.3-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:a0b99d875f293fad0bd9c9c923e8910c03af62d291ebb7d20e69ceaf39e383d4", size = 6170935, upload-time = "2025-06-10T11:19:03.469Z" },
-    { url = "https://files.pythonhosted.org/packages/b2/71/7eaa8dfb4a765fc851dbaddcb21af1325c26d9cf0f3310ceb44427faca5c/pysam-0.23.3-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:725a32970cf4ce322f4ab2a52b755163297027a0349f0d151537fe16bdf525e5", size = 8365284, upload-time = "2025-06-10T11:22:37.658Z" },
-    { url = "https://files.pythonhosted.org/packages/4f/65/14cdc0e0948e03d7c8e9606f8704b47765542dbbb3c0b9c72c8bd7562bbb/pysam-0.23.3-cp310-cp310-manylinux_2_28_aarch64.whl", hash = "sha256:5fd54146c0a5a41e37b67212e3b9b0c123b73d1dd2ba58082d21dc2236c1b290", size = 22850673, upload-time = "2025-06-10T11:22:39.934Z" },
-    { url = "https://files.pythonhosted.org/packages/8e/1a/79a2c1bea757cd432a2d67087feb1e3dc8226b49fc926f2d844b3badd147/pysam-0.23.3-cp310-cp310-manylinux_2_28_x86_64.whl", hash = "sha256:a7d6b3dcbf4756bd178e217fa391187edc5793f8f50c3034e585d1e4d282d29b", size = 23408332, upload-time = "2025-06-10T11:19:05.869Z" },
-    { url = "https://files.pythonhosted.org/packages/ae/ac/fc98ab9bc6bd5d1205fd71c7fd49e33663199cc66645ab0e8db1e572f774/pysam-0.23.3-cp310-cp310-musllinux_1_2_aarch64.whl", hash = "sha256:bc391a099ca74a1134a1cf71812c8ddf9934ab9d6675f3a97fe299466f227a1f", size = 22507284, upload-time = "2025-06-10T11:22:42.551Z" },
-    { url = "https://files.pythonhosted.org/packages/8e/0b/0ff157244e2af25e1a8a880f4d2c050d6b49791b32342dc8886a27d388c4/pysam-0.23.3-cp310-cp310-musllinux_1_2_x86_64.whl", hash = "sha256:d98ce73c07926d400c684773ce2521f03f78247a3dd6968c8206ba31b077b503", size = 22813420, upload-time = "2025-06-10T11:19:08.902Z" },
-    { url = "https://files.pythonhosted.org/packages/71/59/74eccdbb18a26a49d99b9cef50e3630b76b1c430756e6f04891d12f4d43f/pysam-0.23.3-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:cb4c9c4eb245d643b60c7ec750d5554ebf17c6c9646f4f54439f94a3b3de15de", size = 8667888, upload-time = "2025-06-10T11:19:11.209Z" },
-    { url = "https://files.pythonhosted.org/packages/de/12/ae4e639c9187bfd60f3110d9166bf079044e091011f400173bebf2740eae/pysam-0.23.3-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:3449070e0bbe716f9eccd3911d2482476478fbad63f739378d0203f470a446d6", size = 8415426, upload-time = "2025-06-10T11:22:44.903Z" },
-    { url = "https://files.pythonhosted.org/packages/a7/f3/e8cd509f5250e0656076cd0f4a6c9e7d2c520e5599272a8519a3d50ca6ba/pysam-0.23.3-cp311-cp311-manylinux_2_28_aarch64.whl", hash = "sha256:c6cb7069dcecca3d40bbe4a6d5adea5cafe483c11854892dbabd6e10e5776049", size = 25904314, upload-time = "2025-06-10T11:22:47.215Z" },
-    { url = "https://files.pythonhosted.org/packages/7b/98/936efaa190ad843c71ca397addc02e676ea4fb389437e2ca0471ad39efb0/pysam-0.23.3-cp311-cp311-manylinux_2_28_x86_64.whl", hash = "sha256:a7e9c835126f94ff57199e2f58e61436e12e84d47077e70aac8aa03531c4cc71", size = 26452466, upload-time = "2025-06-10T11:19:13.975Z" },
-    { url = "https://files.pythonhosted.org/packages/ac/dd/432569a859c5820b882fb692628b0df7cc9de1fe61c5eb5b979df31a7720/pysam-0.23.3-cp311-cp311-musllinux_1_2_aarch64.whl", hash = "sha256:9b249367a4ad100e61afac9156bde6183c6119f2612bbd5d97ebe3153c643aed", size = 25547736, upload-time = "2025-06-10T11:22:49.708Z" },
-    { url = "https://files.pythonhosted.org/packages/8e/6b/2a8060a279373eb64c5c77e7a0ef2e5bd0d3adc85623aa228d877038f2a2/pysam-0.23.3-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:a720cc0818aa84aca5ee4ef884fda82367598e77ec0c95d2050f670fb1fd0db5", size = 25865391, upload-time = "2025-06-10T11:19:17.103Z" },
-    { url = "https://files.pythonhosted.org/packages/a2/6b/dd9f94da44463ecfddb7075f1048c044155c725d7d79fde2e7957561a3b0/pysam-0.23.3-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:69f90c0867fe43f04004bcea963f6b2e68b39180afab54bf551f61f43856638b", size = 6177042, upload-time = "2025-06-10T11:19:19.517Z" },
-    { url = "https://files.pythonhosted.org/packages/f3/e9/686e711a559a02e4c3ba0bc78cf031d9ddb525e9f0b2984d1b66536ba94a/pysam-0.23.3-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:2310d72bfae7a0980d414156267e25b57aa221a768c11c087f3f7d00ceb9fed4", size = 8398187, upload-time = "2025-06-10T11:22:52.284Z" },
-    { url = "https://files.pythonhosted.org/packages/8a/82/fca396e13969d1020956b02e567e0d357be0af0f3aebc2b4d97bed780a6d/pysam-0.23.3-cp312-cp312-manylinux_2_28_aarch64.whl", hash = "sha256:b2e45983efea190d374fcda0b6e0c835d6e9e474e02694729f3b3a14d680fa62", size = 23343831, upload-time = "2025-06-10T11:22:54.594Z" },
-    { url = "https://files.pythonhosted.org/packages/df/a6/c100df6c8118b4ce1f9c086bb9cf5bccd4f71d05ceb2ecf474f3b0ea87b8/pysam-0.23.3-cp312-cp312-manylinux_2_28_x86_64.whl", hash = "sha256:4099393fc5097b5081c7efaf46b0109e4f0a8ed18f86d497219a8bf739c73992", size = 24021198, upload-time = "2025-06-10T11:19:21.379Z" },
-    { url = "https://files.pythonhosted.org/packages/f1/92/32e1b13f30f16fe2c948f9b9e04c6e7698beaa539ea1a2bcddc51ed6c9b7/pysam-0.23.3-cp312-cp312-musllinux_1_2_aarch64.whl", hash = "sha256:4f04b9aa9b23d767fe36652eacb8370791e3b56816a7e50553d52c65ccdce77f", size = 22925815, upload-time = "2025-06-10T11:22:56.894Z" },
-    { url = "https://files.pythonhosted.org/packages/fa/7d/ccfaa2d6f9f07b357696b07883d5c5471f980938c2293324631425d95523/pysam-0.23.3-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:701843e5dc67c8eb217c3265039c699a5f83cce64fbc4225268141796e972353", size = 23351352, upload-time = "2025-06-10T11:19:24.207Z" },
-    { url = "https://files.pythonhosted.org/packages/88/87/55cabf614bcc96f4a548ab4cf5fe465dd562d193f4f4cd5246cc0a1a18ab/pysam-0.23.3-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:2d3177c5b3e102bde297f86e079d23fa385ac88f16c4252502079ef368056d55", size = 8660576, upload-time = "2025-06-10T11:19:26.918Z" },
-    { url = "https://files.pythonhosted.org/packages/1f/2f/4708f52028610af96fa82e3ef46bcf96a35f1bd3c38aa6f015b31b578fff/pysam-0.23.3-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:2b6f6891684213e89ee679c5ac786b4e845e7d39d24f6ea0e4d8ed8be9c34f48", size = 8420107, upload-time = "2025-06-10T11:22:59.325Z" },
-    { url = "https://files.pythonhosted.org/packages/d9/35/e65f76cfa17d680017bbb61f2a2b3ad34169de5c3747ed4273c194ad13b3/pysam-0.23.3-cp313-cp313-manylinux_2_28_aarch64.whl", hash = "sha256:735b938b809f0dc19a389cf3cee04fe7a451e21e2b20d3e45fa6bc23016ae21d", size = 26547806, upload-time = "2025-06-10T11:23:02.083Z" },
-    { url = "https://files.pythonhosted.org/packages/3f/60/2c8574f13f5a9c07cc14f5b48f70591fcd1ccb50dd59ad9784d48ed31db4/pysam-0.23.3-cp313-cp313-manylinux_2_28_x86_64.whl", hash = "sha256:b721ae4c9118e0c27e1500be278c3b62022c886eeb913ecabc0463fdf98da38f", size = 27262067, upload-time = "2025-06-10T11:19:29.222Z" },
-    { url = "https://files.pythonhosted.org/packages/f3/ef/6ca22f37b3c771f5df38a533d8276dabaacc89a034341a0ec33b7ec21d5e/pysam-0.23.3-cp313-cp313-musllinux_1_2_aarch64.whl", hash = "sha256:915bd2883eed08b16a41964a33923818e67166ca69a51086598d27287df6bb4f", size = 26036767, upload-time = "2025-06-10T11:23:04.839Z" },
-    { url = "https://files.pythonhosted.org/packages/99/a4/d52ac0f89fa90ab98998e5c0640963f3f4c1e9703fd4dd0aaa4facaea187/pysam-0.23.3-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:b80f1092ba290b738d6ed230cc58cc75ca815fda441afe76cb4c25639aec7ee7", size = 26477588, upload-time = "2025-06-10T11:19:31.96Z" },
-]
-
-[[package]]
 name = "pytest"
 version = "8.4.2"
 source = { registry = "https://pypi.org/simple" }
@@ -1333,9 +1301,6 @@ wheels = [
 name = "vcfpy"
 version = "0.13.8"
 source = { editable = "." }
-dependencies = [
-    { name = "pysam" },
-]
 
 [package.dev-dependencies]
 dev = [
@@ -1368,7 +1333,6 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "pysam", specifier = ">=0.10.0" }]
 
 [package.metadata.requires-dev]
 dev = [
