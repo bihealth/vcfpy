@@ -56,8 +56,6 @@ What's the difference to PyVCF?
 
 What's the aim?
     The aim of the project is to provide simple yet efficient read and write access to VCF files.
-    Eventually, PySAM will probably be a better choice once it has a Python wrapper for the VCF part of ``htslib``.
-    However, as this is still misssing, ``VCFPy`` is a good solution for the time being.
 
 .. toctree::
     :caption: Installation & Getting Started

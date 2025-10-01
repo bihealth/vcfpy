@@ -84,6 +84,121 @@ def make_virtual_offset(block_start_offset: int, within_block_offset: int) -> in
     return (block_start_offset << 16) | within_block_offset
 
 
+def split_virtual_offset(virtual_offset: int) -> tuple[int, int]:
+    """Split a 64-bit BGZF virtual offset into block start and within block offsets.
+
+    Returns a tuple of (block_start_offset, within_block_offset).
+
+    >>> split_virtual_offset(0)
+    (0, 0)
+    >>> split_virtual_offset(1)
+    (0, 1)
+    >>> split_virtual_offset(65535)
+    (0, 65535)
+    >>> split_virtual_offset(65536)
+    (1, 0)
+    >>> split_virtual_offset(65537)
+    (1, 1)
+    >>> split_virtual_offset(1195311108)
+    (18239, 4)
+    """
+    start_offset = virtual_offset >> 16
+    within_block = virtual_offset ^ (start_offset << 16)
+    return start_offset, within_block
+
+
+def _load_bgzf_block(handle: typing.IO[bytes]) -> tuple[int, str]:
+    """Load the next BGZF block from the file handle.
+
+    Returns a tuple of (block_size, decompressed_data_as_string).
+    Raises StopIteration if EOF is reached.
+    """
+    # Read the complete gzip header (10 bytes)
+    # ID1 ID2 CM FLG MTIME(4) XFL OS
+    header = handle.read(10)
+    if len(header) < 10:  # pragma: no cover
+        raise StopIteration("EOF")
+
+    # Check magic bytes
+    if header[:4] != _bgzf_magic:  # pragma: no cover
+        raise ValueError(f"Invalid BGZF magic: {header[:4]!r}")
+
+    # Check FLG field - should have FEXTRA bit set (0x04)
+    flg = header[3]
+    if not (flg & 0x04):  # pragma: no cover
+        raise ValueError("BGZF file missing FEXTRA flag")
+
+    # Read XLEN (extra field length)
+    xlen_bytes = handle.read(2)
+    if len(xlen_bytes) < 2:  # pragma: no cover
+        raise ValueError("Truncated BGZF extra field length")
+
+    xlen = struct.unpack("<H", xlen_bytes)[0]
+    if xlen < 6:  # pragma: no cover
+        raise ValueError("Invalid BGZF extra field length")
+
+    # Read the extra field
+    extra_data = handle.read(xlen)
+    if len(extra_data) < xlen:  # pragma: no cover
+        raise ValueError("Truncated BGZF extra field")
+
+    # Parse the BC subfield to get BSIZE
+    if extra_data[:2] != _bytes_BC:  # pragma: no cover
+        raise ValueError("Missing BC subfield in BGZF header")
+
+    if len(extra_data) < 6:  # pragma: no cover
+        raise ValueError("BC subfield too short")
+
+    # BC subfield: SI1='B' SI2='C' SLEN=2 BSIZE(2 bytes)
+    slen = struct.unpack("<H", extra_data[2:4])[0]
+    if slen != 2:  # pragma: no cover
+        raise ValueError(f"Expected BC subfield length 2, got {slen}")
+
+    bsize = struct.unpack("<H", extra_data[4:6])[0]
+
+    # Calculate compressed data size
+    # Total block size = BSIZE + 1
+    # Header size = 10 + 2 + XLEN  (header(10) + xlen(2) + extra(XLEN))
+    # Trailer size = 8 (CRC32 + ISIZE)
+    header_size = 10 + 2 + xlen
+    cdata_size = (bsize + 1) - header_size - 8
+
+    if cdata_size <= 0:  # pragma: no cover
+        raise ValueError(f"Invalid compressed data size: {cdata_size}")
+
+    # Read the compressed data
+    compressed_data = handle.read(cdata_size)
+    if len(compressed_data) != cdata_size:  # pragma: no cover
+        raise ValueError(f"Truncated BGZF block data: expected {cdata_size}, got {len(compressed_data)}")
+
+    # Read the trailer (CRC32 and ISIZE)
+    trailer = handle.read(8)
+    if len(trailer) != 8:  # pragma: no cover
+        raise ValueError("Truncated BGZF trailer")
+
+    crc32, isize = struct.unpack("<II", trailer)
+
+    # Decompress the data
+    try:
+        # Use raw deflate decompression (negative window bits)
+        data = zlib.decompress(compressed_data, -15)
+    except zlib.error as e:  # pragma: no cover
+        raise ValueError(f"Failed to decompress BGZF block: {e}")
+
+    # Verify the uncompressed size
+    if len(data) != isize:  # pragma: no cover
+        raise ValueError(f"Uncompressed size mismatch: got {len(data)}, expected {isize}")
+
+    # Verify the CRC32
+    if zlib.crc32(data) & 0xFFFFFFFF != crc32:  # pragma: no cover
+        raise ValueError("CRC32 mismatch in BGZF block")
+
+    # Always convert to string using latin-1 encoding
+    result = data.decode("latin-1")
+
+    return bsize + 1, result
+
+
 class BgzfWriter(typing.IO[str]):
     def __init__(
         self,
@@ -263,4 +378,287 @@ class BgzfWriter(typing.IO[str]):
         return self
 
     def __exit__(self, type_: type[BaseException] | None, value: BaseException | None, traceback: typing.Any) -> None:
+        self.close()
+
+
+class BgzfReader(typing.IO[str]):
+    r"""BGZF reader, acts like a read only handle but seek/tell differ."""
+
+    def __init__(
+        self,
+        filename: str | None = None,
+        mode: str = "r",
+        fileobj: typing.IO[bytes] | None = None,
+        max_cache: int = 100,
+    ):
+        r"""Initialize the class for reading a BGZF file.
+
+        You would typically use the top level ``bgzf.open(...)`` function
+        which will call this class internally. Direct use is discouraged.
+
+        Either the ``filename`` (string) or ``fileobj`` (input file object in
+        binary mode) arguments must be supplied, but not both.
+
+        Argument ``mode`` controls if the data will be returned as strings in
+        text mode ("rt", "tr", or default "r"), or bytes binary mode ("rb"
+        or "br"). The argument name matches the built-in ``open(...)`` and
+        standard library ``gzip.open(...)`` function.
+
+        If text mode is requested, in order to avoid multi-byte characters,
+        this is hard coded to use the "latin1" encoding, and "\r" and "\n"
+        are passed as is (without implementing universal new line mode). There
+        is no ``encoding`` argument.
+
+        If your data is in UTF-8 or any other incompatible encoding, you must
+        use binary mode, and decode the appropriate fragments yourself.
+
+        Argument ``max_cache`` controls the maximum number of BGZF blocks to
+        cache in memory. Each can be up to 64kb thus the default of 100 blocks
+        could take up to 6MB of RAM. This is important for efficient random
+        access, a small value is fine for reading the file in one pass.
+        """
+        # TODO - Assuming we can seek, check for 28 bytes EOF empty block
+        # and if missing warn about possible truncation (as in samtools)?
+        if max_cache < 1:  # pragma: no cover
+            raise ValueError("Use max_cache with a minimum of 1")
+        # Must open the BGZF file in binary mode, but we may want to
+        # treat the contents as either text or binary (unicode or
+        # bytes under Python 3)
+        if filename and fileobj:
+            raise ValueError("Supply either filename or fileobj, not both")
+        # Want to reject output modes like w, a, x, +
+        if mode.lower() not in ("r", "tr", "rt", "rb", "br"):  # pragma: no cover
+            raise ValueError("Must use a read mode like 'r' (default), 'rt', or 'rb' for binary")
+        # If an open file was passed, make sure it was opened in binary mode.
+        if fileobj:
+            if fileobj.read(0) != b"":  # pragma: no cover
+                raise ValueError("fileobj not opened in binary mode")
+            handle = fileobj
+        else:
+            if filename is None:  # pragma: no cover
+                raise ValueError("Must provide filename if fileobj is None")
+            handle = open(filename, "rb")
+
+        # Always read bytes from disk but return strings to the outside world
+        self._newline = "\n"
+        self._handle = handle
+        self.max_cache = max_cache
+        self._buffers: dict[int, tuple[str, int]] = {}
+        self._block_start_offset: int = -1  # Force initial load
+        self._block_raw_length: int = 0
+        self._within_block_offset: int = 0
+        self._buffer: str = ""
+        self._load_block(0)  # Start at offset 0
+
+    def _load_block(self, start_offset: int | None = None) -> None:
+        if start_offset is None:
+            # If the file is being read sequentially, then _handle.tell()
+            # should be pointing at the start of the next block.
+            # However, if seek has been used, we can't assume that.
+            start_offset = self._block_start_offset + self._block_raw_length
+        if start_offset == self._block_start_offset:  # pragma: no cover
+            self._within_block_offset = 0
+            return
+        elif start_offset in self._buffers:
+            # Already in cache
+            self._buffer, self._block_raw_length = self._buffers[start_offset]
+            self._within_block_offset = 0
+            self._block_start_offset = start_offset
+            return
+        # Must hit the disk... first check cache limits,
+        while len(self._buffers) >= self.max_cache:  # pragma: no cover
+            # TODO - Implement LRU cache removal?
+            self._buffers.popitem()
+        # Now load the block
+        handle = self._handle
+        if start_offset is not None:
+            handle.seek(start_offset)
+        self._block_start_offset = handle.tell()
+        try:
+            block_size, self._buffer = _load_bgzf_block(handle)
+        except StopIteration:
+            # EOF
+            block_size = 0
+            self._buffer = ""
+        self._within_block_offset = 0
+        self._block_raw_length = block_size
+        # Finally save the block in our cache,
+        self._buffers[self._block_start_offset] = self._buffer, block_size
+
+    def tell(self):  # pragma: no cover
+        """Return a 64-bit unsigned BGZF virtual offset."""
+        if 0 < self._within_block_offset and self._within_block_offset == len(self._buffer):
+            # Special case where we're right at the end of a (non empty) block.
+            # For non-maximal blocks could give two possible virtual offsets,
+            # but for a maximal block can't use 65536 as the within block
+            # offset. Therefore for consistency, use the next block and a
+            # within block offset of zero.
+            return (self._block_start_offset + self._block_raw_length) << 16
+        else:
+            # return make_virtual_offset(self._block_start_offset,
+            #                           self._within_block_offset)
+            # TODO - Include bounds checking as in make_virtual_offset?
+            return (self._block_start_offset << 16) | self._within_block_offset
+
+    def seek(self, virtual_offset: int, whence: int = 0) -> int:
+        """Seek to a 64-bit unsigned BGZF virtual offset."""
+        # Do this inline to avoid a function call,
+        # start_offset, within_block = split_virtual_offset(virtual_offset)
+        start_offset = virtual_offset >> 16
+        within_block = virtual_offset ^ (start_offset << 16)
+        if start_offset != self._block_start_offset:
+            # Don't need to load the block if already there
+            # (this avoids a function call since _load_block would do nothing)
+            self._load_block(start_offset)
+            if start_offset != self._block_start_offset:  # pragma: no cover
+                raise ValueError("start_offset not loaded correctly")
+        if within_block > len(self._buffer):
+            if not (within_block == 0 and len(self._buffer) == 0):  # pragma: no cover
+                raise ValueError("Within offset %i but block size only %i" % (within_block, len(self._buffer)))
+        self._within_block_offset = within_block
+        # assert virtual_offset == self.tell(), \
+        #    "Did seek to %i (%i, %i), but tell says %i (%i, %i)" \
+        #    % (virtual_offset, start_offset, within_block,
+        #       self.tell(), self._block_start_offset,
+        #       self._within_block_offset)
+        return virtual_offset
+
+    def read(self, size: int = -1) -> str:
+        """Read method for the BGZF module."""
+        if size < 0:  # pragma: no cover
+            raise NotImplementedError("Don't be greedy, that could be massive!")
+
+        result = ""
+        while size and self._block_raw_length:
+            if self._within_block_offset + size <= len(self._buffer):
+                # This may leave us right at the end of a block
+                # (lazy loading, don't load the next block unless we have too)
+                data = self._buffer[self._within_block_offset : self._within_block_offset + size]
+                self._within_block_offset += size
+                if not data:  # pragma: no cover
+                    raise ValueError("Must be at least 1 byte")
+                result += data
+                break
+            else:  # pragma: no cover
+                data = self._buffer[self._within_block_offset :]
+                size -= len(data)
+                self._load_block()  # will reset offsets
+                result += data
+
+        return result
+
+    def readline(self, size: int = -1) -> str:
+        """Read a single line for the BGZF file."""
+        result = ""
+        while self._block_raw_length:
+            i = self._buffer.find(self._newline, self._within_block_offset)
+            # Three cases to consider,
+            if i == -1:  # pragma: no cover
+                # No newline, need to read in more data
+                data = self._buffer[self._within_block_offset :]
+                self._load_block()  # will reset offsets
+                result += data
+            elif i + 1 == len(self._buffer):
+                # Found new line, but right at end of block (SPECIAL)
+                data = self._buffer[self._within_block_offset :]
+                # Must now load the next block to ensure tell() works
+                self._load_block()  # will reset offsets
+                if not data:  # pragma: no cover
+                    raise ValueError("Must be at least 1 byte")
+                result += data
+                break
+            else:
+                # Found new line, not at end of block (easy case, no IO)
+                data = self._buffer[self._within_block_offset : i + 1]
+                self._within_block_offset = i + 1
+                # assert data.endswith(self._newline)
+                result += data
+                break
+
+        return result
+
+    def __next__(self) -> str:
+        """Return the next line."""
+        line = self.readline()
+        if not line:
+            raise StopIteration
+        return line
+
+    def __iter__(self) -> "BgzfReader":  # pragma: no cover
+        """Iterate over the lines in the BGZF file."""
+        return self
+
+    def close(self) -> None:
+        """Close BGZF file."""
+        self._handle.close()
+        self._buffer = ""
+        self._block_start_offset = 0
+        self._buffers = {}
+
+    def seekable(self) -> bool:  # pragma: no cover
+        """Return True indicating the BGZF supports random access."""
+        return True
+
+    def isatty(self) -> bool:  # pragma: no cover
+        """Return True if connected to a TTY device."""
+        return False
+
+    def readable(self) -> bool:  # pragma: no cover
+        """Return True indicating the BGZF file is readable."""
+        return True
+
+    def writable(self) -> bool:  # pragma: no cover
+        """Return False indicating the BGZF file is not writable."""
+        return False
+
+    def fileno(self) -> int:  # pragma: no cover
+        """Return integer file descriptor."""
+        return self._handle.fileno()
+
+    @property
+    def closed(self) -> bool:  # pragma: no cover
+        """Return True if the file is closed."""
+        return self._handle.closed
+
+    @property
+    def mode(self) -> str:  # pragma: no cover
+        """Return the file mode."""
+        return "r"
+
+    @property
+    def name(self) -> str:
+        """Return the file name."""
+        return getattr(self._handle, "name", "")
+
+    def flush(self) -> None:  # pragma: no cover
+        """Flush - no-op for read-only file."""
+        pass
+
+    def readlines(self, hint: int = -1) -> list[str]:
+        """Read all lines from the file."""
+        lines = []
+        for line in self:
+            lines.append(line)
+            if hint > 0 and len(lines) >= hint:
+                break
+        return lines
+
+    def writelines(self, lines: Iterable[str]) -> None:  # pragma: no cover
+        """Write lines - not supported for read-only file."""
+        raise OSError("not writable")
+
+    def write(self, s: str) -> int:  # pragma: no cover
+        """Write - not supported for read-only file."""
+        raise OSError("not writable")
+
+    def truncate(self, size: int | None = None) -> int:  # pragma: no cover
+        """Truncate - not supported for read-only file."""
+        raise OSError("not writable")
+
+    def __enter__(self):
+        """Open a file operable with WITH statement."""
+        return self
+
+    def __exit__(self, type, value, traceback):
+        """Close a file with WITH statement."""
         self.close()

@@ -5,7 +5,7 @@ requires = ["hatchling"]
 [project]
 authors = [{name = "Manuel Holtgrewe"}]
 classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Natural Language :: English",
@@ -15,9 +15,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
 ]
-dependencies = [
-  "pysam>=0.10.0",  # fast tabix jumping
-]
+dependencies = []
 description = "Python 3 VCF library with good support for both reading and writing"
 keywords = []
 name = "vcfpy"

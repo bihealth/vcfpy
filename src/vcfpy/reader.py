@@ -7,9 +7,8 @@ import pathlib
 import typing
 from io import TextIOWrapper
 
-import pysam
-
 from vcfpy import parser
+from vcfpy.tabix import TabixFile
 
 __author__ = "Manuel Holtgrewe <manuel.holtgrewe@bihealth.de>"
 
@@ -159,7 +158,7 @@ class Reader:
         if not self.tabix_file or self.tabix_file.closed:
             if self.path is None:  # pragma: no cover
                 raise ValueError("Cannot fetch without path")
-            self.tabix_file = pysam.TabixFile(filename=self.path, index=self.tabix_path)
+            self.tabix_file = TabixFile(filename=self.path, index=self.tabix_path)
         # jump to the next position
         if begin is None:
             self.tabix_iter = self.tabix_file.fetch(region=chrom_or_region)
