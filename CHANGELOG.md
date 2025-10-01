@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.14.0](https://github.com/bihealth/vcfpy/compare/vcfpy-v0.13.8...vcfpy-v0.14.0) (2025-10-01)
+
+
+### ⚠ BREAKING CHANGES
+
+* add type annotations ([#188](https://github.com/bihealth/vcfpy/issues/188)) (#189)
+
+### Features
+
+* add type annotations ([#188](https://github.com/bihealth/vcfpy/issues/188)) ([#189](https://github.com/bihealth/vcfpy/issues/189)) ([7ecb78e](https://github.com/bihealth/vcfpy/commit/7ecb78e19f58cb0eb7337038f330b7b36a4014d4))
+* remove pysam dependency ([#192](https://github.com/bihealth/vcfpy/issues/192)) ([#193](https://github.com/bihealth/vcfpy/issues/193)) ([34ff40a](https://github.com/bihealth/vcfpy/commit/34ff40adfa66f49a0b1c801ba68b6e2ec00415a6))
+
+
+### Bug Fixes
+
+* A sample column value of 0|0 is not being parsed correctly ([#176](https://github.com/bihealth/vcfpy/issues/176)) ([#187](https://github.com/bihealth/vcfpy/issues/187)) ([ea28aed](https://github.com/bihealth/vcfpy/commit/ea28aed464f17dec13bc051e103a17168d4064a6))
+* escaped equal sign in INFO fields ([#171](https://github.com/bihealth/vcfpy/issues/171)) ([#172](https://github.com/bihealth/vcfpy/issues/172)) ([da013b8](https://github.com/bihealth/vcfpy/commit/da013b8ca3c48fa3b3a9eea5b333e68f89be06bd))
+* fix parse record error verbiage ([#175](https://github.com/bihealth/vcfpy/issues/175)) ([#186](https://github.com/bihealth/vcfpy/issues/186)) ([ff19171](https://github.com/bihealth/vcfpy/commit/ff19171b19b4d5544277e4768c1503a873f958d6))
+* fixing manifest for changelog ([#169](https://github.com/bihealth/vcfpy/issues/169)) ([83c5b8e](https://github.com/bihealth/vcfpy/commit/83c5b8e6cd1199245673cc0d8deb2d6f3646d183))
+* remove versioneer Python 3.12 compatibility ([#160](https://github.com/bihealth/vcfpy/issues/160)) ([5e2860e](https://github.com/bihealth/vcfpy/commit/5e2860e22042aa794304c8805ca716a39c88f24e))
+
 ## [0.13.8](https://github.com/bihealth/vcfpy/compare/v0.13.7...v0.13.8) (2024-01-10)
 
 
