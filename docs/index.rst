@@ -1,7 +1,22 @@
 .. _manual-main:
 
 Welcome to VCFPy's documentation!
-=================================
+==================================
+
+.. toctree::
+    :caption: API Documentation
+    :name: api-reference
+    :hidden:
+    :maxdepth: 1
+    :titlesonly:
+
+    api_header
+    api_io
+    api_exceptions
+    api_record
+    api_parser
+    api_bgzf
+    api_tabix
 
 VCFPy is a Python 3 library with good support for both reading and writing VCF files.
 The documentation is split into three parts (accessible through the navigation on the left):
@@ -25,7 +40,7 @@ Features
 --------
 
 * Support for reading and writing VCF v4.3
-* Interface to ``INFO`` and ``FORMAT`` fields is based on ``OrderedDict`` allows for easier modification than PyVCF (also I find this more pythonic)
+* Interface to ``INFO`` and ``FORMAT`` fields is based on ``dict`` allows for easier modification than PyVCF (also I find this more pythonic)
 * Read (and jump in) and write BGZF files just using ``vcfpy``
 
 Frequently Asked Questions
@@ -49,7 +64,7 @@ What's the state?
 
 What's the difference to PyVCF?
     The main difference is technical.
-    Instead of using ``collections.namedtuple`` for storing the call annotation, VCFPy uses ``collections.OrderedDict``.
+    Instead of using ``collections.namedtuple`` for storing the call annotation, VCFPy uses ``dict``.
     This has the advantage that (1) access to optional settings is much more pythonic using ``.get(KEY, DEFAULT)`` instead of ``getattr()``.
     Further, (2) adding call annotations (``FORMAT``) fields is able without any performance penalty where for PyVCF, ``copy.deepcopy`` has to be used at some point which is very slow.
     There has not been any movement in supporting modifying ``FORMAT`` fields in PyVCF and here is a library that does this well.
@@ -91,6 +106,14 @@ What's the aim?
     authors
     history
     license
+
+.. toctree::
+    :caption: Full API Reference
+    :name: full-api
+    :hidden:
+    :maxdepth: 1
+
+    modules
 
 .. Generated pages, should not appear
 

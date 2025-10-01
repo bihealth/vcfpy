@@ -6,15 +6,6 @@ Header
 
 .. contents::
 
-vcfpy.OrderedDict
------------------
-
-Convenience export of ``OrderedDict``.
-When available, the ``cyordereddict``, a Cython-reimplementation of ``OrderedDict`` is used for Python before 3.5 (from 3.5, Python ships with a fast, C implementation of ``OrderedDict``).
-
-.. autoclass:: vcfpy.OrderedDict
-    :members:
-
 vcfpy.Header
 ------------
 

@@ -26,10 +26,10 @@ import os
 cwd = os.getcwd()
 project_root = os.path.dirname(cwd)
 
-# Insert the project root dir as the first element in the PYTHONPATH.
+# Insert the src directory as the first element in the PYTHONPATH.
 # This lets us ensure that the source package is imported, and that its
 # version is used.
-sys.path.insert(0, project_root)
+sys.path.insert(0, os.path.join(project_root, 'src'))
 
 import vcfpy
 
@@ -41,6 +41,9 @@ import vcfpy
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ["sphinx.ext.autodoc", "sphinx.ext.viewcode"]
+
+# Suppress specific warnings
+suppress_warnings = ['autodoc.duplicate_object']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]

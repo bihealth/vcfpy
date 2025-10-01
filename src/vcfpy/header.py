@@ -304,7 +304,7 @@ class Header:
     """Represent header of VCF file
 
     While this class allows mutating records, it should not be changed once it
-    has been assigned to a writer.  Use :py:method:`~Header.copy` to create
+    has been assigned to a writer.  Use :py:meth:`~Header.copy` to create
     a copy that can be modified without problems.
 
     This class provides function for adding lines to a header and updating the
