@@ -536,3 +536,244 @@ def test_tabix_sequence_ordering():
         # Verify that records are in index order
         sorted_lines = sorted(all_lines, key=lambda x: x[0])  # Sort by index position
         assert all_lines == sorted_lines, "Records should be in index order, not lexical order"
+
+
+def test_tabix_large_file_comprehensive():
+    """Test tabix functionality on a large real-world VCF file."""
+    vcf_path = pathlib.Path(__file__).parent / "vcfs" / "annotated_tomato_150.100000.vcf.gz"
+
+    if not vcf_path.exists():
+        pytest.skip("Large tomato VCF file not found")
+
+    with TabixFile(filename=vcf_path) as tabix_file:
+        # Test 1: Basic file properties
+        assert tabix_file.index_file.format == FileFormat.VCF
+        assert "SL2.50ch00" in tabix_file.index_file.indices
+
+        # Test 2: Small range at the beginning - should have 44 records
+        records = list(tabix_file.fetch(reference="SL2.50ch00", start=1, end=1000))
+        assert len(records) == 44, f"Expected 44 records in range 1-1000, got {len(records)}"
+
+        # Verify first record
+        first_record = records[0]
+        fields = first_record.split("\t")
+        assert fields[0] == "SL2.50ch00"
+        assert int(fields[1]) == 280  # First position should be 280
+
+        # Test 3: Dense region - should have 114 records
+        records = list(tabix_file.fetch(reference="SL2.50ch00", start=10000, end=11000))
+        assert len(records) == 114, f"Expected 114 records in range 10000-11000, got {len(records)}"
+
+        # Test 4: Medium range - should have 360 records
+        records = list(tabix_file.fetch(reference="SL2.50ch00", start=80000, end=85000))
+        assert len(records) == 360, f"Expected 360 records in range 80000-85000, got {len(records)}"
+
+        # Test 5: Large range - should have 3118 records
+        records = list(tabix_file.fetch(reference="SL2.50ch00", start=50000, end=100000))
+        assert len(records) == 3118, f"Expected 3118 records in range 50000-100000, got {len(records)}"
+
+
+def test_tabix_large_file_position_verification():
+    """Test that positions are correctly parsed and filtered in large file."""
+    vcf_path = pathlib.Path(__file__).parent / "vcfs" / "annotated_tomato_150.100000.vcf.gz"
+
+    if not vcf_path.exists():
+        pytest.skip("Large tomato VCF file not found")
+
+    with TabixFile(filename=vcf_path) as tabix_file:
+        # Test position boundaries
+        records = list(tabix_file.fetch(reference="SL2.50ch00", start=90000, end=95000))
+
+        for record in records:
+            fields = record.split("\t")
+            chrom = fields[0]
+            pos = int(fields[1])
+            ref = fields[3]
+
+            assert chrom == "SL2.50ch00"
+            assert 90000 <= pos <= 95000, f"Position {pos} outside range 90000-95000"
+
+            # For VCF, end position is pos + len(ref) - 1
+            end_pos = pos + len(ref) - 1
+            # Record should overlap with query range [90000, 95000]
+            assert not (end_pos < 90000 or pos > 95000), f"Record at {pos}-{end_pos} doesn't overlap 90000-95000"
+
+
+def test_tabix_large_file_edge_cases():
+    """Test edge cases with the large file."""
+    vcf_path = pathlib.Path(__file__).parent / "vcfs" / "annotated_tomato_150.100000.vcf.gz"
+
+    if not vcf_path.exists():
+        pytest.skip("Large tomato VCF file not found")
+
+    with TabixFile(filename=vcf_path) as tabix_file:
+        # Test 1: Query before any records
+        records = list(tabix_file.fetch(reference="SL2.50ch00", start=1, end=100))
+        assert len(records) == 0, "Should have no records before position 280"
+
+        # Test 2: Query after all records (assuming file ends before 200000)
+        records = list(tabix_file.fetch(reference="SL2.50ch00", start=200000, end=300000))
+        # This might have 0 records if the file doesn't extend that far
+
+        # Test 3: Single position query
+        records = list(tabix_file.fetch(reference="SL2.50ch00", start=90016, end=90016))
+        # Should find the record at position 90016 if it exists
+        if records:
+            fields = records[0].split("\t")
+            pos = int(fields[1])
+            ref = fields[3]
+            end_pos = pos + len(ref) - 1
+            assert pos <= 90016 <= end_pos, f"Record at {pos}-{end_pos} should contain position 90016"
+
+        # Test 4: Very small range
+        records = list(tabix_file.fetch(reference="SL2.50ch00", start=90090, end=90100))
+        # Verify all records are in the correct range
+        for record in records:
+            fields = record.split("\t")
+            pos = int(fields[1])
+            ref = fields[3]
+            end_pos = pos + len(ref) - 1
+            # Record should overlap with query range
+            assert not (end_pos < 90090 or pos > 90100), f"Record at {pos}-{end_pos} doesn't overlap 90090-90100"
+
+
+def test_tabix_large_file_different_query_sizes():
+    """Test different query sizes to validate binning scheme performance."""
+    vcf_path = pathlib.Path(__file__).parent / "vcfs" / "annotated_tomato_150.100000.vcf.gz"
+
+    if not vcf_path.exists():
+        pytest.skip("Large tomato VCF file not found")
+
+    with TabixFile(filename=vcf_path) as tabix_file:
+        # Test various bin sizes to exercise different levels of the UCSC binning scheme
+        test_cases = [
+            # Small queries (should use high-resolution bins)
+            ("SL2.50ch00", 1000, 2000, "small_query_1kb"),
+            ("SL2.50ch00", 5000, 6000, "small_query_1kb_2"),
+            # Medium queries (should use medium-resolution bins)
+            ("SL2.50ch00", 10000, 20000, "medium_query_10kb"),
+            ("SL2.50ch00", 30000, 50000, "medium_query_20kb"),
+            # Large queries (should use low-resolution bins)
+            ("SL2.50ch00", 1, 50000, "large_query_50kb"),
+            ("SL2.50ch00", 25000, 75000, "large_query_50kb_2"),
+        ]
+
+        for chrom, start, end, description in test_cases:
+            records = list(tabix_file.fetch(reference=chrom, start=start, end=end))
+
+            # Verify all records are in the correct range
+            for record in records:
+                fields = record.split("\t")
+                pos = int(fields[1])
+                ref = fields[3]
+                record_end = pos + len(ref) - 1
+
+                # Record should overlap with query range
+                assert not (
+                    record_end < start or pos > end
+                ), f"{description}: Record at {pos}-{record_end} doesn't overlap {start}-{end}"
+
+                assert fields[0] == chrom, f"{description}: Wrong chromosome {fields[0]}, expected {chrom}"
+
+
+def test_tabix_large_file_validation_against_reference():
+    """Validate our implementation against reference tabix command results."""
+    vcf_path = pathlib.Path(__file__).parent / "vcfs" / "annotated_tomato_150.100000.vcf.gz"
+
+    if not vcf_path.exists():
+        pytest.skip("Large tomato VCF file not found")
+
+    with TabixFile(filename=vcf_path) as tabix_file:
+        # Test cases with known results from reference tabix command
+        validation_cases = [
+            # Range, Expected count (from tabix command)
+            ("SL2.50ch00", 1, 1000, 44),
+            ("SL2.50ch00", 10000, 11000, 114),
+            ("SL2.50ch00", 80000, 85000, 360),
+            ("SL2.50ch00", 50000, 100000, 3118),
+        ]
+
+        for chrom, start, end, expected_count in validation_cases:
+            records = list(tabix_file.fetch(reference=chrom, start=start, end=end))
+            actual_count = len(records)
+
+            assert (
+                actual_count == expected_count
+            ), f"Range {chrom}:{start}-{end}: expected {expected_count} records, got {actual_count}"
+
+            # Verify record ordering (should be sorted by position)
+            positions = []
+            for record in records:
+                fields = record.split("\t")
+                pos = int(fields[1])
+                positions.append(pos)
+
+            assert positions == sorted(positions), f"Records in range {chrom}:{start}-{end} are not sorted by position"
+
+
+def test_tabix_large_file_indel_handling():
+    """Test handling of insertions and deletions in large file."""
+    vcf_path = pathlib.Path(__file__).parent / "vcfs" / "annotated_tomato_150.100000.vcf.gz"
+
+    if not vcf_path.exists():
+        pytest.skip("Large tomato VCF file not found")
+
+    with TabixFile(filename=vcf_path) as tabix_file:
+        # Get some records that include indels
+        records = list(tabix_file.fetch(reference="SL2.50ch00", start=400, end=500))
+
+        indel_count = 0
+        for record in records:
+            fields = record.split("\t")
+            pos = int(fields[1])
+            ref = fields[3]
+            alt = fields[4]
+
+            # Check if this is an indel
+            is_indel = len(ref) != len(alt)
+            if is_indel:
+                indel_count += 1
+
+                # Verify the record is correctly positioned
+                record_end = pos + len(ref) - 1
+                assert 400 <= pos <= 500 or (
+                    pos < 400 and record_end >= 400
+                ), f"Indel at {pos}-{record_end} incorrectly included in range 400-500"
+
+        # The test file should have at least one indel in this range
+        # (We saw ATTT->ATTTT at position 409 in the sample output)
+        assert indel_count > 0, "Should find at least one indel in the test range"
+
+
+def test_tabix_large_file_performance_bins():
+    """Test that different bin levels are being used appropriately."""
+    vcf_path = pathlib.Path(__file__).parent / "vcfs" / "annotated_tomato_150.100000.vcf.gz"
+
+    if not vcf_path.exists():
+        pytest.skip("Large tomato VCF file not found")
+
+    with TabixFile(filename=vcf_path) as tabix_file:
+        # Get the sequence index for SL2.50ch00
+        seq_index = tabix_file.index_file.indices["SL2.50ch00"]
+
+        # Verify we have bins
+        bin_numbers = [bin_obj.number for bin_obj in seq_index.bins]
+        assert len(bin_numbers) > 0, "Should have at least some bins"
+
+        # Check bin number ranges for UCSC binning scheme
+        # Level 5: bins 4681-37448 (each spans ~128kb)
+        # For a file covering ~150kb, we should mainly have level 5 bins
+        level_5_bins = [b for b in bin_numbers if 4681 <= b <= 37448]
+
+        # The file covers ~150kb so should have multiple level 5 bins
+        assert len(level_5_bins) > 0, "Should have level 5 bins for fine-grained access"
+        assert len(level_5_bins) == len(bin_numbers), "All bins should be level 5 for this file size"
+
+        # Verify bins are consecutive or at least in reasonable range
+        min_bin = min(bin_numbers)
+        max_bin = max(bin_numbers)
+        bin_range = max_bin - min_bin + 1
+
+        # For ~150kb file, we expect a reasonable number of bins
+        assert 50 <= len(bin_numbers) <= 200, f"Expected 50-200 bins, got {len(bin_numbers)}"
+        assert bin_range <= 200, f"Bin range {bin_range} seems too large for a 150kb file"
