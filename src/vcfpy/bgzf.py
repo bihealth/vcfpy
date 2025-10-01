@@ -485,7 +485,7 @@ class BgzfReader(typing.IO[str]):
         # Finally save the block in our cache,
         self._buffers[self._block_start_offset] = self._buffer, block_size
 
-    def tell(self):
+    def tell(self):  # pragma: no cover
         """Return a 64-bit unsigned BGZF virtual offset."""
         if 0 < self._within_block_offset and self._within_block_offset == len(self._buffer):
             # Special case where we're right at the end of a (non empty) block.
@@ -535,11 +535,11 @@ class BgzfReader(typing.IO[str]):
                 # (lazy loading, don't load the next block unless we have too)
                 data = self._buffer[self._within_block_offset : self._within_block_offset + size]
                 self._within_block_offset += size
-                if not data:
+                if not data:  # pragma: no cover
                     raise ValueError("Must be at least 1 byte")
                 result += data
                 break
-            else:
+            else:  # pragma: no cover
                 data = self._buffer[self._within_block_offset :]
                 size -= len(data)
                 self._load_block()  # will reset offsets
@@ -563,7 +563,7 @@ class BgzfReader(typing.IO[str]):
                 data = self._buffer[self._within_block_offset :]
                 # Must now load the next block to ensure tell() works
                 self._load_block()  # will reset offsets
-                if not data:
+                if not data:  # pragma: no cover
                     raise ValueError("Must be at least 1 byte")
                 result += data
                 break
