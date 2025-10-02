@@ -5,11 +5,5 @@
   "bump-patch-for-minor-pre-major": false,
   "draft": false,
   "prerelease": false,
-  "packages": {
-    ".": {
-      "package-name": "vcfpy",
-      "release-type": "python",
-      "version-file": "vcfpy/version.py"
-    }
-  }
+  "version-file": "src/vcfpy/version.py"
 }
