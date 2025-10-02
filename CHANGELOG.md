@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.14.1](https://github.com/bihealth/vcfpy/compare/vcfpy-v0.14.0...vcfpy-v0.14.1) (2025-10-02)
+
+
+### Features
+
+* force re-release as 0.14.1 for readthedocs release ([#195](https://github.com/bihealth/vcfpy/issues/195)) ([68d86e1](https://github.com/bihealth/vcfpy/commit/68d86e1cbc89a71a7dcce65e862eb5aac4965463))
+
+
+### Documentation
+
+* improving docs ([#194](https://github.com/bihealth/vcfpy/issues/194)) ([9dba5c5](https://github.com/bihealth/vcfpy/commit/9dba5c54769d39b08edaac09587fcaecb81ad158))
+
 ## [0.14.0](https://github.com/bihealth/vcfpy/compare/vcfpy-v0.13.8...vcfpy-v0.14.0) (2025-10-01)
 
 
