@@ -191,10 +191,11 @@ class Reader:
         :raises: ``StopException`` if at end
         """
         if self.tabix_iter:
-            return self.parser.parse_line(str(next(self.tabix_iter)))
+            result = self.parser.parse_line(str(next(self.tabix_iter)))
         else:
             result = self.parser.parse_next_record()
-            if result is None:
-                raise StopIteration()
-            else:
-                return result
+
+        if result is None:
+            raise StopIteration()
+
+        return result
