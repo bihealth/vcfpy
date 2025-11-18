@@ -171,7 +171,6 @@ run = "hatch build"
 packages = ["src/vcfpy"]
 
 [tool.hatch.build.targets.sdist]
-packages = ["src/vcfpy"]
 exclude = [
   "/.editorconfig",
   "/Makefile",
@@ -181,3 +180,4 @@ exclude = [
   "/.gitignore",
   "/tests",
 ]
+only-include = ["src"]
