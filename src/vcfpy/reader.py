@@ -151,9 +151,6 @@ class Reader:
         """
         if begin is not None and end is None:  # pragma: no cover
             raise ValueError("begin and end must both be None or neither")
-        # close tabix file if any and is open
-        if self.tabix_file and not self.tabix_file.closed:
-            self.tabix_file.close()
         # open tabix file if not yet open
         if not self.tabix_file or self.tabix_file.closed:
             if self.path is None:  # pragma: no cover

@@ -87,25 +87,26 @@ def test_fetch_two_records_region():
 
 
 def test_fetch_multiple_calls_same_reader():
-    """Test calling fetch multiple times on the same reader to cover tabix_file.close() path"""
+    """Reuse the open index while restarting queries, including unfinished ones."""
     path = os.path.join(os.path.dirname(__file__), "vcfs", "multi_contig.vcf.gz")
-    r = reader.Reader.from_path(path)
+    with reader.Reader.from_path(path) as r:
+        records1 = list(r.fetch("20", 1110695, 1230236))
+        assert [(record.CHROM, record.POS) for record in records1] == [("20", 1110696)]
+        tabix_file = r.tabix_file
 
-    # First fetch call - this will open tabix_file
-    records1 = list(r.fetch("20", 1110695, 1230236))
-    assert len(records1) == 1
-    assert records1[0].CHROM == "20"
-    assert records1[0].POS == 1110696
+        records2 = list(r.fetch("20", 1234566, 1234568))
+        assert [(record.CHROM, record.POS) for record in records2] == [("20", 1234567)]
+        assert r.tabix_file is tabix_file
 
-    # Second fetch call - this will close the existing tabix_file and open a new one
-    # This triggers line 157: self.tabix_file.close()
-    records2 = list(r.fetch("20", 1234566, 1234568))
-    assert len(records2) == 1
-    assert records2[0].CHROM == "20"
-    assert records2[0].POS == 1234567
+        # Rewind using the region-string API, then abandon a partially read query.
+        records3 = list(r.fetch("20:1,230,236-1,230,238"))
+        assert [(record.CHROM, record.POS) for record in records3] == [("20", 1230237)]
+        assert next(r.fetch("20")).POS == 1110696
+        assert [(record.CHROM, record.POS) for record in r.fetch("1")] == [("1", 14370)]
+        assert list(r.fetch("20:1-10")) == []
+        assert [(record.CHROM, record.POS) for record in r.fetch("2")] == [("2", 17330)]
+        assert r.tabix_file is tabix_file
+        assert not tabix_file.closed
 
-    # Third fetch with region string to ensure it also works
-    records3 = list(r.fetch("20:1,230,236-1,230,238"))
-    assert len(records3) == 1
-    assert records3[0].CHROM == "20"
-    assert records3[0].POS == 1230237
+    assert tabix_file.closed
+    assert r.stream.closed
